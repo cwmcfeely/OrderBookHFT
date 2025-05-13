@@ -1,7 +1,6 @@
 import logging
 import time
 from datetime import datetime
-from collections import deque
 
 logger = logging.getLogger(__name__)
 logger.propagate = False
@@ -38,10 +37,12 @@ class CircuitBreaker:
 
 
 class MatchingEngine:
-    def __init__(self, order_book, strategies=None):
+    def __init__(self, order_book, strategies=None, trading_state=None, state_lock=None):
         """
         :param order_book: OrderBook instance
         :param strategies: dict mapping source_name -> strategy instance
+        :param trading_state: dict for global state tracking (must contain 'latency_history')
+        :param state_lock: threading.Lock() to protect shared state
         """
         self.order_book = order_book
         self.logger = logging.getLogger("MatchingEngine")
@@ -51,6 +52,8 @@ class MatchingEngine:
             max_order_rate=100      # Max orders per second
         )
         self.strategies = strategies if strategies else {}
+        self.trading_state = trading_state
+        self.state_lock = state_lock
 
     def calculate_pnl(self, trade):
         """
@@ -79,6 +82,11 @@ class MatchingEngine:
                 top_order = queue[0]
                 trade_qty = min(quantity, top_order["qty"])
 
+                # Calculate latency if order_time is available
+                order_time = top_order.get("order_time", None)
+                current_time = time.time()
+                latency_ms = (current_time - order_time) * 1000 if order_time else None
+
                 trade = {
                     "price": level_price,
                     "qty": trade_qty,
@@ -88,7 +96,8 @@ class MatchingEngine:
                     "taker_source": source,
                     "side": "buy" if side == "buy" or side == "1" else "sell",
                     "source": source,
-                    "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "latency_ms": latency_ms  # Add latency in milliseconds
                 }
                 trades.append(trade)
 
@@ -108,6 +117,20 @@ class MatchingEngine:
                 if taker_strategy and hasattr(taker_strategy, 'on_trade'):
                     taker_strategy.on_trade(trade)
 
+                # Append latency info to global trading_state for visualization
+                if self.trading_state is not None and self.state_lock is not None:
+                    symbol = self.order_book.symbol
+                    if latency_ms is not None:
+                        with self.state_lock:
+                            latency_list = self.trading_state.setdefault('latency_history', {}).setdefault(symbol, [])
+                            latency_list.append({
+                                "time": trade["time"],
+                                "latency_ms": latency_ms
+                            })
+                            # Limit history size to last 500 entries
+                            if len(latency_list) > 500:
+                                latency_list.pop(0)
+
                 quantity -= trade_qty
                 top_order["qty"] -= trade_qty
 
@@ -118,11 +141,12 @@ class MatchingEngine:
         if quantity > 0:
             self.order_book.add_order(side, price, quantity, order_id, source)
 
-        # Log trades with source information
+        # Log trades with source information and latency if available
         for trade in trades:
+            latency_info = f" | Latency: {trade['latency_ms']:.2f} ms" if trade['latency_ms'] is not None else ""
             self.logger.info(
                 f"Trade executed: {trade['qty']}@{trade['price']} | "
-                f"Maker: {trade['maker_source']} | Taker: {trade['taker_source']}"
+                f"Maker: {trade['maker_source']} | Taker: {trade['taker_source']}{latency_info}"
             )
             self.order_book.last_price = trade["price"]
 

@@ -52,6 +52,8 @@ class BaseStrategy(ABC):
             source=self.source_name
         )
 
+        order_time = time.time()
+
         parsed_order = self.fix_engine.parse(fix_msg)
         if parsed_order:
             self.order_book.add_order(
@@ -59,7 +61,8 @@ class BaseStrategy(ABC):
                 price=parsed_order.get(44),
                 quantity=parsed_order.get(38),
                 order_id=parsed_order.get(11),
-                source=self.source_name
+                source=self.source_name,
+                order_time=order_time  # Capture order submission timestamp
             )
             self.order_count += 1
             if self.position_start_time is None:

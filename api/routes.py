@@ -23,7 +23,7 @@ with open("config.yaml", "r") as f:
     config = yaml.safe_load(f)
 symbols = config.get("symbols", {})
 
-# Initialize trading state
+# Initialise trading state
 trading_state = {
     "exchange_halted": False,
     "my_strategy_enabled": True,
@@ -34,6 +34,7 @@ trading_state = {
     "order_book_history": {symbol: [] for symbol in symbols.values()},
     "spread_history": {symbol: [] for symbol in symbols.values()},
     "liquidity_history": {symbol: [] for symbol in symbols.values()},
+    "latency_history": {symbol: [] for symbol in symbols.values()},
 }
 
 state_lock = threading.Lock()
@@ -108,7 +109,10 @@ def auto_update_order_books():
                     if "momentum" not in strategy_instances[symbol]:
                         strategy_instances[symbol]["momentum"] = MomentumStrategy(fix_engine, order_book, symbol)
 
-                matching_engine = MatchingEngine(order_book, strategies=strategy_instances[symbol])
+                matching_engine = MatchingEngine(order_book,
+                                                 strategies=strategy_instances[symbol],
+                                                 trading_state=trading_state,
+                                                 state_lock=state_lock)
 
                 # Seed order book with synthetic depth if empty
                 if not order_book.bids and not order_book.asks:
@@ -300,6 +304,13 @@ def register_routes(app):
                 trading_state["log"].append(f"Symbol selected: {symbol}")
                 return jsonify({"status": "symbol_changed", "symbol": symbol})
             return jsonify({"error": "Invalid symbol"}), 400
+
+    @app.route('/order_latency_history')
+    def order_latency_history():
+        symbol = request.args.get('symbol') or trading_state['current_symbol']
+        with state_lock:
+            latency_data = trading_state.get('latency_history', {}).get(symbol, [])
+            return jsonify(latency_data)
 
     @app.route("/")
     def index():

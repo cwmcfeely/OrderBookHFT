@@ -11,7 +11,7 @@ class OrderBook:
         self.trade_history = []  # Store recent trade prices for volatility etc.
         self.last_price = None
 
-    def add_order(self, side, price, quantity, order_id, source):
+    def add_order(self, side, price, quantity, order_id, source, order_time=None):
         """Add order with FIX protocol validation"""
         # Convert bytes to string if needed
         if isinstance(side, bytes):
@@ -39,7 +39,8 @@ class OrderBook:
         book[price].append({
             "id": order_id,
             "qty": quantity,
-            "source": source
+            "source": source,
+            "order_time": order_time
         })
 
     def get_depth_snapshot(self, levels=10):

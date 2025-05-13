@@ -245,6 +245,27 @@ function refreshLiquidityChart() {
         });
 }
 
+function refreshLatencyChart() {
+    fetch(`/order_latency_history?symbol=${currentSymbol}`)
+        .then(r => r.json())
+        .then(data => {
+            if (!data || !data.length) {
+                Plotly.newPlot('latency-chart', [{x: [0], y: [0], type: 'scatter'}], {title: "No Data"});
+                return;
+            }
+            let x = data.map(d => d.time);      // time of execution
+            let y = data.map(d => d.latency_ms); // latency in ms
+            Plotly.newPlot('latency-chart', [{
+                x: x, y: y, name: 'Order Latency', type: 'scatter', mode: 'lines+markers', line: {color: '#ff9800'}
+            }], {
+                height: 300,
+                margin: {t: 30},
+                yaxis: {title: 'Latency (ms)'},
+                xaxis: {title: 'Time'}
+            });
+        });
+}
+
 function refreshBlotter() {
     fetch(`/trades?symbol=${currentSymbol}`)
         .then(r => r.json())
@@ -281,6 +302,7 @@ function refreshAll() {
     refreshSpreadChart();
     refreshLiquidityChart();
     refreshBlotter();
+    refreshLatencyChart();
 }
 
 // Initial load
