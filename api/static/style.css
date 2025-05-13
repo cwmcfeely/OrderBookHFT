@@ -1,0 +1,168 @@
+body {
+    background: #181A20;
+    color: #F3F6F9;
+    font-family: 'Inter', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+h1 {
+    color: #90caf9;
+    text-align: center;
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-size: 2.2em;
+    margin: 36px 0 20px 0;
+}
+.dashboard {
+    display: flex;
+    gap: 36px;
+    margin: 0 40px 40px 40px;
+}
+.panel {
+    background: #23272E;
+    color: #F3F6F9;
+    border-radius: 12px;
+    box-shadow: 0 2px 16px #0008;
+    padding: 28px 24px 24px 24px;
+    flex: 1;
+    min-width: 350px;
+}
+.panel h2 {
+    font-size: 1.1em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8A8F98;
+    margin-bottom: 16px;
+}
+.orderbook-table, .trades-table, .metrics-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+.orderbook-table th, .trades-table th, .metrics-table th {
+    background: #23272E;
+    color: #8A8F98;
+    font-size: 0.97em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 8px 10px;
+    border: none;
+}
+.orderbook-table td, .trades-table td, .metrics-table td {
+    border: none;
+    font-family: monospace;
+    font-size: 1em;
+    padding: 8px 10px;
+    text-align: right;
+    background: transparent;
+}
+.bid { color: #66bb6a; }
+.ask { color: #ef5350; }
+.controls {
+    margin: 0 0 30px 0;
+    text-align: center;
+}
+.controls label {
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-right: 8px;
+}
+.controls select, .controls option {
+    background: #23272E;
+    color: #F3F6F9;
+    border: 1px solid #2b2f36;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 1em;
+    margin-right: 16px;
+}
+button {
+    border: none;
+    border-radius: 18px;
+    padding: 8px 24px;
+    font-weight: bold;
+    font-size: 1em;
+    margin: 0 8px;
+    box-shadow: 0 2px 8px #0002;
+    background: #23272E;
+    color: #F3F6F9;
+    transition: background 0.2s, filter 0.2s;
+    cursor: pointer;
+}
+#exchange-toggle { background: #E74C3C; color: #fff; }
+#trading-toggle { background: #27AE60; color: #fff; }
+button:hover { filter: brightness(1.1); }
+#last-price { font-weight: bold; }
+.loading { color: #ffb300; font-size: 0.96em; }
+.error { color: #E74C3C; font-weight: 600; font-size: 0.96em; }
+#trading-status, #exchange-status {
+    font-weight: bold;
+    margin-left: 10px;
+    color: #8A8F98;
+    font-size: 1em;
+}
+.metrics-panel {
+    margin: 40px 40px 0 40px;
+    background: #23272E;
+    border-radius: 12px;
+    box-shadow: 0 2px 16px #0007;
+    padding: 24px 24px 18px 24px;
+}
+.metrics-table th, .metrics-table td {
+    padding: 10px 14px;
+}
+.metrics-table th {
+    font-size: 1.05em;
+}
+.metrics-table td {
+    font-family: monospace;
+    font-size: 1.07em;
+}
+.metrics-table .positive {
+    color: #27AE60;
+}
+.metrics-table .negative {
+    color: #E74C3C;
+}
+.metrics-table .neutral {
+    color: #F3F6F9;
+}
+.viz-row {
+    display: flex;
+    gap: 32px;
+    margin: 0 40px 0 40px;
+}
+.viz-panel {
+    flex: 1;
+    min-width: 350px;
+    background: #23272E;
+    color: #F3F6F9;
+    border-radius: 12px;
+    box-shadow: 0 2px 16px #0008;
+    padding: 24px;
+    margin-bottom: 32px;
+}
+.viz-panel h2 {
+    font-size: 1.1em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8A8F98;
+    margin-bottom: 16px;
+}
+#trade-filter {
+    margin-bottom: 8px;
+    width: 90%;
+    background: #181A20;
+    color: #F3F6F9;
+    border: 1px solid #2b2f36;
+    border-radius: 6px;
+    padding: 6px 12px;
+}
+@media (max-width: 1100px) {
+    .dashboard, .viz-row {
+        flex-direction: column;
+    }
+}

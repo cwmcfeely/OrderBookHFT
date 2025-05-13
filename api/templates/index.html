@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Order Book & Trading Dashboard</title>
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" />
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script>
+        // Inject symbols from Flask into JS
+        let symbols = {{ symbols|tojson }};
+    </script>
+</head>
+<body>
+    <h1>Order Book & Trading Dashboard</h1>
+    <div class="controls">
+        <label for="symbol-select">Select Symbol:</label>
+        <select id="symbol-select"></select>
+        <button id="exchange-toggle" onclick="toggleExchange()">Halt Exchange</button>
+        <button id="trading-toggle" onclick="toggleMyStrategy()">Pause MyStrategy</button>
+        <span id="trading-status"></span>
+        <span id="exchange-status"></span>
+    </div>
+
+    <!-- Strategy Metrics Panel -->
+    <div class="metrics-panel">
+        <h2 class="panel-title">Strategy Metrics</h2>
+        <div id="metrics-feedback" class="loading" style="display:none;">Loading strategy metrics...</div>
+        <div id="metrics-error" class="error" style="display:none;"></div>
+        <table class="metrics-table" id="metrics-table">
+            <thead>
+                <tr>
+                    <th>Strategy</th>
+                    <th>Inventory</th>
+                    <th>P&amp;L</th>
+                    <th>Win Rate</th>
+                    <th>Total Trades</th>
+                </tr>
+            </thead>
+            <tbody id="metrics-body"></tbody>
+        </table>
+    </div>
+
+    <!-- Visualization Row -->
+    <div class="viz-row">
+        <div class="viz-panel">
+            <h2>Order Flow Heatmap</h2>
+            <div id="orderflow-heatmap"></div>
+        </div>
+        <div class="viz-panel">
+            <h2>Spread Evolution</h2>
+            <div id="spread-chart"></div>
+        </div>
+    </div>
+    <div class="viz-row">
+        <div class="viz-panel">
+            <h2>Liquidity Over Time</h2>
+            <div id="liquidity-chart"></div>
+        </div>
+        <div class="viz-panel">
+            <h2>Trade Blotter</h2>
+            <input type="text" id="trade-filter" placeholder="Filter by side/source/price..." />
+            <table class="metrics-table" id="blotter-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Price</th>
+                        <th>Qty</th>
+                        <th>Side</th>
+                        <th>Source</th>
+                    </tr>
+                </thead>
+                <tbody id="blotter-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <div class="panel">
+            <h2>Order Book</h2>
+            <div id="orderbook-feedback" class="loading" style="display:none;">Loading order book...</div>
+            <div id="orderbook-error" class="error" style="display:none;"></div>
+            <table class="orderbook-table" id="orderbook-table">
+                <thead>
+                    <tr>
+                        <th>Bid Qty</th>
+                        <th>Bid Price</th>
+                        <th>Ask Price</th>
+                        <th>Ask Qty</th>
+                    </tr>
+                </thead>
+                <tbody id="orderbook-body"></tbody>
+            </table>
+            <div>Last Price: <span id="last-price">-</span></div>
+        </div>
+        <div class="panel">
+            <h2>Recent Trades</h2>
+            <div id="trades-feedback" class="loading" style="display:none;">Loading trades...</div>
+            <div id="trades-error" class="error" style="display:none;"></div>
+            <table class="trades-table" id="trades-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Price</th>
+                        <th>Qty</th>
+                        <th>Side</th>
+                        <th>Source</th>
+                    </tr>
+                </thead>
+                <tbody id="trades-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

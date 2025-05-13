@@ -1,0 +1,48 @@
+
+OrderBookHFTSimulation/
+├── api/
+│   ├── static/
+│   │   ├── app.js
+│   │   └── style.css
+│   ├── templates/
+│   │   └── index.html
+│   ├── __init__.py
+│   ├── routes.py
+│   └── server.py 
+│
+├── app/
+│   ├── __init__.py
+│   ├── fix_engine.py
+│   ├── logger.py
+│   ├── market_data.py
+│   ├── matching_engine.py
+│   └── order_book.py
+│
+├── logs/
+│   ├── api_calls.log
+│   ├── api_calls_today.json
+│   ├── app.debug.log
+│   ├── fix_messages.log
+│   └── fix_messages_*.log
+│
+├── notebooks/
+│   ├── latency_analysis.ipynb
+│   └── market_data_exploration.ipynb
+│
+├── strategies/
+│   ├── __init__.py
+│   ├── base_strategy.py
+│   ├── competitor_strategy.py
+│   ├── competitor_strategy1.py
+│   ├── competitor_strategy2.py
+│   └── my_strategy.py
+│
+├── tests/ 
+│   ├── test_order_book.py
+│   ├── test_fix_engine.py
+│   └── test_matching_engine.py
+│
+├── .gitignore 
+├── config.yaml 
+├── README.md
+└── requirements.txt

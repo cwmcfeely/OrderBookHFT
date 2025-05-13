@@ -1,0 +1,11 @@
+# EOD Historical Data API configuration
+api_key: "6804f044ec7c74.97906694"
+
+# Supported European Equity Symbols
+symbols:
+  ASML: "ASML.AS"
+  PHIA: "PHIA.AS"
+  INGA: "INGA.AS"
+  AD: "AD.AS"
+  OR: "OR.PA"
+  SAN: "SAN.PA"
