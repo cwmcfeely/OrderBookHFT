@@ -2,7 +2,6 @@ from sortedcontainers import SortedDict
 from collections import deque
 import time
 
-
 class OrderBook:
     def __init__(self, symbol):
         self.symbol = symbol
@@ -54,7 +53,7 @@ class OrderBook:
     def _get_levels(self, book, levels, descending):
         cumulative = 0
         result = []
-        prices = list(book.keys())[:levels]  # SortedDict keys are sorted ascending by default
+        prices = list(book.keys())[:levels]
         if descending:
             prices = list(book.keys())[:levels]
 
@@ -107,11 +106,16 @@ class OrderBook:
         Creates 'levels' price levels on each side with exponentially decaying quantities.
         """
         for i in range(1, levels + 1):
-            # Calculate bid and ask prices at 0.1% intervals from mid_price
             bid_price = mid_price * (1 - 0.001 * i)
             ask_price = mid_price * (1 + 0.001 * i)
-            # Exponentially decay quantity by level
             qty = int(base_qty * (0.8 ** i))
-            # Add synthetic buy and sell orders
             self.add_order("1", bid_price, qty, f"SEED-BID-{i}", "system")
             self.add_order("2", ask_price, qty, f"SEED-ASK-{i}", "system")
+
+    def get_mid_price(self):
+        """Return the midpoint price between best bid and best ask"""
+        best_bid = self.get_best_bid()
+        best_ask = self.get_best_ask()
+        if best_bid is None or best_ask is None:
+            return None
+        return (best_bid["price"] + best_ask["price"]) / 2
