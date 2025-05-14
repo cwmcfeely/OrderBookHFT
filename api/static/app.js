@@ -15,7 +15,7 @@ symbolSelect.value = currentSymbol;
 symbolSelect.onchange = function() {
     currentSymbol = this.value;
     selectSymbol(currentSymbol);
-    refreshAll();
+    refreshVisibleTab();
 };
 
 function fetchWithRetry(url, options = {}, retries = 2) {
@@ -111,16 +111,11 @@ function refreshOrderBook() {
 
             // Limit to 15 rows max
             const maxRows = 15;
-
-            // Calculate how many rows to display (up to 15)
             const rowsToShow = Math.min(maxRows, Math.max(bids.length, asks.length));
-
             let rows = '';
-
             for (let i = 0; i < rowsToShow; i++) {
                 let bid = bids[i] || { qty: '', price: '' };
                 let ask = asks[i] || { qty: '', price: '' };
-
                 rows += `<tr>
                     <td class="bid">${bid.qty || ''}</td>
                     <td class="bid">${bid.price || ''}</td>
@@ -128,7 +123,6 @@ function refreshOrderBook() {
                     <td class="ask">${ask.qty || ''}</td>
                 </tr>`;
             }
-
             document.getElementById('orderbook-body').innerHTML = rows;
             document.getElementById('last-price').textContent = data.last_price || '-';
         })
@@ -167,7 +161,6 @@ function refreshTrades() {
             document.getElementById('trades-error').textContent = "Trades error: " + err.message;
         });
 }
-
 
 function refreshMetrics() {
     document.getElementById('metrics-feedback').style.display = '';
@@ -240,7 +233,6 @@ function refreshMetrics() {
         });
 }
 
-
 function refreshOrderFlowHeatmap() {
     fetch(`/order_book_history?symbol=${currentSymbol}`)
         .then(r => r.json())
@@ -294,50 +286,49 @@ function refreshLiquidityChart() {
 }
 
 function refreshLatencyChart() {
-  fetch(`/order_latency_history?symbol=${currentSymbol}`)
-    .then(r => r.json())
-    .then(data => {
-      if (!data || !data.length) {
-        Plotly.newPlot('latency-chart', [{x: [0], y: [0], type: 'scatter'}], {title: "No Data"});
-        return;
-      }
-      const stratColors = {
-        "my_strategy": "#1976d2",
-        "passive_liquidity_provider": "#ff9800",
-        "market_maker": "#43a047",
-        "momentum": "#e53935"
-      };
-      const stratNames = {
-        "my_strategy": "MyStrategy",
-        "passive_liquidity_provider": "Passive Liquidity Provider",
-        "market_maker": "Market Maker",
-        "momentum": "Momentum"
-      };
-      const grouped = {};
-      data.forEach(d => {
-        const strat = d.strategy || "Unknown";
-        if (!grouped[strat]) grouped[strat] = {x: [], y: []};
-        grouped[strat].x.push(d.time);
-        grouped[strat].y.push(d.latency_ms);
-      });
-      const traces = Object.keys(grouped).map(strat => ({
-        x: grouped[strat].x,
-        y: grouped[strat].y,
-        name: stratNames[strat] || strat,
-        type: 'scatter',
-        mode: 'lines+markers',
-        line: {color: stratColors[strat] || '#888'}
-      }));
-      Plotly.newPlot('latency-chart', traces, {
-        height: 300,
-        margin: {t: 30},
-        yaxis: {title: 'Latency (ms)'},
-        xaxis: {title: 'Time'},
-        legend: {orientation: "h", x: 0, y: 1.15}
-      });
-    });
+    fetch(`/order_latency_history?symbol=${currentSymbol}`)
+        .then(r => r.json())
+        .then(data => {
+            if (!data || !data.length) {
+                Plotly.newPlot('latency-chart', [{x: [0], y: [0], type: 'scatter'}], {title: "No Data"});
+                return;
+            }
+            const stratColors = {
+                "my_strategy": "#1976d2",
+                "passive_liquidity_provider": "#ff9800",
+                "market_maker": "#43a047",
+                "momentum": "#e53935"
+            };
+            const stratNames = {
+                "my_strategy": "MyStrategy",
+                "passive_liquidity_provider": "Passive Liquidity Provider",
+                "market_maker": "Market Maker",
+                "momentum": "Momentum"
+            };
+            const grouped = {};
+            data.forEach(d => {
+                const strat = d.strategy || "Unknown";
+                if (!grouped[strat]) grouped[strat] = {x: [], y: []};
+                grouped[strat].x.push(d.time);
+                grouped[strat].y.push(d.latency_ms);
+            });
+            const traces = Object.keys(grouped).map(strat => ({
+                x: grouped[strat].x,
+                y: grouped[strat].y,
+                name: stratNames[strat] || strat,
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: {color: stratColors[strat] || '#888'}
+            }));
+            Plotly.newPlot('latency-chart', traces, {
+                height: 300,
+                margin: {t: 30},
+                yaxis: {title: 'Latency (ms)'},
+                xaxis: {title: 'Time'},
+                legend: {orientation: "h", x: 0, y: 1.15}
+            });
+        });
 }
-
 
 function refreshBlotter() {
     fetch(`/trades?symbol=${currentSymbol}`)
@@ -366,19 +357,115 @@ function refreshBlotter() {
 }
 document.getElementById('trade-filter').oninput = refreshBlotter;
 
-function refreshAll() {
-    refreshStatus();
-    refreshOrderBook();
-    refreshTrades();
-    refreshMetrics();
-    refreshOrderFlowHeatmap();
-    refreshSpreadChart();
-    refreshLiquidityChart();
-    refreshBlotter();
-    refreshLatencyChart();
+// ---- TAB LOGIC ----
+function openTab(evt, tabName) {
+    // Hide all tabcontent
+    var tabcontent = document.getElementsByClassName("tabcontent");
+    for (let i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+    // Remove "active" class from all tablinks
+    var tablinks = document.getElementsByClassName("tablinks");
+    for (let i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    // Show the selected tab and set active
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+    refreshVisibleTab();
 }
 
-// Initial load
-selectSymbol(currentSymbol);
-refreshAll();
-setInterval(refreshAll, 2000); // auto-refresh every 2s
+// Only refresh data for visible tab
+function refreshVisibleTab() {
+    // Always refresh status and symbol controls
+    refreshStatus();
+
+    // Determine which tab is visible
+    const orderBookTab = document.getElementById('OrderBookTab');
+    const tradeBlotterTab = document.getElementById('TradeBlotterTab');
+    const analyticsTab = document.getElementById('AnalyticsTab');
+
+    if (orderBookTab && orderBookTab.style.display === "block") {
+        refreshOrderBook();
+        refreshTrades();
+        refreshMetrics();
+    }
+    if (tradeBlotterTab && tradeBlotterTab.style.display === "block") {
+        refreshBlotter();
+    }
+    if (analyticsTab && analyticsTab.style.display === "block") {
+        refreshOrderFlowHeatmap();
+        refreshSpreadChart();
+        refreshLatencyChart();
+        refreshLiquidityChart();
+        refreshDepthChart();
+    }
+}
+
+function refreshDepthChart() {
+    fetch(`/order_book?symbol=${currentSymbol}`)
+        .then(response => response.json())
+        .then(data => {
+            let bids = data.bids || [];
+            let asks = data.asks || [];
+
+            // Sort bids descending, asks ascending by price
+            bids = bids.slice().sort((a, b) => b.price - a.price);
+            asks = asks.slice().sort((a, b) => a.price - b.price);
+
+            // Calculate cumulative quantities
+            let bidPrices = [], bidCumQty = [], cum = 0;
+            bids.forEach(b => {
+                cum += b.qty;
+                bidPrices.push(b.price);
+                bidCumQty.push(cum);
+            });
+
+            let askPrices = [], askCumQty = [], cumAsk = 0;
+            asks.forEach(a => {
+                cumAsk += a.qty;
+                askPrices.push(a.price);
+                askCumQty.push(cumAsk);
+            });
+
+            // Plotly traces
+            const traces = [
+                {
+                    x: bidPrices,
+                    y: bidCumQty,
+                    name: "Bids",
+                    mode: "lines",
+                    line: { color: "#27AE60", shape: "hv" }, // green, step
+                    fill: "tozeroy"
+                },
+                {
+                    x: askPrices,
+                    y: askCumQty,
+                    name: "Asks",
+                    mode: "lines",
+                    line: { color: "#E74C3C", shape: "hv" }, // red, step
+                    fill: "tozeroy"
+                }
+            ];
+
+            Plotly.newPlot('depth-chart', traces, {
+                title: "",
+                xaxis: { title: "Price" },
+                yaxis: { title: "Cumulative Quantity" },
+                legend: { orientation: "h", x: 0, y: 1.15 },
+                margin: { t: 30, r: 20, l: 50, b: 40 },
+                plot_bgcolor: "#23272E",
+                paper_bgcolor: "#23272E",
+                font: { color: "#F3F6F9" }
+            }, {responsive: true});
+        });
+}
+
+
+// Initial load: open default tab and refresh
+window.onload = function() {
+    document.getElementById("defaultOpen").click();
+};
+
+// Optionally, refresh visible tab every 2 seconds
+setInterval(refreshVisibleTab, 2000);

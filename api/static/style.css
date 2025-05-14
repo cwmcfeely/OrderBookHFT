@@ -166,3 +166,70 @@ button:hover { filter: brightness(1.1); }
         flex-direction: column;
     }
 }
+/* Tab container */
+.tab {
+    overflow: hidden;
+    background-color: #222;
+    border-bottom: 1px solid #444;
+    margin: 0 40px 20px 40px;
+    border-radius: 8px 8px 0 0;
+}
+
+/* Tab buttons */
+.tab button {
+    background-color: inherit;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 24px;
+    color: #F3F6F9;
+    font-size: 1em;
+    font-weight: 700;
+    letter-spacing: 1px;
+    transition: background-color 0.3s ease;
+    float: left;
+    border-radius: 8px 8px 0 0;
+}
+
+.tab button:hover {
+    background-color: #444;
+}
+
+.tab button.active {
+    background-color: #27AE60; /* Highlight active tab with green */
+    color: #fff;
+    box-shadow: 0 4px 12px #27AE60aa;
+}
+
+/* Clear floats */
+.tab::after {
+    content: "";
+    clear: both;
+    display: table;
+}
+
+/* Tab content sections */
+.tabcontent {
+    display: none;
+    padding: 20px 40px 40px 40px;
+    background-color: #23272E;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 2px 16px #0008;
+    color: #F3F6F9;
+    min-height: 400px; /* Optional: ensure minimum height */
+}
+
+/* Responsive: stack tabs vertically on small screens */
+@media (max-width: 600px) {
+    .tab button {
+        float: none;
+        width: 100%;
+        border-radius: 0;
+        text-align: left;
+        padding-left: 20px;
+    }
+    .tabcontent {
+        padding: 20px;
+        margin: 0 10px 20px 10px;
+    }
+}
