@@ -48,7 +48,6 @@ fix_engines = {
 strategy_instances = {}
 
 def append_order_book_snapshot(symbol, order_book):
-    # For simplicity, snapshot top 10 levels
     snapshot = order_book.get_depth_snapshot(levels=10)
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with state_lock:
@@ -109,10 +108,12 @@ def auto_update_order_books():
                     if "momentum" not in strategy_instances[symbol]:
                         strategy_instances[symbol]["momentum"] = MomentumStrategy(fix_engine, order_book, symbol)
 
-                matching_engine = MatchingEngine(order_book,
-                                                 strategies=strategy_instances[symbol],
-                                                 trading_state=trading_state,
-                                                 state_lock=state_lock)
+                matching_engine = MatchingEngine(
+                    order_book,
+                    strategies=strategy_instances[symbol],
+                    trading_state=trading_state,
+                    state_lock=state_lock
+                )
 
                 # Seed order book with synthetic depth if empty
                 if not order_book.bids and not order_book.asks:
@@ -247,13 +248,11 @@ def register_routes(app):
         with state_lock:
             if symbol not in trading_state['order_book_history']:
                 return jsonify({'error': 'Invalid or missing symbol'}), 400
-            # For heatmap, return list of {time, price_levels, quantities}
             history = []
             for entry in trading_state['order_book_history'][symbol]:
                 snapshot = entry['snapshot']
                 bids = snapshot.get('bids', [])
                 asks = snapshot.get('asks', [])
-                # Combine price levels for heatmap
                 price_levels = [b['price'] for b in bids] + [a['price'] for a in asks]
                 quantities = [b['quantity'] for b in bids] + [a['quantity'] for a in asks]
                 history.append({
@@ -286,10 +285,24 @@ def register_routes(app):
             strategies = strategy_instances.get(symbol, {})
             status = {}
             for name, strat in strategies.items():
+                # Get current market price for unrealized PnL
+                try:
+                    current_price = strat.order_book.get_mid_price()
+                except Exception:
+                    current_price = strat.order_book.last_price
+                # Defensive fallback
+                if current_price is None:
+                    current_price = 0.0
                 status[name] = {
                     "inventory": getattr(strat, "inventory", 0),
-                    "daily_pnl": getattr(strat, "daily_pnl", 0.0),
-                    "total_trades": getattr(strat, "total_trades", 0),
+                    "realized_pnl": strat.realized_pnl,
+                    "realized_pnl_percent": strat.realized_pnl / strat.initial_capital * 100 if strat.initial_capital else 0,
+                    "unrealized_pnl": strat.unrealized_pnl(),
+                    "unrealized_pnl_percent": strat.unrealized_pnl() / strat.initial_capital * 100 if strat.initial_capital else 0,
+                    "total_pnl": strat.total_pnl(),
+                    "total_pnl_percent": strat.total_pnl() / strat.initial_capital * 100 if strat.initial_capital else 0,
+                    "inventory_percent": strat.inventory / strat.max_inventory * 100 if hasattr(strat, "max_inventory") and strat.max_inventory else 0,
+                    "total_trades": strat.total_trades,
                     "win_rate": getattr(strat, "get_win_rate", lambda: 0.0)()
                 }
             return jsonify(status)

@@ -57,11 +57,57 @@ class MatchingEngine:
 
     def calculate_pnl(self, trade):
         """
-        Placeholder for PnL calculation.
-        Implement your own logic based on position tracking.
+        Calculate realized PnL for the maker strategy based on the trade.
+        This updates the strategy's position and realized PnL.
+
+        :param trade: dict with keys including 'qty', 'price', 'maker_source', 'side'
+        :return: realized PnL for this trade
         """
-        # Example: zero PnL for now
-        return 0.0
+        maker_source = trade['maker_source']
+        strategy = self.strategies.get(maker_source)
+        if strategy is None:
+            return 0.0  # No strategy found, no PnL update
+
+        qty = trade['qty']
+        price = trade['price']
+        side = trade['side']
+
+        # Use position and avg_entry_price from strategy
+        position = getattr(strategy, 'inventory', 0)
+        avg_price = getattr(strategy, 'avg_entry_price', 0.0)
+        realized_pnl = 0.0
+
+        if side == 'buy' or side == "1":
+            new_position = position + qty
+            if position >= 0:
+                # Increasing long position: update average price
+                avg_price = (avg_price * position + price * qty) / new_position if new_position != 0 else price
+            else:
+                # Closing short position: realize PnL
+                close_qty = min(abs(position), qty)
+                realized_pnl = close_qty * (avg_price - price)
+                if qty > close_qty:
+                    avg_price = price
+            position = new_position
+        else:
+            new_position = position - qty
+            if position <= 0:
+                # Increasing short position: update average price
+                avg_price = (avg_price * abs(position) + price * qty) / abs(new_position) if new_position != 0 else price
+            else:
+                # Closing long position: realize PnL
+                close_qty = min(position, qty)
+                realized_pnl = close_qty * (price - avg_price)
+                if qty > close_qty:
+                    avg_price = price
+            position = new_position
+
+        # Update strategy attributes
+        strategy.inventory = position
+        strategy.avg_entry_price = avg_price
+        strategy.realized_pnl = getattr(strategy, 'realized_pnl', 0.0) + realized_pnl
+
+        return realized_pnl
 
     def match_order(self, side, price, quantity, order_id, source):
         if not self.circuit_breaker.allow_execution():
@@ -99,15 +145,16 @@ class MatchingEngine:
                     "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "latency_ms": latency_ms  # Add latency in milliseconds
                 }
-                trades.append(trade)
-
-                # Record trade price for volatility calculations
-                self.order_book.record_trade(level_price)
 
                 # Calculate PnL and record for circuit breaker
                 pnl = self.calculate_pnl(trade)
                 trade['pnl'] = pnl
                 self.circuit_breaker.record_trade(pnl)
+
+                trades.append(trade)
+
+                # Record trade price for volatility calculations
+                self.order_book.record_trade(level_price)
 
                 # Notify maker and taker strategies about the trade
                 maker_strategy = self.strategies.get(trade['maker_source'])
@@ -125,7 +172,8 @@ class MatchingEngine:
                             latency_list = self.trading_state.setdefault('latency_history', {}).setdefault(symbol, [])
                             latency_list.append({
                                 "time": trade["time"],
-                                "latency_ms": latency_ms
+                                "latency_ms": latency_ms,
+                                "strategy": trade["maker_source"]
                             })
                             # Limit history size to last 500 entries
                             if len(latency_list) > 500:

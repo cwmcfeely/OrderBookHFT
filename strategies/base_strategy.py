@@ -19,11 +19,14 @@ class BaseStrategy(ABC):
         self.max_position_duration = self.params.get("max_position_duration", 300)  # seconds
         self.daily_loss_limit = self.params.get("daily_loss_limit", -5000)  # currency units
 
+        self.initial_capital = self.params.get("initial_capital", 100000) # Inital capital
+
         # Internal state
         self.order_count = 0
         self.position_start_time = None
-        self.daily_pnl = 0.0
-        self.inventory = 0  # Initialize inventory here
+        self.inventory = 0  # Position size: +long, -short
+        self.avg_entry_price = 0.0
+        self.realized_pnl = 0.0
 
         # Performance tracking
         self.total_trades = 0
@@ -102,7 +105,7 @@ class BaseStrategy(ABC):
             return False
 
         # Daily loss limit check
-        if self.daily_pnl <= self.daily_loss_limit:
+        if self.realized_pnl + self.unrealized_pnl() <= self.daily_loss_limit:
             self.logger.critical("Daily loss limit exceeded")
             return False
 
@@ -140,30 +143,65 @@ class BaseStrategy(ABC):
             return 0.0
 
     def on_trade(self, trade):
-        """Update inventory, daily P&L, and win rate after a trade"""
+        """Update position, realized PnL, daily P&L, and win rate after a trade"""
         qty = trade['qty']
         side = trade['side']
         price = trade['price']
         pnl = trade.get('pnl', 0)  # PnL should be calculated and passed in trade dict
 
-        if side == 'buy':
-            self.inventory += qty
-            self.daily_pnl -= price * qty  # Cost of buying
+        # Update position and realized PnL (average cost method)
+        if side == 'buy' or side == "1":
+            new_position = self.inventory + qty
+            if self.inventory >= 0:
+                # Increasing long position: update average price
+                self.avg_entry_price = (self.avg_entry_price * self.inventory + price * qty) / new_position
+            else:
+                # Closing short position: realize PnL
+                close_qty = min(abs(self.inventory), qty)
+                self.realized_pnl += close_qty * (self.avg_entry_price - price)
+                if qty > close_qty:
+                    # New long position for remainder
+                    self.avg_entry_price = price
+            self.inventory = new_position
         else:
-            self.inventory -= qty
-            self.daily_pnl += price * qty  # Proceeds from selling
+            new_position = self.inventory - qty
+            if self.inventory <= 0:
+                # Increasing short position: update average price
+                self.avg_entry_price = (self.avg_entry_price * abs(self.inventory) + price * qty) / abs(new_position)
+            else:
+                # Closing long position: realize PnL
+                close_qty = min(self.inventory, qty)
+                self.realized_pnl += close_qty * (price - self.avg_entry_price)
+                if qty > close_qty:
+                    # New short position for remainder
+                    self.avg_entry_price = price
+            self.inventory = new_position
 
         self.total_trades += 1
         if pnl > 0:
             self.winning_trades += 1
+
+    def unrealized_pnl(self):
+        """Calculate unrealized PnL based on current mid-price"""
+        mid_price = self.order_book.get_mid_price()
+        if mid_price is None or self.inventory == 0:
+            return 0.0
+        if self.inventory > 0:
+            return (mid_price - self.avg_entry_price) * self.inventory
+        else:
+            return (self.avg_entry_price - mid_price) * abs(self.inventory)
+
+    def total_pnl(self):
+        return self.realized_pnl + self.unrealized_pnl()
 
     def get_win_rate(self):
         return self.winning_trades / self.total_trades if self.total_trades > 0 else 0.0
 
     def reset_inventory(self):
         self.inventory = 0
+        self.avg_entry_price = 0.0
+        self.realized_pnl = 0.0
         self.order_count = 0
         self.position_start_time = None
-        self.daily_pnl = 0.0
         self.total_trades = 0
         self.winning_trades = 0

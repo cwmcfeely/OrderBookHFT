@@ -101,16 +101,26 @@ function hideStatusError() {
 function refreshOrderBook() {
     document.getElementById('orderbook-feedback').style.display = '';
     document.getElementById('orderbook-error').style.display = 'none';
+
     fetchWithRetry(`/order_book?symbol=${currentSymbol}`)
         .then(data => {
             document.getElementById('orderbook-feedback').style.display = 'none';
+
             let bids = data.bids || [];
             let asks = data.asks || [];
-            let maxRows = Math.max(bids.length, asks.length, 10);
+
+            // Limit to 15 rows max
+            const maxRows = 15;
+
+            // Calculate how many rows to display (up to 15)
+            const rowsToShow = Math.min(maxRows, Math.max(bids.length, asks.length));
+
             let rows = '';
-            for (let i = 0; i < maxRows; i++) {
+
+            for (let i = 0; i < rowsToShow; i++) {
                 let bid = bids[i] || { qty: '', price: '' };
                 let ask = asks[i] || { qty: '', price: '' };
+
                 rows += `<tr>
                     <td class="bid">${bid.qty || ''}</td>
                     <td class="bid">${bid.price || ''}</td>
@@ -118,6 +128,7 @@ function refreshOrderBook() {
                     <td class="ask">${ask.qty || ''}</td>
                 </tr>`;
             }
+
             document.getElementById('orderbook-body').innerHTML = rows;
             document.getElementById('last-price').textContent = data.last_price || '-';
         })
@@ -131,11 +142,14 @@ function refreshOrderBook() {
 function refreshTrades() {
     document.getElementById('trades-feedback').style.display = '';
     document.getElementById('trades-error').style.display = 'none';
+
     fetchWithRetry(`/trades?symbol=${currentSymbol}`)
         .then(trades => {
             document.getElementById('trades-feedback').style.display = 'none';
+
             let rows = '';
-            (trades || []).slice(-20).reverse().forEach(trade => {
+            // Limit to 15 most recent trades
+            (trades || []).slice(-15).reverse().forEach(trade => {
                 rows += `<tr>
                     <td>${trade.time || '-'}</td>
                     <td>${trade.price}</td>
@@ -144,6 +158,7 @@ function refreshTrades() {
                     <td>${trade.source || '-'}</td>
                 </tr>`;
             });
+
             document.getElementById('trades-body').innerHTML = rows;
         })
         .catch(err => {
@@ -152,6 +167,7 @@ function refreshTrades() {
             document.getElementById('trades-error').textContent = "Trades error: " + err.message;
         });
 }
+
 
 function refreshMetrics() {
     document.getElementById('metrics-feedback').style.display = '';
@@ -164,25 +180,57 @@ function refreshMetrics() {
         .then(data => {
             document.getElementById('metrics-feedback').style.display = 'none';
             let rows = '';
-            // data is an object with keys like 'my_strategy', 'passive_liquidity_provider', etc.
             const strategies = ["my_strategy", "passive_liquidity_provider", "market_maker", "momentum"];
+
+            // Utility functions for formatting
+            const formatPercent = (v) => v !== undefined ? (v > 0 ? "+" : "") + v.toFixed(2) + "%" : "-";
+            const formatEuro = (v) => v !== undefined ? (v > 0 ? "+" : "") + v.toFixed(2) : "-";
+
             strategies.forEach(name => {
                 const m = data[name] || {};
-                const pnlClass = m.daily_pnl > 0 ? "positive" : (m.daily_pnl < 0 ? "negative" : "neutral");
+
+                // Determine CSS classes for coloring positive/negative/neutral values
+                const realizedClass = m.realized_pnl >= 0 ? "positive" : "negative";
+                const unrealizedClass = m.unrealized_pnl >= 0 ? "positive" : "negative";
+                const totalClass = m.total_pnl >= 0 ? "positive" : "negative";
+                const inventoryPercentClass = m.inventory_percent >= 0 ? "positive" : "negative";
+
                 rows += `<tr>
                     <td style="text-align:left;">
-                        <span style="font-weight:bold;letter-spacing:1px;">${name === "my_strategy" ? "MyStrategy" : 
-                            name === "passive_liquidity_provider" ? "Passive Liquidity Provider" : 
-                            name === "market_maker" ? "Market Maker" : 
-                            name === "momentum" ? "Momentum" : name}</span>
+                        <span style="font-weight:bold;letter-spacing:1px;">${
+                            name === "my_strategy" ? "MyStrategy"
+                            : name === "passive_liquidity_provider" ? "Passive Liquidity Provider"
+                            : name === "market_maker" ? "Market Maker"
+                            : name === "momentum" ? "Momentum"
+                            : name
+                        }</span>
                     </td>
                     <td>${m.inventory !== undefined ? m.inventory : '-'}</td>
-                    <td class="${pnlClass}">${m.daily_pnl !== undefined ? (m.daily_pnl > 0 ? "+" : "") + m.daily_pnl.toFixed(2) : '-'}</td>
-                    <td>${m.win_rate !== undefined ? (m.win_rate * 100).toFixed(1) + "%" : '-'}</td>
+                    <td class="${realizedClass}">${formatPercent(m.realized_pnl_percent)}</td>
+                    <td class="${unrealizedClass}">${formatPercent(m.unrealized_pnl_percent)}</td>
+                    <td class="${totalClass}">${formatPercent(m.total_pnl_percent)}</td>
+                    <td class="${totalClass}">${formatEuro(m.total_pnl)}</td>
+                    <td class="${inventoryPercentClass}">${formatPercent(m.inventory_percent)}</td>
                     <td>${m.total_trades !== undefined ? m.total_trades : '-'}</td>
                 </tr>`;
             });
-            document.getElementById('metrics-body').innerHTML = rows;
+
+            // Update table header and body
+            document.getElementById('metrics-table').innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Strategy</th>
+                        <th>Inventory</th>
+                        <th>Realised P&amp;L (%)</th>
+                        <th>Unrealised P&amp;L (%)</th>
+                        <th>Total P&amp;L (%)</th>
+                        <th>Total P&amp;L (&euro;)</th>
+                        <th>Inventory (%)</th>
+                        <th>Total Trades</th>
+                    </tr>
+                </thead>
+                <tbody id="metrics-body">${rows}</tbody>
+            `;
         })
         .catch(err => {
             document.getElementById('metrics-feedback').style.display = 'none';
@@ -246,25 +294,50 @@ function refreshLiquidityChart() {
 }
 
 function refreshLatencyChart() {
-    fetch(`/order_latency_history?symbol=${currentSymbol}`)
-        .then(r => r.json())
-        .then(data => {
-            if (!data || !data.length) {
-                Plotly.newPlot('latency-chart', [{x: [0], y: [0], type: 'scatter'}], {title: "No Data"});
-                return;
-            }
-            let x = data.map(d => d.time);      // time of execution
-            let y = data.map(d => d.latency_ms); // latency in ms
-            Plotly.newPlot('latency-chart', [{
-                x: x, y: y, name: 'Order Latency', type: 'scatter', mode: 'lines+markers', line: {color: '#ff9800'}
-            }], {
-                height: 300,
-                margin: {t: 30},
-                yaxis: {title: 'Latency (ms)'},
-                xaxis: {title: 'Time'}
-            });
-        });
+  fetch(`/order_latency_history?symbol=${currentSymbol}`)
+    .then(r => r.json())
+    .then(data => {
+      if (!data || !data.length) {
+        Plotly.newPlot('latency-chart', [{x: [0], y: [0], type: 'scatter'}], {title: "No Data"});
+        return;
+      }
+      const stratColors = {
+        "my_strategy": "#1976d2",
+        "passive_liquidity_provider": "#ff9800",
+        "market_maker": "#43a047",
+        "momentum": "#e53935"
+      };
+      const stratNames = {
+        "my_strategy": "MyStrategy",
+        "passive_liquidity_provider": "Passive Liquidity Provider",
+        "market_maker": "Market Maker",
+        "momentum": "Momentum"
+      };
+      const grouped = {};
+      data.forEach(d => {
+        const strat = d.strategy || "Unknown";
+        if (!grouped[strat]) grouped[strat] = {x: [], y: []};
+        grouped[strat].x.push(d.time);
+        grouped[strat].y.push(d.latency_ms);
+      });
+      const traces = Object.keys(grouped).map(strat => ({
+        x: grouped[strat].x,
+        y: grouped[strat].y,
+        name: stratNames[strat] || strat,
+        type: 'scatter',
+        mode: 'lines+markers',
+        line: {color: stratColors[strat] || '#888'}
+      }));
+      Plotly.newPlot('latency-chart', traces, {
+        height: 300,
+        margin: {t: 30},
+        yaxis: {title: 'Latency (ms)'},
+        xaxis: {title: 'Time'},
+        legend: {orientation: "h", x: 0, y: 1.15}
+      });
+    });
 }
+
 
 function refreshBlotter() {
     fetch(`/trades?symbol=${currentSymbol}`)

@@ -3,7 +3,7 @@ import yaml
 import json
 import threading
 import logging
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 from pathlib import Path
 import time
 import pandas as pd
@@ -31,6 +31,10 @@ api_counter_lock = threading.Lock()
 API_COUNT_FILE = Path("logs/api_calls_today.json")
 
 CACHE_EXPIRY_SECONDS = 3600  # 1 hour cache expiry
+
+# Global dictionary to hold the latest prices per symbol for quick access
+latest_prices = {}
+latest_prices_lock = threading.Lock()
 
 def ensure_directories():
     DATA_DIR_RAW.mkdir(parents=True, exist_ok=True)
@@ -119,6 +123,14 @@ def _fetch_for_day(symbol, trading_day, interval="5m"):
             logger.warning(f"No data for {symbol} on {trading_day}")
             return None
 
+        # Update latest price cache
+        with latest_prices_lock:
+            latest_tick = data[-1] if isinstance(data, list) and len(data) > 0 else None
+            if latest_tick:
+                price = latest_tick.get('close') or latest_tick.get('c') or ((latest_tick.get('bid') + latest_tick.get('ask')) / 2)
+                if price:
+                    latest_prices[symbol] = price
+
         return data
 
     except Exception as e:
@@ -154,6 +166,12 @@ def fetch_intraday_data(symbol, interval="5m"):
     return data
 
 def get_latest_price(symbol):
+    with latest_prices_lock:
+        price = latest_prices.get(symbol)
+    if price is not None:
+        return price
+
+    # Fallback: fetch fresh data if not cached
     data = fetch_intraday_data(symbol)
     if not data:
         return None
