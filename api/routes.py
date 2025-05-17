@@ -4,7 +4,6 @@ import uuid
 import yaml
 import logging
 from flask import request, jsonify, render_template
-
 from app.market_data import get_latest_price
 from app.matching_engine import MatchingEngine, TradingHalted
 from app.order_book import OrderBook
@@ -35,12 +34,13 @@ trading_state = {
     "spread_history": {symbol: [] for symbol in symbols.values()},
     "liquidity_history": {symbol: [] for symbol in symbols.values()},
     "latency_history": {symbol: [] for symbol in symbols.values()},
+    "execution_reports": {symbol: [] for symbol in symbols.values()}  # NEW: store execution reports
 }
 
 state_lock = threading.Lock()
 
 fix_engines = {
-    symbol: FixEngine(log_file=f"logs/fix_messages_{symbol}.log")
+    symbol: FixEngine(symbol=symbol)
     for symbol in symbols.values()
 }
 
@@ -86,27 +86,40 @@ def auto_update_order_books():
                 time.sleep(1)
                 continue
 
-        for symbol, fix_engine in fix_engines.items():
+        for symbol in symbols.values():
             try:
                 order_book = trading_state["order_books"][symbol]
+
+                # Adding order expiry
+                order_book.expire_old_orders(max_age=60)
 
                 # Create or retrieve strategy instances for this symbol
                 with state_lock:
                     if symbol not in strategy_instances:
                         strategy_instances[symbol] = {}
+
                     # MyStrategy (user-controlled)
                     if trading_state["my_strategy_enabled"]:
                         if "my_strategy" not in strategy_instances[symbol]:
-                            strategy_instances[symbol]["my_strategy"] = MyStrategy(fix_engine, order_book, symbol)
+                            strategy_instances[symbol]["my_strategy"] = MyStrategy(
+                                FixEngine(symbol="my_strategy"), order_book, symbol
+                            )
                     else:
                         strategy_instances[symbol].pop("my_strategy", None)
+
                     # Competitor strategies (always on)
                     if "passive_liquidity_provider" not in strategy_instances[symbol]:
-                        strategy_instances[symbol]["passive_liquidity_provider"] = PassiveLiquidityProvider(fix_engine, order_book, symbol)
+                        strategy_instances[symbol]["passive_liquidity_provider"] = PassiveLiquidityProvider(
+                            FixEngine(symbol="passive_liquidity_provider"), order_book, symbol
+                        )
                     if "market_maker" not in strategy_instances[symbol]:
-                        strategy_instances[symbol]["market_maker"] = MarketMakerStrategy(fix_engine, order_book, symbol)
+                        strategy_instances[symbol]["market_maker"] = MarketMakerStrategy(
+                            FixEngine(symbol="market_maker"), order_book, symbol
+                        )
                     if "momentum" not in strategy_instances[symbol]:
-                        strategy_instances[symbol]["momentum"] = MomentumStrategy(fix_engine, order_book, symbol)
+                        strategy_instances[symbol]["momentum"] = MomentumStrategy(
+                            FixEngine(symbol="momentum"), order_book, symbol
+                        )
 
                 matching_engine = MatchingEngine(
                     order_book,
@@ -151,10 +164,14 @@ def auto_update_order_books():
                     except Exception as e:
                         logger.error(f"Strategy {strategy.source_name} error: {str(e)}", exc_info=True)
 
-                # Handle FIX heartbeats
-                if fix_engine.is_heartbeat_due():
-                    fix_engine.create_heartbeat()
-                    fix_engine.update_heartbeat()
+                # Handle FIX heartbeats (optional: you may want to keep one fix_engine per symbol for heartbeats)
+                for strategy in strategies:
+                    if hasattr(strategy, "fix_engine"):
+                        fix_engine = strategy.fix_engine
+                        if fix_engine.is_heartbeat_due():
+                            fix_engine.create_heartbeat()
+                            fix_engine.update_heartbeat()
+
 
             except Exception as e:
                 logger.error(f"Error updating {symbol}: {str(e)}", exc_info=True)
@@ -194,6 +211,30 @@ def register_routes(app):
             status = "enabled" if trading_state["my_strategy_enabled"] else "paused"
             trading_state["log"].append(f"MyStrategy {status}")
         return jsonify({"my_strategy_enabled": trading_state["my_strategy_enabled"]})
+
+    @app.route("/cancel_mystrategy_orders", methods=["POST"])
+    def cancel_mystrategy_orders():
+        data = request.get_json() or {}
+        symbol = data.get("symbol") or trading_state["current_symbol"]
+        with state_lock:
+            if symbol not in trading_state["order_books"]:
+                return jsonify({"status": "error", "error": "Invalid symbol"}), 400
+            order_book = trading_state["order_books"][symbol]
+            removed_orders = []
+            for book_side in [order_book.bids, order_book.asks]:
+                for price in list(book_side.keys()):
+                    queue = book_side[price]
+                    new_queue = [order for order in queue if order.get("source") != "my_strategy"]
+                    if len(new_queue) != len(queue):
+                        removed_orders.extend([order for order in queue if order.get("source") == "my_strategy"])
+                    if new_queue:
+                        book_side[price] = new_queue
+                    else:
+                        del book_side[price]
+
+        # Decode bytes in removed_orders before jsonify
+        decoded_removed_orders = decode_bytes(removed_orders)
+        return jsonify({"status": "success", "removed_orders": decoded_removed_orders})
 
     @app.route("/status")
     def get_status():
@@ -306,6 +347,16 @@ def register_routes(app):
                     "win_rate": getattr(strat, "get_win_rate", lambda: 0.0)()
                 }
             return jsonify(status)
+
+    @app.route("/execution_reports")
+    def get_execution_reports():
+        symbol = request.args.get("symbol") or trading_state["current_symbol"]
+        source = request.args.get("source")
+        with state_lock:
+            reports = trading_state.get("execution_reports", {}).get(symbol, [])
+            if source:
+                reports = [r for r in reports if r.get("source") == source]
+            return jsonify(reports)
 
     @app.route("/select_symbol", methods=["POST"])
     def select_symbol():

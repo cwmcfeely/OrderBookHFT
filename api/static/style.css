@@ -50,7 +50,19 @@ h1 {
     padding: 8px 10px;
     border: none;
 }
-.orderbook-table td, .trades-table td, .metrics-table td {
+
+.trades-table th, .trades-table td {
+    text-align: left;
+}
+.trades-table td:nth-child(2),
+.trades-table td:nth-child(3) {
+    text-align: right;
+}
+.trades-table td:last-child {
+    text-align: left;
+}
+
+.orderbook-table td, .metrics-table td {
     border: none;
     font-family: monospace;
     font-size: 1em;
@@ -232,4 +244,48 @@ button:hover { filter: brightness(1.1); }
         padding: 20px;
         margin: 0 10px 20px 10px;
     }
+}
+
+.viz-panel {
+    width: 100%;
+    min-width: 350px;
+    box-sizing: border-box;
+}
+
+.viz-panel {
+    width: 100%;
+    min-width: 350px;
+    box-sizing: border-box;
+}
+
+#depth-chart {
+    width: 100% !important;
+    height: 300px !important;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+    display: block;
+}
+
+#blotter-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    margin: 0 auto;
+}
+
+#blotter-table-wrapper table {
+    width: 100%;
+    min-width: 900px; /* Adjust as needed for all columns */
+    table-layout: fixed;
+}
+
+#blotter-table-wrapper th, #blotter-table-wrapper td {
+    text-align: left;
+    padding: 8px 10px;
+    white-space: nowrap;
+}
+
+#blotter-table-wrapper td:nth-child(2), /* Price */
+#blotter-table-wrapper td:nth-child(3)  /* Qty */ {
+    text-align: right;
 }

@@ -13,7 +13,7 @@ class PassiveLiquidityProvider(BaseStrategy):
             if self.inventory + quantity > self.max_inventory:
                 return False  # Prevent buying if over max inventory
         elif side == "2":  # Selling
-            if self.inventory - quantity < 0:
+            if self.inventory - quantity < -self.max_inventory:
                 return False  # Prevent selling if not enough inventory
         # Call base class risk check as well
         return super()._risk_check(side, price, quantity)
@@ -37,7 +37,7 @@ class PassiveLiquidityProvider(BaseStrategy):
 
         if best_ask:
             quantity = random.randint(1, 10)
-            if self.inventory - quantity >= 0:
+            if self.inventory - quantity >= -self.max_inventory:
                 # Generate sell order (FIX: 2 = Sell)
                 orders.append({
                     "side": "2",  # Sell

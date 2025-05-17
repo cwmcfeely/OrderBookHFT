@@ -13,13 +13,10 @@ class BaseStrategy(ABC):
 
         self.max_order_qty = self.params.get("max_order_qty", 1000)
         self.max_price_deviation = self.params.get("max_price_deviation", 0.05)  # 5%
-
-        # New risk parameters
         self.max_daily_orders = self.params.get("max_daily_orders", 1000)
         self.max_position_duration = self.params.get("max_position_duration", 300)  # seconds
         self.daily_loss_limit = self.params.get("daily_loss_limit", -5000)  # currency units
-
-        self.initial_capital = self.params.get("initial_capital", 100000) # Inital capital
+        self.initial_capital = self.params.get("initial_capital", 100000)  # Initial capital
 
         # Internal state
         self.order_count = 0
@@ -134,7 +131,7 @@ class BaseStrategy(ABC):
     def _current_volatility(self):
         """Calculate recent price volatility (std dev) over last 30 prices"""
         try:
-            prices = self.order_book.get_recent_prices(window=30)  # You need to implement this method
+            prices = self.order_book.get_recent_prices(window=30)
             if len(prices) < 2:
                 return 0.0
             return np.std(prices)
@@ -152,7 +149,10 @@ class BaseStrategy(ABC):
         # Update position and realized PnL (average cost method)
         if side == 'buy' or side == "1":
             new_position = self.inventory + qty
-            if self.inventory >= 0:
+            if new_position == 0:
+                # Position closed, reset avg_entry_price
+                self.avg_entry_price = 0.0
+            elif self.inventory >= self.max_order_qty or self.inventory >= 0:
                 # Increasing long position: update average price
                 self.avg_entry_price = (self.avg_entry_price * self.inventory + price * qty) / new_position
             else:
@@ -165,7 +165,10 @@ class BaseStrategy(ABC):
             self.inventory = new_position
         else:
             new_position = self.inventory - qty
-            if self.inventory <= 0:
+            if new_position == 0:
+                # Position closed, reset avg_entry_price
+                self.avg_entry_price = 0.0
+            elif self.inventory <= self.max_order_qty or self.inventory <= 0.0 or self.inventory <= -self.max_order_qty or self.inventory <= -1.0 * self.max_order_qty:
                 # Increasing short position: update average price
                 self.avg_entry_price = (self.avg_entry_price * abs(self.inventory) + price * qty) / abs(new_position)
             else:
@@ -180,6 +183,8 @@ class BaseStrategy(ABC):
         self.total_trades += 1
         if pnl > 0:
             self.winning_trades += 1
+
+        return (self.inventory, self.avg_entry_price, self.realized_pnl, self.total_trades, self.winning_trades)
 
     def unrealized_pnl(self):
         """Calculate unrealized PnL based on current mid-price"""

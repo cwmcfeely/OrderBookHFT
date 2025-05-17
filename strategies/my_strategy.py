@@ -14,7 +14,7 @@ class MyStrategy(BaseStrategy):
             if self.inventory + quantity > self.max_inventory:
                 return False  # Prevent buying if over max inventory
         elif side == "2":  # Selling
-            if self.inventory - quantity < 0:
+            if self.inventory - quantity < -self.max_inventory:
                 return False  # Prevent selling if not enough inventory
         if quantity > 500:
             return False
@@ -50,7 +50,7 @@ class MyStrategy(BaseStrategy):
 
             # Generate and store sell order
             quantity = random.randint(1, min(10, max_size))
-            if self.inventory - quantity >= 0:
+            if self.inventory - quantity >= -self.max_inventory:
                 orders.append({
                     "side": "2",  # Sell
                     "price": adjusted_ask,

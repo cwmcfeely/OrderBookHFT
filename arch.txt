@@ -18,6 +18,10 @@ OrderBookHFTSimulation/
 │   ├── matching_engine.py
 │   └── order_book.py
 │
+├── data/
+│   ├── processed/
+│   └── raw
+│
 ├── logs/
 │   ├── api_calls.log
 │   ├── api_calls_today.json

@@ -119,3 +119,14 @@ class OrderBook:
         if best_bid is None or best_ask is None:
             return None
         return (best_bid["price"] + best_ask["price"]) / 2
+
+    # Expiring old orders from the book
+    def expire_old_orders(self, max_age=60):
+        now = time.time()
+        for book in [self.bids, self.asks]:
+            for price in list(book.keys()):
+                queue = book[price]
+                while queue and queue[0].get("order_time") and now - queue[0]["order_time"] > max_age:
+                    queue.popleft()
+                if not queue:
+                    del book[price]

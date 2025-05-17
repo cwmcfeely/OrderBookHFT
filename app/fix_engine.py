@@ -1,45 +1,24 @@
 import simplefix
 import time
 import logging
-from pathlib import Path
-
-logger = logging.getLogger(__name__)
-logger.propagate = False
 
 class FixEngine:
-    def __init__(self, heartbeat_interval=30, log_file="logs/fix_messages.log"):
+    def __init__(self, symbol=None, heartbeat_interval=30):
         self.parser = simplefix.FixParser()
         self.heartbeat_interval = heartbeat_interval
-        self.last_heartbeat = time.time()  # Tracks last heartbeat time persistently
+        self.last_heartbeat = time.time()
         self.seq_num = 1
-        self.log_file = Path(log_file).resolve()
+        self.symbol = symbol  # Symbol string, e.g. "ASML.AS" or None
 
-        # Ensure directory exists and is writable
-        self.log_file.parent.mkdir(parents=True, exist_ok=True)
-        if not self.log_file.parent.is_dir():
-            raise RuntimeError(f"Directory {self.log_file.parent} not created")
-
-        # Configure logger (single handler per instance)
-        self.logger = logging.getLogger(f"FIXEngine_{id(self)}")  # Unique logger per instance
-        self.logger.setLevel(logging.INFO)
-        self.logger.propagate = False  # Prevent propagation to root logger
-
-        # Clear existing handlers (if any)
-        for handler in self.logger.handlers[:]:
-            self.logger.removeHandler(handler)
-
-        # Configure file handler with append mode
-        file_handler = logging.FileHandler(
-            self.log_file,
-            encoding="utf-8",
-            mode="a"  # Append to avoid overwriting
-        )
-        file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-        self.logger.addHandler(file_handler)
+        # Updated loggers
+        self.server_logger = logging.getLogger("FIXServer")
+        # For per-strategy logs: use the strategy name as symbol (e.g., "my_strategy")
+        self.strategy_logger = logging.getLogger(f"FIX_{self.symbol}") if self.symbol else None
 
         # Test logging
-        self.logger.info("===== FIX ENGINE INITIALIZED =====")
-        file_handler.flush()
+        self.server_logger.info("===== FIX ENGINE INITIALIZED =====")
+        if self.strategy_logger:
+            self.strategy_logger.info("===== FIX ENGINE INITIALIZED FOR SYMBOL %s =====", self.symbol)
 
     def create_heartbeat(self):
         """Generate and log FIX heartbeat (MsgType=0)"""
@@ -50,120 +29,157 @@ class FixEngine:
         msg.append_pair(34, self.seq_num)
         msg.append_pair(35, "0")  # Heartbeat
         msg.append_utc_timestamp(52)
-
         try:
             raw_msg = msg.encode()
-            self._log_message(msg, incoming=False)
+            self._log_heartbeat(msg, incoming=False)
             self.seq_num += 1
             return raw_msg
         except Exception as e:
-            self.logger.error(f"Heartbeat failed: {str(e)}", exc_info=True)
+            self.server_logger.error(f"Heartbeat failed: {str(e)}", exc_info=True)
+            if self.strategy_logger:
+                self.strategy_logger.error(f"Heartbeat failed: {str(e)}", exc_info=True)
             raise
 
     def create_new_order(self, cl_ord_id, symbol, side, price, qty, source):
         """Create FIX NewOrderSingle with full headers and validation"""
-
-        # Validate input types and values
         if not cl_ord_id or not isinstance(cl_ord_id, str):
             raise ValueError("ClOrdID (11) must be a non-empty string")
-
         if not symbol or not isinstance(symbol, str) or len(symbol) > 8:
             raise ValueError(f"Symbol (55) must be a non-empty string up to 8 characters. Got: {symbol}")
-
-        # Side must be '1' (Buy) or '2' (Sell)
         if str(side) not in {"1", "2"}:
             raise ValueError(f"Side (54) must be '1' (Buy) or '2' (Sell). Got: {side}")
-
-        # Price validation: positive and reasonable upper bound
         try:
             price_val = float(price)
         except Exception:
             raise ValueError(f"Price (44) must be a valid float. Got: {price}")
-
         if not (0.01 <= price_val <= 1_000_000):
             raise ValueError(f"Price (44) out of valid range [0.01, 1,000,000]: {price_val}")
-
-        # Quantity validation: positive integer and reasonable upper bound
         try:
             qty_val = int(qty)
         except Exception:
             raise ValueError(f"Quantity (38) must be a valid integer. Got: {qty}")
-
         if not (1 <= qty_val <= 10_000):
             raise ValueError(f"Quantity (38) out of valid range [1, 10,000]: {qty_val}")
 
-        # Construct FIX message
         msg = simplefix.FixMessage()
+        msg.append_pair(8, "FIX.4.4")
+        msg.append_pair(49, "MY_COMPANY")
+        msg.append_pair(56, "EXCHANGE")
+        msg.append_pair(34, self.seq_num)
+        msg.append_pair(35, "D")  # NewOrderSingle
+        msg.append_pair(11, cl_ord_id)
+        msg.append_pair(55, symbol)
+        msg.append_pair(54, str(side))
+        msg.append_pair(44, f"{price_val:.8f}")
+        msg.append_pair(38, str(qty_val))
+        msg.append_utc_timestamp(52)
+        msg.append_pair(6007, source)
 
-        # Required FIX headers
-        msg.append_pair(8, "FIX.4.4")  # BeginString
-        msg.append_pair(49, "MY_COMPANY")  # SenderCompID
-        msg.append_pair(56, "EXCHANGE")  # TargetCompID
-        msg.append_pair(34, self.seq_num)  # MsgSeqNum
-
-        # Message body
-        msg.append_pair(35, "D")  # MsgType (NewOrderSingle)
-        msg.append_pair(11, cl_ord_id)  # ClOrdID
-        msg.append_pair(55, symbol)  # Symbol
-        msg.append_pair(54, str(side))  # Side (1=Buy, 2=Sell)
-        msg.append_pair(44, f"{price_val:.8f}")  # Price (formatted with 8 decimals)
-        msg.append_pair(38, str(qty_val))  # OrderQty
-        msg.append_utc_timestamp(52)  # SendingTime (UTC)
-        msg.append_pair(6007, source)  # Custom source tag
-
-        # Log outgoing FIX message
-        self._log_message(msg, incoming=False)
-
-        # Increment sequence number for next message
+        self._log_fix_message(msg, incoming=False)
         self.seq_num += 1
-
-        # Return encoded FIX message bytes
         return msg.encode()
 
     def parse(self, raw_msg):
-        """Parse incoming FIX messages with error handling"""
+        """Parse incoming FIX messages"""
         try:
             self.parser.append_buffer(raw_msg)
             msg = self.parser.get_message()
             if msg:
-                self._log_message(msg, incoming=True)
-                # Handle sequence number synchronization
+                self._log_fix_message(msg, incoming=True)
                 seq_num = msg.get(34)
                 if seq_num:
                     self.seq_num = int(seq_num.decode()) + 1
-            return msg
+                return msg
         except Exception as e:
-            self.logger.error(f"Parse error: {str(e)}", exc_info=True)
+            self.server_logger.error(f"Parse error: {str(e)}", exc_info=True)
+            if self.strategy_logger:
+                self.strategy_logger.error(f"Parse error: {str(e)}", exc_info=True)
             return None
 
-    def _log_message(self, msg, incoming=True):
-        """Log FIX message with error handling"""
+    def _log_heartbeat(self, msg, incoming=True):
+        """Log heartbeat messages to both FIXServer and strategy logger if available"""
+        direction = "HEARTBEAT RECEIVED" if incoming else "HEARBEAT SENT"
+        try:
+            raw = msg.encode().decode(errors='replace').replace('\x01', '|')
+            self.server_logger.info(f"{direction}: {raw}")
+            if self.strategy_logger:
+                self.strategy_logger.info(f"{direction}: {raw}")
+        except Exception as e:
+            self.server_logger.error(f"Heartbeat log error: {str(e)}", exc_info=True)
+            if self.strategy_logger:
+                self.strategy_logger.error(f"Heartbeat log error: {str(e)}", exc_info=True)
+
+    def _log_fix_message(self, msg, incoming=True):
+        """Log non-heartbeat FIX messages to strategy-specific logger"""
         direction = "IN" if incoming else "OUT"
         try:
             if isinstance(msg, simplefix.FixMessage):
-                raw_bytes = msg.encode()
-                raw = raw_bytes.decode().replace('\x01', '|')
+                raw = msg.encode().decode(errors='replace').replace('\x01', '|')
             elif isinstance(msg, bytes):
-                raw = msg.decode().replace('\x01', '|')
+                raw = msg.decode(errors='replace').replace('\x01', '|')
             else:
                 raw = str(msg)
-            self.logger.info(f"{direction}: {raw}")
-            # Force immediate write
-            for handler in self.logger.handlers:
-                handler.flush()
+
+            if self.strategy_logger:
+                self.strategy_logger.info(f"{direction}: {raw}")
+            else:
+                # Fallback to FIXServer logger if no strategy logger
+                self.server_logger.info(f"{direction}: {raw}")
         except Exception as e:
-            self.logger.error(f"Log error: {str(e)}", exc_info=True)
+            if self.strategy_logger:
+                self.strategy_logger.error(f"FIX message log error: {str(e)}", exc_info=True)
+            else:
+                self.server_logger.error(f"FIX message log error: {str(e)}", exc_info=True)
 
     def is_heartbeat_due(self):
-        """Check if heartbeat needs to be sent (with optimized logging)"""
         now = time.time()
         due = (now - self.last_heartbeat) >= self.heartbeat_interval
         if due:
-            self.logger.debug("Heartbeat due after %.1fs (interval=%ds)",
-                              now - self.last_heartbeat, self.heartbeat_interval)
+            self.server_logger.debug(
+                f"Heartbeat due after {now - self.last_heartbeat:.1f}s (interval={self.heartbeat_interval}s)"
+            )
+            if self.strategy_logger:
+                self.strategy_logger.debug(
+                    f"Heartbeat due after {now - self.last_heartbeat:.1f}s (interval={self.heartbeat_interval}s)"
+                )
         return due
 
+    def create_execution_report(self, cl_ord_id, order_id, exec_id, ord_status, exec_type, symbol, side, order_qty,
+                               last_qty=None, last_px=None, leaves_qty=None, cum_qty=None, price=None, source=None):
+        msg = simplefix.FixMessage()
+        msg.append_pair(8, "FIX.4.4")
+        msg.append_pair(49, "EXCHANGE")
+        msg.append_pair(56, "MY_COMPANY")
+        msg.append_pair(34, self.seq_num)
+        msg.append_pair(35, "8")  # ExecutionReport
+        msg.append_pair(11, cl_ord_id)
+        msg.append_pair(37, order_id)
+        msg.append_pair(17, exec_id)
+        msg.append_pair(39, ord_status)
+        msg.append_pair(150, exec_type)
+        msg.append_pair(55, symbol)
+        msg.append_pair(54, side)
+        msg.append_pair(38, str(order_qty))
+        if last_qty is not None:
+            msg.append_pair(32, str(last_qty))
+        if last_px is not None:
+            msg.append_pair(31, f"{last_px:.8f}")
+        if leaves_qty is not None:
+            msg.append_pair(151, str(leaves_qty))
+        if cum_qty is not None:
+            msg.append_pair(14, str(cum_qty))
+        if price is not None:
+            msg.append_pair(44, f"{price:.8f}")
+        if source:
+            msg.append_pair(6007, source)
+        msg.append_utc_timestamp(52)
+
+        self._log_fix_message(msg, incoming=False)
+        self.seq_num += 1
+        return msg.encode()
+
     def update_heartbeat(self):
-        """Update heartbeat timestamp"""
         self.last_heartbeat = time.time()
-        self.logger.debug("Heartbeat timestamp updated")
+        self.server_logger.debug("Heartbeat timestamp updated")
+        if self.strategy_logger:
+            self.strategy_logger.debug("Heartbeat timestamp updated")

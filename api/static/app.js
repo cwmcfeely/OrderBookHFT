@@ -61,16 +61,33 @@ function toggleMyStrategy() {
         .catch(err => showStatusError("Failed to toggle trading: " + err.message));
 }
 
+function cancelMyStrategyOrders() {
+    const symbol = document.getElementById('symbol-select').value;
+    fetch('/cancel_mystrategy_orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbol: symbol })
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert("All MyStrategy orders cancelled.");
+        refreshOrderBook();
+    })
+    .catch(err => {
+        alert("Failed to cancel orders: " + err.message);
+    });
+}
+
 function updateExchangeButton(isHalted) {
     const btn = document.getElementById('exchange-toggle');
     btn.textContent = isHalted ? "Resume Exchange" : "Halt Exchange";
-    document.getElementById('exchange-status').textContent = isHalted ? "Exchange Halted" : "Exchange Active";
+    document.getElementById('exchange-status').textContent;
 }
 
 function updateTradingButton(isRunning) {
     const btn = document.getElementById('trading-toggle');
     btn.textContent = isRunning ? "Pause MyStrategy" : "Start MyStrategy";
-    document.getElementById('trading-status').textContent = isRunning ? "MyStrategy Running" : "MyStrategy Paused";
+    document.getElementById('trading-status').textContent;
 }
 
 function refreshStatus() {
@@ -208,7 +225,6 @@ function refreshMetrics() {
                 </tr>`;
             });
 
-            // Update table header and body
             document.getElementById('metrics-table').innerHTML = `
                 <thead>
                     <tr>
@@ -285,6 +301,97 @@ function refreshLiquidityChart() {
         });
 }
 
+function refreshBlotter() {
+    fetch(`/trades?symbol=${currentSymbol}`)
+        .then(r => r.json())
+        .then(trades => {
+            let filter = document.getElementById('trade-filter').value.toLowerCase();
+            let rows = '';
+            (trades || []).reverse().forEach(trade => {
+                if (
+                    (!filter) ||
+                    (trade.side && trade.side.toLowerCase().includes(filter)) ||
+                    (trade.source && trade.source.toLowerCase().includes(filter)) ||
+                    (trade.price && trade.price.toString().includes(filter))
+                ) {
+                    rows += `<tr>
+                        <td>${trade.time || '-'}</td>
+                        <td>${trade.price}</td>
+                        <td>${trade.qty}</td>
+                        <td>${trade.side || '-'}</td>
+                        <td>${trade.source || '-'}</td>
+                    </tr>`;
+                }
+            });
+            document.getElementById('blotter-body').innerHTML = rows;
+        });
+}
+document.getElementById('trade-filter').oninput = refreshBlotter;
+
+// ---- Execution Reports: For Execution Report Tab ----
+function refreshExecutionReports() {
+    document.getElementById('exec-reports-feedback').style.display = '';
+    document.getElementById('exec-reports-error').style.display = 'none';
+
+    fetchWithRetry(`/execution_reports?symbol=${currentSymbol}`)
+        .then(reports => {
+            document.getElementById('exec-reports-feedback').style.display = 'none';
+            let rows = '';
+            (reports || []).reverse().forEach(rep => {
+                rows += `<tr>
+                    <td>${rep.time || '-'}</td>
+                    <td>${rep.cl_ord_id || '-'}</td>
+                    <td>${rep.order_id || '-'}</td>
+                    <td>${rep.exec_id || '-'}</td>
+                    <td>${rep.ord_status || '-'}</td>
+                    <td>${rep.exec_type || '-'}</td>
+                    <td>${rep.side || '-'}</td>
+                    <td>${rep.last_qty !== undefined ? rep.last_qty : '-'}</td>
+                    <td>${rep.last_px !== undefined ? rep.last_px : '-'}</td>
+                    <td>${rep.leaves_qty !== undefined ? rep.leaves_qty : '-'}</td>
+                    <td>${rep.cum_qty !== undefined ? rep.cum_qty : '-'}</td>
+                    <td>${rep.price !== undefined ? rep.price : '-'}</td>
+                    <td>${rep.source || '-'}</td>
+                </tr>`;
+            });
+            document.getElementById('exec-reports-body').innerHTML = rows;
+            filterExecReportsTable(); // Apply filter after loading
+        })
+        .catch(err => {
+            document.getElementById('exec-reports-feedback').style.display = 'none';
+            document.getElementById('exec-reports-error').style.display = '';
+            document.getElementById('exec-reports-error').textContent = "Execution reports error: " + err.message;
+        });
+}
+
+// Filter function for Execution Reports table
+function filterExecReportsTable() {
+    var input = document.getElementById("exec-filter");
+    if (!input) return;
+    var filter = input.value.toUpperCase();
+    var table = document.getElementById("exec-reports-table");
+    var tr = table.getElementsByTagName("tr");
+    for (var i = 1; i < tr.length; i++) { // skip header row
+        var rowText = tr[i].textContent || tr[i].innerText;
+        tr[i].style.display = rowText.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+    }
+}
+
+// ---- TAB LOGIC ----
+function openTab(evt, tabName) {
+    var tabcontent = document.getElementsByClassName("tabcontent");
+    for (let i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+    var tablinks = document.getElementsByClassName("tablinks");
+    for (let i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+    refreshVisibleTab();
+}
+
 function refreshLatencyChart() {
     fetch(`/order_latency_history?symbol=${currentSymbol}`)
         .then(r => r.json())
@@ -325,81 +432,12 @@ function refreshLatencyChart() {
                 margin: {t: 30},
                 yaxis: {title: 'Latency (ms)'},
                 xaxis: {title: 'Time'},
-                legend: {orientation: "h", x: 0, y: 1.15}
-            });
+                legend: {orientation: "h", x: 0, y: 1.15},
+                plot_bgcolor: "#23272E",
+                paper_bgcolor: "#23272E",
+                font: { color: "#F3F6F9" }
+            }, {responsive: true});
         });
-}
-
-function refreshBlotter() {
-    fetch(`/trades?symbol=${currentSymbol}`)
-        .then(r => r.json())
-        .then(trades => {
-            let filter = document.getElementById('trade-filter').value.toLowerCase();
-            let rows = '';
-            (trades || []).reverse().forEach(trade => {
-                if (
-                    (!filter) ||
-                    (trade.side && trade.side.toLowerCase().includes(filter)) ||
-                    (trade.source && trade.source.toLowerCase().includes(filter)) ||
-                    (trade.price && trade.price.toString().includes(filter))
-                ) {
-                    rows += `<tr>
-                        <td>${trade.time || '-'}</td>
-                        <td>${trade.price}</td>
-                        <td>${trade.qty}</td>
-                        <td>${trade.side || '-'}</td>
-                        <td>${trade.source || '-'}</td>
-                    </tr>`;
-                }
-            });
-            document.getElementById('blotter-body').innerHTML = rows;
-        });
-}
-document.getElementById('trade-filter').oninput = refreshBlotter;
-
-// ---- TAB LOGIC ----
-function openTab(evt, tabName) {
-    // Hide all tabcontent
-    var tabcontent = document.getElementsByClassName("tabcontent");
-    for (let i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = "none";
-    }
-    // Remove "active" class from all tablinks
-    var tablinks = document.getElementsByClassName("tablinks");
-    for (let i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
-    }
-    // Show the selected tab and set active
-    document.getElementById(tabName).style.display = "block";
-    evt.currentTarget.className += " active";
-    refreshVisibleTab();
-}
-
-// Only refresh data for visible tab
-function refreshVisibleTab() {
-    // Always refresh status and symbol controls
-    refreshStatus();
-
-    // Determine which tab is visible
-    const orderBookTab = document.getElementById('OrderBookTab');
-    const tradeBlotterTab = document.getElementById('TradeBlotterTab');
-    const analyticsTab = document.getElementById('AnalyticsTab');
-
-    if (orderBookTab && orderBookTab.style.display === "block") {
-        refreshOrderBook();
-        refreshTrades();
-        refreshMetrics();
-    }
-    if (tradeBlotterTab && tradeBlotterTab.style.display === "block") {
-        refreshBlotter();
-    }
-    if (analyticsTab && analyticsTab.style.display === "block") {
-        refreshOrderFlowHeatmap();
-        refreshSpreadChart();
-        refreshLatencyChart();
-        refreshLiquidityChart();
-        refreshDepthChart();
-    }
 }
 
 function refreshDepthChart() {
@@ -428,14 +466,13 @@ function refreshDepthChart() {
                 askCumQty.push(cumAsk);
             });
 
-            // Plotly traces
             const traces = [
                 {
                     x: bidPrices,
                     y: bidCumQty,
                     name: "Bids",
                     mode: "lines",
-                    line: { color: "#27AE60", shape: "hv" }, // green, step
+                    line: { color: "#27AE60", shape: "hv" },
                     fill: "tozeroy"
                 },
                 {
@@ -443,29 +480,59 @@ function refreshDepthChart() {
                     y: askCumQty,
                     name: "Asks",
                     mode: "lines",
-                    line: { color: "#E74C3C", shape: "hv" }, // red, step
+                    line: { color: "#E74C3C", shape: "hv" },
                     fill: "tozeroy"
                 }
             ];
 
             Plotly.newPlot('depth-chart', traces, {
-                title: "",
-                xaxis: { title: "Price" },
-                yaxis: { title: "Cumulative Quantity" },
+                height: 300,
+                margin: { t: 30 },
+                yaxis: { title: 'Cumulative Quantity' },
+                xaxis: { title: 'Price' },
                 legend: { orientation: "h", x: 0, y: 1.15 },
-                margin: { t: 30, r: 20, l: 50, b: 40 },
                 plot_bgcolor: "#23272E",
                 paper_bgcolor: "#23272E",
                 font: { color: "#F3F6F9" }
-            }, {responsive: true});
+            }, { responsive: true });
+        })
+        .catch(err => {
+            console.error("Error fetching depth chart data:", err);
+            Plotly.newPlot('depth-chart', [{ x: [], y: [], type: 'scatter' }], { title: "No Data" });
         });
 }
 
 
-// Initial load: open default tab and refresh
+// Only refresh data for visible tab
+function refreshVisibleTab() {
+    refreshStatus();
+
+    const orderBookTab = document.getElementById('OrderBookTab');
+    const tradeBlotterTab = document.getElementById('TradeBlotterTab');
+    const analyticsTab = document.getElementById('AnalyticsTab');
+    const execReportTab = document.getElementById('ExecutionReportTab');
+
+    if (orderBookTab && orderBookTab.style.display === "block") {
+        refreshOrderBook();
+        refreshTrades();
+        refreshMetrics();
+        refreshDepthChart();
+    }
+    if (tradeBlotterTab && tradeBlotterTab.style.display === "block") {
+        refreshBlotter();
+    }
+    if (analyticsTab && analyticsTab.style.display === "block") {
+        refreshOrderFlowHeatmap();
+        refreshSpreadChart();
+        refreshLatencyChart();
+        refreshLiquidityChart();
+    }
+    if (execReportTab && execReportTab.style.display === "block") {
+        refreshExecutionReports();
+    }
+}
+
 window.onload = function() {
     document.getElementById("defaultOpen").click();
 };
-
-// Optionally, refresh visible tab every 2 seconds
 setInterval(refreshVisibleTab, 2000);
