@@ -1,3 +1,5 @@
+import time
+
 from .base_strategy import BaseStrategy
 import random
 
@@ -23,6 +25,8 @@ class MyStrategy(BaseStrategy):
 
     def generate_orders(self):
         orders = []
+
+
         best_bid = self.order_book.get_best_bid()
         best_ask = self.order_book.get_best_ask()
 

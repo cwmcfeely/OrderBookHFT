@@ -1,3 +1,5 @@
+import time
+
 from .base_strategy import BaseStrategy
 import random
 
@@ -20,6 +22,12 @@ class PassiveLiquidityProvider(BaseStrategy):
 
     def generate_orders(self):
         orders = []
+
+        # Cooldown check
+        now = time.time()
+        if now - self.last_order_time < self.min_order_interval:
+            return orders  # Skip order generation if still in cooldown
+
         best_bid = self.order_book.get_best_bid()
         best_ask = self.order_book.get_best_ask()
 

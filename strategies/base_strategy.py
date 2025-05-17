@@ -18,6 +18,10 @@ class BaseStrategy(ABC):
         self.daily_loss_limit = self.params.get("daily_loss_limit", -5000)  # currency units
         self.initial_capital = self.params.get("initial_capital", 100000)  # Initial capital
 
+        # Coolddown perid
+        self.last_order_time = 0
+        self.min_order_interval = self.params.get("min_order_interval", 5.0)
+
         # Internal state
         self.order_count = 0
         self.position_start_time = None
@@ -38,13 +42,22 @@ class BaseStrategy(ABC):
         pass
 
     def place_order(self, side, price, quantity):
-        """Send order via FIX and add to order book, after risk checks"""
+        """Send order via FIX and add to order book, after risk checks and cooldown"""
+
+        # Check cooldown before placing order
+        now = time.time()
+        if (now - getattr(self, 'last_order_time', 0)) < getattr(self, 'min_order_interval', 1.0):
+            self.logger.info(f"Order skipped due to cooldown: {side} {quantity}@{price}")
+            return
+
+        # Risk check
         if not self._risk_check(side, price, quantity):
             self.logger.warning(f"[RISK BLOCKED] {side} order for {quantity}@{price} rejected.")
             return
 
+        # Create FIX new order
         fix_msg = self.fix_engine.create_new_order(
-            cl_ord_id=f"{self.source_name}-{time.time()}",
+            cl_ord_id=f"{self.source_name}-{now}",
             symbol=self.symbol,
             side=side,
             price=price,
@@ -52,8 +65,9 @@ class BaseStrategy(ABC):
             source=self.source_name
         )
 
-        order_time = time.time()
+        order_time = now
 
+        # Parse and add order to order book
         parsed_order = self.fix_engine.parse(fix_msg)
         if parsed_order:
             self.order_book.add_order(
@@ -66,7 +80,10 @@ class BaseStrategy(ABC):
             )
             self.order_count += 1
             if self.position_start_time is None:
-                self.position_start_time = time.time()
+                self.position_start_time = now
+
+            # Update last_order_time to enforce cooldown
+            self.last_order_time = now
 
     def _risk_check(self, side, price, quantity):
         """Comprehensive risk checks"""
@@ -210,3 +227,8 @@ class BaseStrategy(ABC):
         self.position_start_time = None
         self.total_trades = 0
         self.winning_trades = 0
+
+def can_place_order(self):
+    """Return True if enough time has passed since the last order."""
+    now = time.time()
+    return (now - self.last_order_time) >= self.min_order_interval

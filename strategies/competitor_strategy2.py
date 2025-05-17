@@ -1,3 +1,5 @@
+import time
+
 from .base_strategy import BaseStrategy
 import random
 import numpy as np
@@ -11,6 +13,12 @@ class MomentumStrategy(BaseStrategy):
 
     def generate_orders(self):
         orders = []
+
+        # Cooldown check
+        now = time.time()
+        if now - self.last_order_time < self.min_order_interval:
+            return orders  # Skip order generation if still in cooldown
+
         prices = self.order_book.get_recent_prices(window=self.lookback)
         if len(prices) < self.lookback:
             return orders
