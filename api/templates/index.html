@@ -1,16 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Set character encoding and page title -->
     <meta charset="UTF-8" />
     <title>Order Book & Trading Dashboard</title>
+
+    <!-- Link to external CSS file for styling -->
     <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" />
+
+    <!-- Load Plotly.js for interactive charts and visualizations -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
     <script>
-        // Inject symbols from Flask into JS
+        // Inject the list of trading symbols from Flask backend into JavaScript
         let symbols = {{ symbols|tojson }};
     </script>
+
     <style>
-        /* ... (your existing CSS remains unchanged) ... */
+        /* Inline style for filter input fields (used in tables) */
         .filter-input {
             margin-bottom: 10px;
             padding: 6px 10px;
@@ -22,18 +29,25 @@
     </style>
 </head>
 <body>
+    <!-- Main page heading -->
     <h1>Order Book & Trading Dashboard</h1>
+
+    <!-- Controls for symbol selection and trading actions -->
     <div class="controls">
         <label for="symbol-select">Select Symbol:</label>
         <select id="symbol-select"></select>
+        <!-- Button to halt or resume the exchange -->
         <button id="exchange-toggle" onclick="toggleExchange()">Halt Exchange</button>
+        <!-- Button to pause or resume user's strategy -->
         <button id="trading-toggle" onclick="toggleMyStrategy()">Pause MyStrategy</button>
+        <!-- Button to withdraw all orders placed by MyStrategy -->
         <button id="cancel-mystrategy-orders" onclick="cancelMyStrategyOrders()">Withdraw MyStrategy Orders</button>
+        <!-- Status indicators for trading and exchange state -->
         <span id="trading-status"></span>
         <span id="exchange-status"></span>
     </div>
 
-    <!-- Tab navigation -->
+    <!-- Tab navigation for switching between dashboard sections -->
     <div class="tab">
         <button class="tablinks" onclick="openTab(event, 'OrderBookTab')" id="defaultOpen">Order Book</button>
         <button class="tablinks" onclick="openTab(event, 'TradeBlotterTab')">Trade Blotter</button>
@@ -41,13 +55,16 @@
         <button class="tablinks" onclick="openTab(event, 'ExecutionReportTab')">Execution Report</button>
     </div>
 
-    <!-- Order Book Tab -->
+    <!-- Order Book Tab: Displays real-time order book and recent trades -->
     <div id="OrderBookTab" class="tabcontent">
         <div class="dashboard" style="display:flex; gap: 20px; margin-top: 20px;">
+            <!-- Order Book Panel -->
             <div class="panel" style="flex: 1;">
                 <h2>Order Book</h2>
+                <!-- Loading and error messages for order book -->
                 <div id="orderbook-feedback" class="loading" style="display:none;">Loading order book...</div>
                 <div id="orderbook-error" class="error" style="display:none;"></div>
+                <!-- Table displaying bid/ask levels and quantities -->
                 <table class="orderbook-table" id="orderbook-table">
                     <thead>
                         <tr>
@@ -59,12 +76,16 @@
                     </thead>
                     <tbody id="orderbook-body"></tbody>
                 </table>
+                <!-- Display the last traded price -->
                 <div>Last Price: <span id="last-price">-</span></div>
             </div>
+            <!-- Recent Trades Panel -->
             <div class="panel" style="flex: 1;">
                 <h2>Recent Trades</h2>
+                <!-- Loading and error messages for trades -->
                 <div id="trades-feedback" class="loading" style="display:none;">Loading trades...</div>
                 <div id="trades-error" class="error" style="display:none;"></div>
+                <!-- Table displaying recent trades -->
                 <table class="trades-table" id="trades-table">
                     <thead>
                         <tr>
@@ -80,19 +101,21 @@
             </div>
         </div>
 
+        <!-- Market Depth Chart Visualization -->
         <div class="viz-row" style="margin-top: 40px;">
             <div class="viz-panel" style="flex: 1; min-width: 700px;">
                 <h2>Market Depth Chart</h2>
                 <div id="depth-chart" style="width: 100%; height: 300px;"></div>
             </div>
         </div>
-
     </div>
 
-    <!-- Trade Blotter Tab -->
+    <!-- Trade Blotter Tab: Shows a filterable table of all trades -->
     <div id="TradeBlotterTab" class="tabcontent">
         <h2>Trade Blotter</h2>
+        <!-- Input for filtering trades by side, source, or price -->
         <input type="text" id="trade-filter" placeholder="Filter by side/source/price..." />
+        <!-- Responsive wrapper for the trade blotter table -->
         <div id="blotter-table-wrapper" style="width:100%; overflow-x:auto; margin: 0 auto;">
             <table class="metrics-table" id="blotter-table" style="width:100%; min-width:900px; table-layout:fixed;">
                 <thead>
@@ -109,14 +132,15 @@
         </div>
     </div>
 
-
-    <!-- Analytics & Visualisations Tab -->
+    <!-- Analytics & Visualisations Tab: Shows strategy metrics and market analytics -->
     <div id="AnalyticsTab" class="tabcontent">
-        <!-- Strategy Metrics Panel moved here -->
+        <!-- Strategy Metrics Panel -->
         <div class="metrics-panel" style="margin-bottom: 40px;">
             <h2 class="panel-title">Strategy Metrics</h2>
+            <!-- Loading and error messages for metrics -->
             <div id="metrics-feedback" class="loading" style="display:none;">Loading strategy metrics...</div>
             <div id="metrics-error" class="error" style="display:none;"></div>
+            <!-- Table displaying strategy performance metrics -->
             <table class="metrics-table" id="metrics-table">
                 <thead>
                     <tr>
@@ -130,6 +154,7 @@
                 <tbody id="metrics-body"></tbody>
             </table>
         </div>
+        <!-- Visualization panels for analytics -->
         <div class="viz-row">
             <div class="viz-panel">
                 <h2>Order Flow Heatmap</h2>
@@ -148,12 +173,15 @@
         </div>
     </div>
 
-    <!-- Execution Report Tab -->
+    <!-- Execution Report Tab: Shows all execution reports with filtering -->
     <div id="ExecutionReportTab" class="tabcontent">
         <h2>Execution Reports</h2>
+        <!-- Input for filtering execution reports -->
         <input type="text" id="exec-filter" class="filter-input" placeholder="Filter execution reports..." onkeyup="filterExecReportsTable()">
+        <!-- Loading and error messages for execution reports -->
         <div id="exec-reports-feedback" class="loading" style="display:none;">Loading execution reports...</div>
         <div id="exec-reports-error" class="error" style="display:none;"></div>
+        <!-- Table displaying execution report details -->
         <table class="metrics-table" id="exec-reports-table">
             <thead>
                 <tr>
@@ -175,9 +203,10 @@
         </table>
     </div>
 
+    <!-- Load main JavaScript logic for the dashboard -->
     <script src="{{ url_for('static', filename='app.js') }}"></script>
     <script>
-        // Tab switching function
+        // Tab switching function: shows the selected tab and hides others
         function openTab(evt, tabName) {
             const tabcontent = document.getElementsByClassName("tabcontent");
             for (let i = 0; i < tabcontent.length; i++) {
@@ -189,18 +218,18 @@
             }
             document.getElementById(tabName).style.display = "block";
             evt.currentTarget.className += " active";
-            // Refresh data for the new tab
+            // Refresh data for the new tab if needed
             if (tabName === "ExecutionReportTab") {
                 refreshExecutionReports();
             }
         }
 
-        // Open default tab on page load
+        // On page load, open the default tab (Order Book)
         window.onload = function() {
             document.getElementById("defaultOpen").click();
         };
 
-        // Filter function for Execution Reports table
+        // Filter function for the Execution Reports table
         function filterExecReportsTable() {
             var input = document.getElementById("exec-filter");
             var filter = input.value.toUpperCase();

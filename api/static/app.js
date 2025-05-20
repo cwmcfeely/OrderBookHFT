@@ -1,23 +1,40 @@
+// Set the current trading symbol to the first available symbol
 let currentSymbol = Object.values(symbols)[0];
+// Track whether MyStrategy is running
 let tradingRunning = true;
+// Track whether the exchange is halted
 let exchangeHalted = false;
 
-// Populate dropdown
+// --- Symbol Dropdown Initialisation ---
+
+// Get the symbol select dropdown from the DOM
 const symbolSelect = document.getElementById('symbol-select');
+// Populate the dropdown with all available symbols
 for (const [key, val] of Object.entries(symbols)) {
     let opt = document.createElement('option');
     opt.value = val;
     opt.text = `${key} (${val})`;
     symbolSelect.appendChild(opt);
 }
+// Set the dropdown to the current symbol
 symbolSelect.value = currentSymbol;
 
+// When the user changes the selected symbol
 symbolSelect.onchange = function() {
     currentSymbol = this.value;
-    selectSymbol(currentSymbol);
-    refreshVisibleTab();
+    selectSymbol(currentSymbol); // Inform backend of symbol change
+    refreshVisibleTab(); // Refresh UI for new symbol
 };
 
+// --- Utility: Fetch with Retry ---
+
+/**
+ * Fetch a URL with retry logic on failure
+ * @param {string} url - The endpoint to fetch
+ * @param {object} options - Fetch options
+ * @param {number} retries - Number of retries
+ * @returns {Promise<any>} - JSON response
+ */
 function fetchWithRetry(url, options = {}, retries = 2) {
     return fetch(url, options).then(response => {
         if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
@@ -31,6 +48,12 @@ function fetchWithRetry(url, options = {}, retries = 2) {
     });
 }
 
+// --- Symbol Selection ---
+
+/**
+ * Notify backend to select a new trading symbol
+ * @param {string} symbol - The symbol to select
+ */
 function selectSymbol(symbol) {
     fetch('/select_symbol', {
         method: 'POST',
@@ -41,6 +64,11 @@ function selectSymbol(symbol) {
     });
 }
 
+// --- Exchange Controls ---
+
+/**
+ * Toggle the exchange between halted and active state
+ */
 function toggleExchange() {
     fetchWithRetry('/toggle_exchange', { method: 'POST' })
         .then(data => {
@@ -51,6 +79,9 @@ function toggleExchange() {
         .catch(err => showExchangeError("Failed to toggle exchange: " + err.message));
 }
 
+/**
+ * Toggle MyStrategy between running and paused
+ */
 function toggleMyStrategy() {
     fetchWithRetry('/toggle_my_strategy', { method: 'POST' })
         .then(data => {
@@ -61,6 +92,9 @@ function toggleMyStrategy() {
         .catch(err => showStatusError("Failed to toggle trading: " + err.message));
 }
 
+/**
+ * Cancel all orders placed by MyStrategy for the selected symbol
+ */
 function cancelMyStrategyOrders() {
     const symbol = document.getElementById('symbol-select').value;
     fetch('/cancel_mystrategy_orders', {
@@ -78,18 +112,33 @@ function cancelMyStrategyOrders() {
     });
 }
 
+// --- UI Button Updates ---
+
+/**
+ * Update the exchange toggle button text and status indicator
+ * @param {boolean} isHalted - Whether the exchange is halted
+ */
 function updateExchangeButton(isHalted) {
     const btn = document.getElementById('exchange-toggle');
     btn.textContent = isHalted ? "Resume Exchange" : "Halt Exchange";
-    document.getElementById('exchange-status').textContent;
+    document.getElementById('exchange-status').textContent = "";
 }
 
+/**
+ * Update the MyStrategy toggle button text and status indicator
+ * @param {boolean} isRunning - Whether MyStrategy is running
+ */
 function updateTradingButton(isRunning) {
     const btn = document.getElementById('trading-toggle');
     btn.textContent = isRunning ? "Pause MyStrategy" : "Start MyStrategy";
-    document.getElementById('trading-status').textContent;
+    document.getElementById('trading-status').textContent = "";
 }
 
+// --- Status Refresh and Error Handling ---
+
+/**
+ * Refresh the current trading and exchange status from backend
+ */
 function refreshStatus() {
     fetchWithRetry('/status')
         .then(data => {
@@ -101,20 +150,38 @@ function refreshStatus() {
         .catch(err => showStatusError("Status error: " + err.message));
 }
 
+/**
+ * Show a status error message for trading controls
+ * @param {string} msg - Error message to display
+ */
 function showStatusError(msg) {
     const el = document.getElementById('trading-status');
     el.textContent = msg;
     el.classList.add('error');
 }
+
+/**
+ * Show a status error message for exchange controls
+ * @param {string} msg - Error message to display
+ */
 function showExchangeError(msg) {
     const el = document.getElementById('exchange-status');
     el.textContent = msg;
     el.classList.add('error');
 }
+
+/**
+ * Hide the trading status error message
+ */
 function hideStatusError() {
     document.getElementById('trading-status').classList.remove('error');
 }
 
+// --- Order Book Display ---
+
+/**
+ * Refresh and render the current order book for the selected symbol
+ */
 function refreshOrderBook() {
     document.getElementById('orderbook-feedback').style.display = '';
     document.getElementById('orderbook-error').style.display = 'none';
@@ -126,7 +193,7 @@ function refreshOrderBook() {
             let bids = data.bids || [];
             let asks = data.asks || [];
 
-            // Limit to 15 rows max
+            // Show up to 15 rows (bids/asks)
             const maxRows = 15;
             const rowsToShow = Math.min(maxRows, Math.max(bids.length, asks.length));
             let rows = '';
@@ -150,6 +217,11 @@ function refreshOrderBook() {
         });
 }
 
+// --- Trades Display ---
+
+/**
+ * Refresh and render the recent trades for the selected symbol
+ */
 function refreshTrades() {
     document.getElementById('trades-feedback').style.display = '';
     document.getElementById('trades-error').style.display = 'none';
@@ -159,7 +231,7 @@ function refreshTrades() {
             document.getElementById('trades-feedback').style.display = 'none';
 
             let rows = '';
-            // Limit to 15 most recent trades
+            // Show up to 15 most recent trades, newest first
             (trades || []).slice(-15).reverse().forEach(trade => {
                 rows += `<tr>
                     <td>${trade.time || '-'}</td>
@@ -179,6 +251,11 @@ function refreshTrades() {
         });
 }
 
+// --- Strategy Metrics Display ---
+
+/**
+ * Refresh and render the strategy metrics table
+ */
 function refreshMetrics() {
     document.getElementById('metrics-feedback').style.display = '';
     document.getElementById('metrics-error').style.display = 'none';
@@ -192,16 +269,16 @@ function refreshMetrics() {
             let rows = '';
             const strategies = ["my_strategy", "passive_liquidity_provider", "market_maker", "momentum"];
 
-            // Utility functions for formatting
+            // Helper functions for formatting numbers and percentages
             const formatPercent = (v) => v !== undefined ? (v > 0 ? "+" : "") + v.toFixed(2) + "%" : "-";
             const formatEuro = (v) => v !== undefined ? (v > 0 ? "+" : "") + v.toFixed(2) : "-";
 
             strategies.forEach(name => {
                 const m = data[name] || {};
 
-                // Determine CSS classes for coloring positive/negative/neutral values
-                const realizedClass = m.realized_pnl >= 0 ? "positive" : "negative";
-                const unrealizedClass = m.unrealized_pnl >= 0 ? "positive" : "negative";
+                // Determine CSS class for coloring based on value sign
+                const realisedClass = m.realised_pnl >= 0 ? "positive" : "negative";
+                const unrealisedClass = m.unrealised_pnl >= 0 ? "positive" : "negative";
                 const totalClass = m.total_pnl >= 0 ? "positive" : "negative";
                 const inventoryPercentClass = m.inventory_percent >= 0 ? "positive" : "negative";
 
@@ -216,8 +293,8 @@ function refreshMetrics() {
                         }</span>
                     </td>
                     <td>${m.inventory !== undefined ? m.inventory : '-'}</td>
-                    <td class="${realizedClass}">${formatPercent(m.realized_pnl_percent)}</td>
-                    <td class="${unrealizedClass}">${formatPercent(m.unrealized_pnl_percent)}</td>
+                    <td class="${realisedClass}">${formatPercent(m.realised_pnl_percent)}</td>
+                    <td class="${unrealisedClass}">${formatPercent(m.unrealised_pnl_percent)}</td>
                     <td class="${totalClass}">${formatPercent(m.total_pnl_percent)}</td>
                     <td class="${totalClass}">${formatEuro(m.total_pnl)}</td>
                     <td class="${inventoryPercentClass}">${formatPercent(m.inventory_percent)}</td>
@@ -249,6 +326,11 @@ function refreshMetrics() {
         });
 }
 
+// --- Analytics & Visualisation ---
+
+/**
+ * Refresh and render the order flow heatmap using Plotly
+ */
 function refreshOrderFlowHeatmap() {
     fetch(`/order_book_history?symbol=${currentSymbol}`)
         .then(r => r.json())
@@ -266,6 +348,9 @@ function refreshOrderFlowHeatmap() {
         });
 }
 
+/**
+ * Refresh and render the spread evolution chart
+ */
 function refreshSpreadChart() {
     fetch(`/spread_history?symbol=${currentSymbol}`)
         .then(r => r.json())
@@ -285,6 +370,9 @@ function refreshSpreadChart() {
         });
 }
 
+/**
+ * Refresh and render the liquidity chart
+ */
 function refreshLiquidityChart() {
     fetch(`/liquidity_history?symbol=${currentSymbol}`)
         .then(r => r.json())
@@ -301,6 +389,11 @@ function refreshLiquidityChart() {
         });
 }
 
+// --- Trade Blotter ---
+
+/**
+ * Refresh and render the trade blotter table, applying filter if present
+ */
 function refreshBlotter() {
     fetch(`/trades?symbol=${currentSymbol}`)
         .then(r => r.json())
@@ -326,9 +419,14 @@ function refreshBlotter() {
             document.getElementById('blotter-body').innerHTML = rows;
         });
 }
+// Attach blotter refresh to filter input changes
 document.getElementById('trade-filter').oninput = refreshBlotter;
 
-// ---- Execution Reports: For Execution Report Tab ----
+// --- Execution Reports Tab ---
+
+/**
+ * Refresh and render the execution reports table, applying filter if present
+ */
 function refreshExecutionReports() {
     document.getElementById('exec-reports-feedback').style.display = '';
     document.getElementById('exec-reports-error').style.display = 'none';
@@ -364,7 +462,9 @@ function refreshExecutionReports() {
         });
 }
 
-// Filter function for Execution Reports table
+/**
+ * Filter the execution reports table by the input field
+ */
 function filterExecReportsTable() {
     var input = document.getElementById("exec-filter");
     if (!input) return;
@@ -377,7 +477,13 @@ function filterExecReportsTable() {
     }
 }
 
-// ---- TAB LOGIC ----
+// --- Tab Logic ---
+
+/**
+ * Handle tab switching, updating visible content and refreshing relevant data
+ * @param {Event} evt - The tab click event
+ * @param {string} tabName - The name of the tab to show
+ */
 function openTab(evt, tabName) {
     var tabcontent = document.getElementsByClassName("tabcontent");
     for (let i = 0; i < tabcontent.length; i++) {
@@ -392,6 +498,11 @@ function openTab(evt, tabName) {
     refreshVisibleTab();
 }
 
+// --- Latency Chart ---
+
+/**
+ * Refresh and render the order processing latency chart
+ */
 function refreshLatencyChart() {
     fetch(`/order_latency_history?symbol=${currentSymbol}`)
         .then(r => r.json())
@@ -400,6 +511,7 @@ function refreshLatencyChart() {
                 Plotly.newPlot('latency-chart', [{x: [0], y: [0], type: 'scatter'}], {title: "No Data"});
                 return;
             }
+            // Define colors and names for each strategy
             const stratColors = {
                 "my_strategy": "#1976d2",
                 "passive_liquidity_provider": "#ff9800",
@@ -412,6 +524,7 @@ function refreshLatencyChart() {
                 "market_maker": "Market Maker",
                 "momentum": "Momentum"
             };
+            // Group latency data by strategy
             const grouped = {};
             data.forEach(d => {
                 const strat = d.strategy || "Unknown";
@@ -419,6 +532,7 @@ function refreshLatencyChart() {
                 grouped[strat].x.push(d.time);
                 grouped[strat].y.push(d.latency_ms);
             });
+            // Create a trace for each strategy
             const traces = Object.keys(grouped).map(strat => ({
                 x: grouped[strat].x,
                 y: grouped[strat].y,
@@ -440,6 +554,11 @@ function refreshLatencyChart() {
         });
 }
 
+// --- Depth Chart ---
+
+/**
+ * Refresh and render the market depth chart
+ */
 function refreshDepthChart() {
     fetch(`/order_book?symbol=${currentSymbol}`)
         .then(response => response.json())
@@ -451,7 +570,7 @@ function refreshDepthChart() {
             bids = bids.slice().sort((a, b) => b.price - a.price);
             asks = asks.slice().sort((a, b) => a.price - b.price);
 
-            // Calculate cumulative quantities
+            // Calculate cumulative quantities for bids
             let bidPrices = [], bidCumQty = [], cum = 0;
             bids.forEach(b => {
                 cum += b.qty;
@@ -459,6 +578,7 @@ function refreshDepthChart() {
                 bidCumQty.push(cum);
             });
 
+            // Calculate cumulative quantities for asks
             let askPrices = [], askCumQty = [], cumAsk = 0;
             asks.forEach(a => {
                 cumAsk += a.qty;
@@ -466,6 +586,7 @@ function refreshDepthChart() {
                 askCumQty.push(cumAsk);
             });
 
+            // Prepare traces for Plotly
             const traces = [
                 {
                     x: bidPrices,
@@ -502,8 +623,11 @@ function refreshDepthChart() {
         });
 }
 
+// --- Tab Visibility Refresh ---
 
-// Only refresh data for visible tab
+/**
+ * Refresh only the data relevant to the currently visible tab
+ */
 function refreshVisibleTab() {
     refreshStatus();
 
@@ -532,7 +656,11 @@ function refreshVisibleTab() {
     }
 }
 
+// --- Initial Page Load and Auto-Refresh ---
+
+// On page load, open the default tab
 window.onload = function() {
     document.getElementById("defaultOpen").click();
 };
+// Periodically refresh the visible tab every 2 seconds
 setInterval(refreshVisibleTab, 2000);

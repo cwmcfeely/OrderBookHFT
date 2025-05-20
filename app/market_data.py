@@ -10,38 +10,51 @@ import pandas as pd
 
 from app.logger import setup_logging
 
+# Initialise logging with INFO level
 setup_logging(level=logging.INFO)
 logger = logging.getLogger(__name__)
-logger.propagate = False
+logger.propagate = False  # Prevent double logging if root logger also logs
 
+# Define directories for raw and processed data storage
 DATA_DIR_RAW = Path("data/raw")
 DATA_DIR_PROCESSED = Path("data/processed")
 
+# Load configuration from YAML file
 with open("config.yaml", "r") as f:
     CONFIG = yaml.safe_load(f)
 
+# Extract API key and symbols dictionary from config
 API_KEY = CONFIG.get("api_key")
 SYMBOLS = CONFIG.get("symbols", {})
 BASE_URL = "https://eodhistoricaldata.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
+# Variables to track API usage to respect rate limits
 api_calls_today = 0
 last_call_date = date.today()
-api_counter_lock = threading.Lock()
-API_COUNT_FILE = Path("logs/api_calls_today.json")
+api_counter_lock = threading.Lock()  # Lock to synchronise access to API call counters
+API_COUNT_FILE = Path("logs/api_calls_today.json")  # File to persist API call count across restarts
 
-CACHE_EXPIRY_SECONDS = 3600  # 1 hour cache expiry
+CACHE_EXPIRY_SECONDS = 3600  # Cache expiry time in seconds (1 hour)
 
-# Global dictionary to hold the latest prices per symbol for quick access
+# Global dictionary to hold latest prices per symbol for quick access
 latest_prices = {}
-latest_prices_lock = threading.Lock()
+latest_prices_lock = threading.Lock()  # Lock for thread-safe access to latest_prices
 
 def ensure_directories():
+    """
+    Ensure that the required directories for raw data, processed data,
+    and logs exist, creating them if necessary.
+    """
     DATA_DIR_RAW.mkdir(parents=True, exist_ok=True)
     DATA_DIR_PROCESSED.mkdir(parents=True, exist_ok=True)
     API_COUNT_FILE.parent.mkdir(parents=True, exist_ok=True)
 
 def load_api_count():
+    """
+    Load the API call count and last call date from a JSON file.
+    This helps to persist API usage count across application restarts.
+    """
     global api_calls_today, last_call_date
     try:
         if API_COUNT_FILE.exists():
@@ -53,6 +66,9 @@ def load_api_count():
         logger.error(f"Error loading API count: {str(e)}")
 
 def save_api_count():
+    """
+    Save the current API call count and last call date to a JSON file.
+    """
     try:
         with open(API_COUNT_FILE, "w") as f:
             json.dump({
@@ -63,6 +79,10 @@ def save_api_count():
         logger.error(f"Error saving API count: {str(e)}")
 
 def increment_api_count():
+    """
+    Increment the API call count in a thread-safe manner.
+    Reset the count if the day has changed.
+    """
     global api_calls_today, last_call_date
     with api_counter_lock:
         today = date.today()
@@ -73,17 +93,36 @@ def increment_api_count():
         save_api_count()
 
 def get_last_trading_day(current_date=None):
+    """
+    Get the last business (trading) day before the given date.
+    Uses pandas BusinessDay offset to skip weekends and holidays.
+
+    Args:
+        current_date (date, optional): Reference date. Defaults to today.
+
+    Returns:
+        date: The last trading day date.
+    """
     current_date = current_date or pd.Timestamp.today().date()
-    # Use pandas BusinessDay to get last business day
     last_business_day = pd.Timestamp(current_date) - pd.tseries.offsets.BusinessDay(1)
     return last_business_day.date()
 
 def load_cached_data(symbol):
+    """
+    Load cached intraday data for a symbol if available and not expired.
+
+    Args:
+        symbol (str): Trading symbol.
+
+    Returns:
+        dict or None: Cached JSON data or None if no valid cache.
+    """
     cache_dir = DATA_DIR_PROCESSED
-    files = sorted(cache_dir.glob(f"{symbol}_*.json"), reverse=True)
+    files = sorted(cache_dir.glob(f"{symbol}_*.json"), reverse=True)  # Latest first
     if not files:
         return None
     latest_file = files[0]
+    # Check if cache file is expired based on modification time
     if time.time() - latest_file.stat().st_mtime > CACHE_EXPIRY_SECONDS:
         return None
     try:
@@ -94,6 +133,17 @@ def load_cached_data(symbol):
         return None
 
 def _fetch_for_day(symbol, trading_day, interval="5m"):
+    """
+    Fetch intraday data for a given symbol and trading day from the EOD Historical Data API.
+
+    Args:
+        symbol (str): Trading symbol.
+        trading_day (date): Date for which to fetch data.
+        interval (str): Data interval (e.g., "5m").
+
+    Returns:
+        list or None: List of intraday data points or None on failure.
+    """
     start_dt = datetime.combine(trading_day, datetime.min.time())
     end_dt = datetime.combine(trading_day, datetime.max.time())
 
@@ -106,6 +156,7 @@ def _fetch_for_day(symbol, trading_day, interval="5m"):
     }
 
     try:
+        # Enforce daily API call limit
         if api_calls_today >= 100000:
             raise Exception("Daily API limit (100,000) reached")
 
@@ -123,11 +174,13 @@ def _fetch_for_day(symbol, trading_day, interval="5m"):
             logger.warning(f"No data for {symbol} on {trading_day}")
             return None
 
-        # Update latest price cache
+        # Update latest price cache with last tick's close price or midpoint of bid/ask
         with latest_prices_lock:
             latest_tick = data[-1] if isinstance(data, list) and len(data) > 0 else None
             if latest_tick:
-                price = latest_tick.get('close') or latest_tick.get('c') or ((latest_tick.get('bid') + latest_tick.get('ask')) / 2)
+                price = latest_tick.get('close') or latest_tick.get('c') or (
+                    (latest_tick.get('bid', 0) + latest_tick.get('ask', 0)) / 2
+                )
                 if price:
                     latest_prices[symbol] = price
 
@@ -138,23 +191,34 @@ def _fetch_for_day(symbol, trading_day, interval="5m"):
         return None
 
 def fetch_intraday_data(symbol, interval="5m"):
-    # Try cache first
+    """
+    Fetch intraday data for a symbol, using cache if available and valid.
+    Falls back to previous trading day if no data for last trading day.
+
+    Args:
+        symbol (str): Trading symbol.
+        interval (str): Data interval (default "5m").
+
+    Returns:
+        list or None: Intraday data list or None if fetch failed.
+    """
+    # Attempt to load cached data first
     cached = load_cached_data(symbol)
     if cached:
         logger.info(f"Using cached data for {symbol}")
         return cached
 
-    # Try last trading day
+    # Fetch data for last trading day
     trading_day = get_last_trading_day()
     data = _fetch_for_day(symbol, trading_day, interval)
     if data:
-        # Cache raw and processed data
+        # Cache raw and processed data for future use
         cache_data(symbol, data)
         processed = sorted(data, key=lambda x: x.get('date', ''))
         cache_data(symbol, processed, processed=True)
         return data
 
-    # Fallback to previous business day if no data
+    # Fallback: try previous business day if no data on last trading day
     prev_day = pd.Timestamp(trading_day) - pd.tseries.offsets.BusinessDay(1)
     prev_day = prev_day.date()
     logger.info(f"No data for {symbol} on {trading_day}, trying previous business day {prev_day}")
@@ -166,19 +230,41 @@ def fetch_intraday_data(symbol, interval="5m"):
     return data
 
 def get_latest_price(symbol):
+    """
+    Get the latest known price for a symbol from cache or fetch fresh data if missing.
+
+    Args:
+        symbol (str): Trading symbol.
+
+    Returns:
+        float or None: Latest price or None if unavailable.
+    """
     with latest_prices_lock:
         price = latest_prices.get(symbol)
     if price is not None:
         return price
 
-    # Fallback: fetch fresh data if not cached
+    # If not cached, fetch fresh intraday data and extract latest price
     data = fetch_intraday_data(symbol)
     if not data:
         return None
     latest = data[-1]
-    return latest.get('close') or latest.get('c') or ((latest.get('bid') + latest.get('ask')) / 2)
+    return latest.get('close') or latest.get('c') or (
+        (latest.get('bid', 0) + latest.get('ask', 0)) / 2
+    )
 
 def cache_data(symbol, data, processed=False):
+    """
+    Cache data to disk as JSON file in appropriate directory.
+
+    Args:
+        symbol (str): Trading symbol.
+        data (list or dict): Data to cache.
+        processed (bool): Whether data is processed (goes to processed directory).
+
+    Returns:
+        Path or None: Path to cached file or None if failed.
+    """
     try:
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
         directory = DATA_DIR_PROCESSED if processed else DATA_DIR_RAW
@@ -192,6 +278,10 @@ def cache_data(symbol, data, processed=False):
         return None
 
 def update_all_symbols():
+    """
+    Update intraday data for all configured symbols.
+    Ensures directories and API count are loaded, then fetches and caches data.
+    """
     ensure_directories()
     load_api_count()
 
@@ -209,5 +299,6 @@ def update_all_symbols():
         except Exception as e:
             logger.error(f"Failed processing {symbol_key}: {str(e)}")
 
+# If this module is run as the main program, update all symbols immediately
 if __name__ == "__main__":
     update_all_symbols()

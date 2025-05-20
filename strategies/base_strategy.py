@@ -1,75 +1,93 @@
 import time
 import logging
 from abc import ABC, abstractmethod
-import numpy as np  # Ensure numpy is in your requirements.txt
+import numpy as np  # Required for volatility calculations
 
 class BaseStrategy(ABC):
+    """
+    Abstract base class for trading strategies.
+    Provides risk management, order placement, PnL, and performance tracking utilities.
+    All custom strategies should inherit from this class and implement their own logic.
+    """
     def __init__(self, fix_engine, order_book, symbol, source_name, params=None):
+        # Core components required by all strategies
         self.fix_engine = fix_engine
         self.order_book = order_book
         self.symbol = symbol
         self.source_name = source_name
         self.params = params if params else {}
 
+        # Risk and trading parameters (with sensible defaults)
         self.max_order_qty = self.params.get("max_order_qty", 1000)
-        self.max_price_deviation = self.params.get("max_price_deviation", 0.02)  # 2%
+        self.max_price_deviation = self.params.get("max_price_deviation", 0.02)  # 2% price deviation allowed
         self.max_daily_orders = self.params.get("max_daily_orders", 1000)
         self.max_position_duration = self.params.get("max_position_duration", 60)  # seconds
-        self.daily_loss_limit = self.params.get("daily_loss_limit", -10000)  # currency units
-        self.initial_capital = self.params.get("initial_capital", 100000)  # Initial capital
+        self.daily_loss_limit = self.params.get("daily_loss_limit", -10000)  # Max daily loss allowed
+        self.initial_capital = self.params.get("initial_capital", 100000)  # Starting capital
 
-        # Coolddown perid
+        # Cooldown period after drawdown or risk event
         self.last_order_time = 0
-        self.min_order_interval = self.params.get("min_order_interval", 1.0)
+        self.min_order_interval = self.params.get("min_order_interval", 1.0)  # Minimum time between orders (seconds)
         self.max_unrealized_pnl = 0.0
         self.cooldown_until = 0
-        self.drawdown_limit = self.params.get("drawdown_limit", 500)  # e.g., $500
-        self.cooldown_period = self.params.get("cooldown_period", 60)  # seconds
+        self.drawdown_limit = self.params.get("drawdown_limit", 500)  # Drawdown threshold before cooldown (£500)
+        self.cooldown_period = self.params.get("cooldown_period", 60)  # Cooldown duration in seconds
 
-        # Trailing stop
-        self.trailing_stop = self.params.get("trailing_stop", 0.01)  # e.g., 1% trailing stop
+        # Trailing stop parameters
+        self.trailing_stop = self.params.get("trailing_stop", 0.01)  # 1% trailing stop by default
         self.highest_price = None
         self.lowest_price = None
 
-        # Internal state
+        # Internal state for position and PnL tracking
         self.order_count = 0
         self.position_start_time = None
-        self.inventory = 0  # Position size: +long, -short
+        self.inventory = 0  # Net position: positive=long, negative=short
         self.avg_entry_price = 0.0
         self.realized_pnl = 0.0
 
-        # Performance tracking
+        # Performance metrics
         self.total_trades = 0
         self.winning_trades = 0
 
-        # Logger for risk messages
+        # Logger for this strategy instance
         self.logger = logging.getLogger(f"Strategy.{self.source_name}")
 
     def generate_orders(self):
+        """
+        Entry point for strategy order generation.
+        Handles cooldown logic and drawdown checks.
+        Override in subclasses to implement specific trading logic.
+        """
         now = time.time()
         if now < getattr(self, "cooldown_until", 0):
             self.logger.info(f"{self.source_name}: In cooldown until {self.cooldown_until}, skipping orders.")
             return []
-        # Optionally, update unrealized PnL and check drawdown
+        # Optionally update unrealised PnL and check drawdown
         self.update_unrealized_pnl_and_drawdown()
         # By default, base class does not generate orders
         return None
 
     def place_order(self, side, price, quantity):
-        """Send order via FIX and add to order book, after risk checks and cooldown"""
+        """
+        Place an order via FIX and add it to the order book, after risk checks and cooldown.
 
-        # Check cooldown before placing order
+        Args:
+            side (str): '1' (buy) or '2' (sell) per FIX standard.
+            price (float): Limit price.
+            quantity (int): Order quantity.
+        """
+        # Enforce minimum interval between orders (cooldown)
         now = time.time()
         if (now - getattr(self, 'last_order_time', 0)) < getattr(self, 'min_order_interval', 1.0):
             self.logger.info(f"Order skipped due to cooldown: {side} {quantity}@{price}")
             return
 
-        # Risk check
+        # Run risk checks before placing the order
         if not self._risk_check(side, price, quantity):
             self.logger.warning(f"[RISK BLOCKED] {side} order for {quantity}@{price} rejected.")
             return
 
-        # Create FIX new order
+        # Create and send FIX new order message
         fix_msg = self.fix_engine.create_new_order(
             cl_ord_id=f"{self.source_name}-{now}",
             symbol=self.symbol,
@@ -81,7 +99,7 @@ class BaseStrategy(ABC):
 
         order_time = now
 
-        # Parse and add order to order book
+        # Parse the FIX message and add the order to the order book
         parsed_order = self.fix_engine.parse(fix_msg)
         if parsed_order:
             self.order_book.add_order(
@@ -100,8 +118,12 @@ class BaseStrategy(ABC):
             self.last_order_time = now
 
     def _risk_check(self, side, price, quantity):
-        """Comprehensive risk checks"""
+        """
+        Comprehensive risk checks before order placement.
 
+        Returns:
+            bool: True if order passes all risk checks, False otherwise.
+        """
         # Quantity limit
         if quantity > self.max_order_qty:
             self.logger.error(f"Order quantity {quantity} exceeds max {self.max_order_qty}")
@@ -150,7 +172,16 @@ class BaseStrategy(ABC):
         return True
 
     def _check_liquidity(self, side, quantity):
-        """Check order size against available liquidity in top 5 levels"""
+        """
+        Check order size against available liquidity in top 5 levels.
+
+        Args:
+            side (str): '1' (buy) or '2' (sell).
+            quantity (int): Order quantity.
+
+        Returns:
+            bool: True if order size is within 10% of top 5 levels' liquidity.
+        """
         book = self.order_book.bids if side == "2" else self.order_book.asks
         total_liquidity = 0
         levels = list(book.values())[:5]
@@ -160,7 +191,15 @@ class BaseStrategy(ABC):
         return quantity <= total_liquidity * 0.1 if total_liquidity > 0 else False
 
     def _current_volatility(self, window=30):
-        """Calculate recent price volatility (std dev) over last `window` prices"""
+        """
+        Calculate recent price volatility (standard deviation) over last `window` prices.
+
+        Args:
+            window (int): Number of recent prices to consider.
+
+        Returns:
+            float: Standard deviation of recent prices.
+        """
         try:
             prices = self.order_book.get_recent_prices(window=window)
             if len(prices) < 2:
@@ -171,15 +210,22 @@ class BaseStrategy(ABC):
             return 0.0
 
     def on_trade(self, trade):
-        """Update position, realized PnL, daily P&L, and win rate after a trade.
+        """
+        Update position, realised PnL, daily PnL, and win rate after a trade.
         Implements per-trade stop loss, take profit, and trailing stop logic.
+
+        Args:
+            trade (dict): Trade details, including side, price, qty, and pnl.
+
+        Returns:
+            tuple: (inventory, avg_entry_price, realised_pnl, total_trades, winning_trades)
         """
         qty = trade['qty']
         side = trade['side']
         price = trade['price']
         pnl = trade.get('pnl', 0)  # PnL should be calculated and passed in trade dict
 
-        # Update position and realized PnL (average cost method)
+        # Update position and realised PnL using average cost method
         if side == 'buy' or side == "1":
             new_position = self.inventory + qty
             if new_position == 0:
@@ -209,7 +255,7 @@ class BaseStrategy(ABC):
         if pnl > 0:
             self.winning_trades += 1
 
-        # --- Initialize trailing stop trackers if not present ---
+        # --- Trailing stop logic initialisation ---
         if not hasattr(self, 'highest_price'):
             self.highest_price = None
         if not hasattr(self, 'lowest_price'):
@@ -257,7 +303,12 @@ class BaseStrategy(ABC):
         return (self.inventory, self.avg_entry_price, self.realized_pnl, self.total_trades, self.winning_trades)
 
     def unrealized_pnl(self):
-        """Calculate unrealized PnL based on current mid-price"""
+        """
+        Calculate unrealised PnL based on current mid-price.
+
+        Returns:
+            float: Unrealised profit or loss.
+        """
         mid_price = self.order_book.get_mid_price()
         if mid_price is None or self.inventory == 0:
             return 0.0
@@ -267,12 +318,24 @@ class BaseStrategy(ABC):
             return (self.avg_entry_price - mid_price) * abs(self.inventory)
 
     def total_pnl(self):
+        """
+        Total PnL (realised + unrealised).
+        """
         return self.realized_pnl + self.unrealized_pnl()
 
     def get_win_rate(self):
+        """
+        Calculate win rate as the fraction of winning trades.
+
+        Returns:
+            float: Win rate (0.0 to 1.0).
+        """
         return self.winning_trades / self.total_trades if self.total_trades > 0 else 0.0
 
     def reset_inventory(self):
+        """
+        Reset all position and PnL state for this strategy.
+        """
         self.inventory = 0
         self.avg_entry_price = 0.0
         self.realized_pnl = 0.0
@@ -282,26 +345,40 @@ class BaseStrategy(ABC):
         self.winning_trades = 0
 
     def can_place_order(self):
-        """Return True if enough time has passed since the last order."""
+        """
+        Return True if enough time has passed since the last order (cooldown complete).
+        """
         now = time.time()
         return (now - self.last_order_time) >= self.min_order_interval
 
     def get_adaptive_order_size(self, min_size=1, max_size=None, volatility_window=30):
         """
         Returns an order size inversely proportional to recent volatility.
+        This helps reduce risk in volatile markets.
+
+        Args:
+            min_size (int): Minimum order size.
+            max_size (int or None): Maximum order size.
+            volatility_window (int): Number of prices to use for volatility.
+
+        Returns:
+            int: Adaptive order size.
         """
         vol = self._current_volatility(window=volatility_window)
         max_qty = max_size if max_size is not None else self.max_order_qty
         # Avoid division by zero and cap size
         adaptive_size = max(min_size, int(max_qty / (vol + 0.01)))
-        # Optionally, cap at a reasonable upper bound
         return min(adaptive_size, max_qty)
 
     def update_unrealized_pnl_and_drawdown(self):
+        """
+        Update unrealised PnL and check for drawdown limit breach.
+        If drawdown exceeded, enter cooldown period.
+        """
         mid_price = self.order_book.get_mid_price()
         if mid_price is None or self.inventory == 0:
             return
-        # Calculate current unrealized PnL
+        # Calculate current unrealised PnL
         if self.inventory > 0:
             unrealized = (mid_price - self.avg_entry_price) * self.inventory
         else:
@@ -311,4 +388,4 @@ class BaseStrategy(ABC):
         if drawdown >= self.drawdown_limit:
             self.logger.warning(f"{self.source_name}: Drawdown limit hit ({drawdown}), entering cooldown.")
             self.cooldown_until = time.time() + self.cooldown_period
-            self.max_unrealized_pnl = unrealized  # reset peak
+            self.max_unrealized_pnl = unrealized  # Reset peak

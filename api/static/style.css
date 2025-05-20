@@ -1,161 +1,216 @@
+/* Body styles: dark background with light text for contrast and readability */
 body {
-    background: #181A20;
-    color: #F3F6F9;
-    font-family: 'Inter', Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-}
-h1 {
-    color: #90caf9;
-    text-align: center;
-    font-weight: 700;
-    letter-spacing: 2px;
-    font-size: 2.2em;
-    margin: 36px 0 20px 0;
-}
-.dashboard {
-    display: flex;
-    gap: 36px;
-    margin: 0 40px 40px 40px;
-}
-.panel {
-    background: #23272E;
-    color: #F3F6F9;
-    border-radius: 12px;
-    box-shadow: 0 2px 16px #0008;
-    padding: 28px 24px 24px 24px;
-    flex: 1;
-    min-width: 350px;
-}
-.panel h2 {
-    font-size: 1.1em;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #8A8F98;
-    margin-bottom: 16px;
-}
-.orderbook-table, .trades-table, .metrics-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-.orderbook-table th, .trades-table th, .metrics-table th {
-    background: #23272E;
-    color: #8A8F98;
-    font-size: 0.97em;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 8px 10px;
-    border: none;
+    background: #181A20; /* Dark background color */
+    color: #F3F6F9; /* Light text color */
+    font-family: 'Inter', Arial, sans-serif; /* Modern sans-serif font stack */
+    margin: 0; /* Remove default margin */
+    padding: 0; /* Remove default padding */
 }
 
-.trades-table th, .trades-table td {
-    text-align: left;
+/* Main page heading style */
+h1 {
+    color: #90caf9; /* Soft blue color for heading */
+    text-align: center; /* Center align text */
+    font-weight: 700; /* Bold font weight */
+    letter-spacing: 2px; /* Spaced out letters */
+    font-size: 2.2em; /* Large font size */
+    margin: 36px 0 20px 0; /* Vertical spacing around heading */
 }
+
+/* Dashboard container: flex layout with gaps and margins */
+.dashboard {
+    display: flex; /* Arrange child panels side-by-side */
+    gap: 36px; /* Space between panels */
+    margin: 0 40px 40px 40px; /* Outer margins */
+}
+
+/* Individual panel styling */
+.panel {
+    background: #23272E; /* Dark gray background for panels */
+    color: #F3F6F9; /* Light text color */
+    border-radius: 12px; /* Rounded corners */
+    box-shadow: 0 2px 16px #0008; /* Subtle shadow for depth */
+    padding: 28px 24px 24px 24px; /* Inner padding */
+    flex: 1; /* Panels share available space equally */
+    min-width: 350px; /* Minimum width to maintain usability */
+}
+
+/* Panel headings */
+.panel h2 {
+    font-size: 1.1em; /* Slightly larger font */
+    font-weight: 700; /* Bold */
+    text-transform: uppercase; /* Uppercase letters */
+    letter-spacing: 1px; /* Spacing between letters */
+    color: #8A8F98; /* Muted gray color */
+    margin-bottom: 16px; /* Space below heading */
+}
+
+/* Tables for order book, trades, and metrics share common styles */
+.orderbook-table, .trades-table, .metrics-table {
+    width: 100%; /* Full width */
+    border-collapse: collapse; /* Remove gaps between cells */
+    margin-top: 10px; /* Space above tables */
+}
+
+/* Table headers for all main tables */
+.orderbook-table th, .trades-table th, .metrics-table th {
+    background: #23272E; /* Dark background matching panels */
+    color: #8A8F98; /* Muted gray text */
+    font-size: 0.97em; /* Slightly smaller font */
+    font-weight: 700; /* Bold */
+    text-transform: uppercase; /* Uppercase */
+    letter-spacing: 1px; /* Letter spacing */
+    padding: 8px 10px; /* Cell padding */
+    border: none; /* No border */
+}
+
+/* Trades table specific alignment */
+.trades-table th, .trades-table td {
+    text-align: left; /* Left align text by default */
+}
+/* Price and quantity columns right-aligned for numeric clarity */
 .trades-table td:nth-child(2),
 .trades-table td:nth-child(3) {
     text-align: right;
 }
+/* Last column (Source) left-aligned */
 .trades-table td:last-child {
     text-align: left;
 }
 
+/* Order book and metrics tables cell styles */
 .orderbook-table td, .metrics-table td {
-    border: none;
-    font-family: monospace;
-    font-size: 1em;
-    padding: 8px 10px;
-    text-align: right;
-    background: transparent;
+    border: none; /* No borders */
+    font-family: monospace; /* Monospaced font for numeric data */
+    font-size: 1em; /* Normal font size */
+    padding: 8px 10px; /* Padding inside cells */
+    text-align: right; /* Right-align numeric data */
+    background: transparent; /* Transparent background */
 }
-.bid { color: #66bb6a; }
-.ask { color: #ef5350; }
+
+/* Color coding for bid and ask prices */
+.bid { color: #66bb6a; } /* Green for bids */
+.ask { color: #ef5350; } /* Red for asks */
+
+/* Controls container styles */
 .controls {
-    margin: 0 0 30px 0;
-    text-align: center;
+    margin: 0 0 30px 0; /* Bottom margin */
+    text-align: center; /* Center content */
 }
+
+/* Labels inside controls */
 .controls label {
-    font-weight: 700;
-    letter-spacing: 1px;
-    margin-right: 8px;
+    font-weight: 700; /* Bold text */
+    letter-spacing: 1px; /* Letter spacing */
+    margin-right: 8px; /* Space after label */
 }
+
+/* Select dropdown and options styling */
 .controls select, .controls option {
-    background: #23272E;
-    color: #F3F6F9;
-    border: 1px solid #2b2f36;
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 1em;
-    margin-right: 16px;
+    background: #23272E; /* Dark background */
+    color: #F3F6F9; /* Light text */
+    border: 1px solid #2b2f36; /* Subtle border */
+    border-radius: 6px; /* Rounded corners */
+    padding: 6px 12px; /* Padding inside */
+    font-size: 1em; /* Normal font size */
+    margin-right: 16px; /* Space after select */
 }
+
+/* General button styles */
 button {
-    border: none;
-    border-radius: 18px;
-    padding: 8px 24px;
-    font-weight: bold;
-    font-size: 1em;
-    margin: 0 8px;
-    box-shadow: 0 2px 8px #0002;
-    background: #23272E;
-    color: #F3F6F9;
-    transition: background 0.2s, filter 0.2s;
-    cursor: pointer;
+    border: none; /* Remove default border */
+    border-radius: 18px; /* Rounded pill shape */
+    padding: 8px 24px; /* Padding inside button */
+    font-weight: bold; /* Bold text */
+    font-size: 1em; /* Normal font size */
+    margin: 0 8px; /* Horizontal margin */
+    box-shadow: 0 2px 8px #0002; /* Subtle shadow */
+    background: #23272E; /* Dark background */
+    color: #F3F6F9; /* Light text */
+    transition: background 0.2s, filter 0.2s; /* Smooth hover transitions */
+    cursor: pointer; /* Pointer cursor on hover */
 }
-#exchange-toggle { background: #E74C3C; color: #fff; }
-#trading-toggle { background: #27AE60; color: #fff; }
+
+/* Specific button colors for exchange and trading toggles */
+#exchange-toggle { background: #E74C3C; color: #fff; } /* Red background for halt */
+#trading-toggle { background: #27AE60; color: #fff; } /* Green background for trading */
+
+/* Button hover effect to brighten */
 button:hover { filter: brightness(1.1); }
+
+/* Last price text style */
 #last-price { font-weight: bold; }
-.loading { color: #ffb300; font-size: 0.96em; }
-.error { color: #E74C3C; font-weight: 600; font-size: 0.96em; }
+
+/* Loading message style */
+.loading { color: #ffb300; font-size: 0.96em; } /* Amber color */
+
+/* Error message style */
+.error { color: #E74C3C; font-weight: 600; font-size: 0.96em; } /* Red color, semi-bold */
+
+/* Trading and exchange status text */
 #trading-status, #exchange-status {
     font-weight: bold;
-    margin-left: 10px;
-    color: #8A8F98;
+    margin-left: 10px; /* Space from adjacent elements */
+    color: #8A8F98; /* Muted gray */
     font-size: 1em;
 }
+
+/* Metrics panel container */
 .metrics-panel {
-    margin: 40px 40px 0 40px;
-    background: #23272E;
-    border-radius: 12px;
-    box-shadow: 0 2px 16px #0007;
-    padding: 24px 24px 18px 24px;
+    margin: 40px 40px 0 40px; /* Margins around panel */
+    background: #23272E; /* Dark background */
+    border-radius: 12px; /* Rounded corners */
+    box-shadow: 0 2px 16px #0007; /* Shadow for depth */
+    padding: 24px 24px 18px 24px; /* Inner padding */
 }
+
+/* Metrics table header and cell padding */
 .metrics-table th, .metrics-table td {
     padding: 10px 14px;
 }
+
+/* Metrics table header font size */
 .metrics-table th {
     font-size: 1.05em;
 }
+
+/* Metrics table cell font */
 .metrics-table td {
-    font-family: monospace;
+    font-family: monospace; /* Monospaced for numeric clarity */
     font-size: 1.07em;
 }
+
+/* Color coding for positive, negative, and neutral values */
 .metrics-table .positive {
-    color: #27AE60;
+    color: #27AE60; /* Green */
 }
 .metrics-table .negative {
-    color: #E74C3C;
+    color: #E74C3C; /* Red */
 }
 .metrics-table .neutral {
-    color: #F3F6F9;
+    color: #F3F6F9; /* Light/neutral */
 }
+
+/* Visualization rows container: flex layout with gap */
 .viz-row {
     display: flex;
     gap: 32px;
     margin: 0 40px 0 40px;
 }
+
+/* Visualization panels */
 .viz-panel {
-    flex: 1;
-    min-width: 350px;
-    background: #23272E;
-    color: #F3F6F9;
-    border-radius: 12px;
-    box-shadow: 0 2px 16px #0008;
-    padding: 24px;
-    margin-bottom: 32px;
+    flex: 1; /* Flexible width */
+    min-width: 350px; /* Minimum width */
+    background: #23272E; /* Dark background */
+    color: #F3F6F9; /* Light text */
+    border-radius: 12px; /* Rounded corners */
+    box-shadow: 0 2px 16px #0008; /* Shadow */
+    padding: 24px; /* Inner padding */
+    margin-bottom: 32px; /* Space below */
 }
+
+/* Visualization panel headings */
 .viz-panel h2 {
     font-size: 1.1em;
     font-weight: 700;
@@ -164,56 +219,63 @@ button:hover { filter: brightness(1.1); }
     color: #8A8F98;
     margin-bottom: 16px;
 }
+
+/* Trade filter input box */
 #trade-filter {
     margin-bottom: 8px;
     width: 90%;
-    background: #181A20;
-    color: #F3F6F9;
-    border: 1px solid #2b2f36;
+    background: #181A20; /* Matches body background */
+    color: #F3F6F9; /* Light text */
+    border: 1px solid #2b2f36; /* Border color */
     border-radius: 6px;
     padding: 6px 12px;
 }
+
+/* Responsive layout: stack dashboard and viz rows vertically on narrow screens */
 @media (max-width: 1100px) {
     .dashboard, .viz-row {
         flex-direction: column;
     }
 }
-/* Tab container */
+
+/* Tab container styles */
 .tab {
-    overflow: hidden;
-    background-color: #222;
-    border-bottom: 1px solid #444;
-    margin: 0 40px 20px 40px;
-    border-radius: 8px 8px 0 0;
+    overflow: hidden; /* Clear floats */
+    background-color: #222; /* Dark background */
+    border-bottom: 1px solid #444; /* Bottom border */
+    margin: 0 40px 20px 40px; /* Margins */
+    border-radius: 8px 8px 0 0; /* Rounded top corners */
 }
 
 /* Tab buttons */
 .tab button {
-    background-color: inherit;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    padding: 14px 24px;
-    color: #F3F6F9;
+    background-color: inherit; /* Inherit tab background */
+    border: none; /* No border */
+    outline: none; /* Remove focus outline */
+    cursor: pointer; /* Pointer cursor */
+    padding: 14px 24px; /* Padding */
+    color: #F3F6F9; /* Light text */
     font-size: 1em;
     font-weight: 700;
     letter-spacing: 1px;
-    transition: background-color 0.3s ease;
-    float: left;
-    border-radius: 8px 8px 0 0;
+    transition: background-color 0.3s ease; /* Smooth hover */
+    float: left; /* Align buttons horizontally */
+    border-radius: 8px 8px 0 0; /* Rounded top corners */
 }
 
+/* Tab button hover effect */
 .tab button:hover {
-    background-color: #444;
+    background-color: #444; /* Slightly lighter background */
 }
 
+/* Active tab button styles */
 .tab button.active {
-    background-color: #27AE60; /* Highlight active tab with green */
-    color: #fff;
-    box-shadow: 0 4px 12px #27AE60aa;
+    background-color: #27AE60; /* Green highlight */
+    color: #fff; /* White text */
+    box-shadow: 0 4px 12px #27AE60aa; /* Glowing shadow */
 }
 
-/* Clear floats */
+/* Clear floats after tabs */
 .tab::after {
     content: "";
     clear: both;
@@ -222,69 +284,69 @@ button:hover { filter: brightness(1.1); }
 
 /* Tab content sections */
 .tabcontent {
-    display: none;
-    padding: 20px 40px 40px 40px;
-    background-color: #23272E;
-    border-radius: 0 0 12px 12px;
-    box-shadow: 0 2px 16px #0008;
-    color: #F3F6F9;
-    min-height: 400px; /* Optional: ensure minimum height */
+    display: none; /* Hidden by default */
+    padding: 20px 40px 40px 40px; /* Padding inside */
+    background-color: #23272E; /* Dark background */
+    border-radius: 0 0 12px 12px; /* Rounded bottom corners */
+    box-shadow: 0 2px 16px #0008; /* Shadow */
+    color: #F3F6F9; /* Light text */
+    min-height: 400px; /* Minimum height for layout stability */
 }
 
-/* Responsive: stack tabs vertically on small screens */
+/* Responsive tab buttons and content on small screens */
 @media (max-width: 600px) {
     .tab button {
-        float: none;
-        width: 100%;
-        border-radius: 0;
-        text-align: left;
-        padding-left: 20px;
+        float: none; /* Stack vertically */
+        width: 100%; /* Full width */
+        border-radius: 0; /* Remove rounding */
+        text-align: left; /* Left align text */
+        padding-left: 20px; /* Indent text */
     }
     .tabcontent {
         padding: 20px;
-        margin: 0 10px 20px 10px;
+        margin: 0 10px 20px 10px; /* Smaller margins */
     }
 }
 
+/* Visualization panel width and box sizing */
 .viz-panel {
     width: 100%;
     min-width: 350px;
-    box-sizing: border-box;
+    box-sizing: border-box; /* Include padding in width */
 }
 
-.viz-panel {
-    width: 100%;
-    min-width: 350px;
-    box-sizing: border-box;
-}
-
+/* Market depth chart container */
 #depth-chart {
-    width: 100% !important;
-    height: 300px !important;
+    width: 100% !important; /* Full width */
+    height: 300px !important; /* Fixed height */
     min-width: 0;
     max-width: 100%;
     margin: 0;
     display: block;
 }
 
+/* Wrapper for blotter table to enable horizontal scrolling */
 #blotter-table-wrapper {
     width: 100%;
-    overflow-x: auto;
+    overflow-x: auto; /* Scroll horizontally if needed */
     margin: 0 auto;
 }
 
+/* Blotter table styles */
 #blotter-table-wrapper table {
     width: 100%;
-    min-width: 900px; /* Adjust as needed for all columns */
-    table-layout: fixed;
+    min-width: 900px; /* Ensure enough width for all columns */
+    table-layout: fixed; /* Fixed layout for consistent column widths */
 }
 
+/* Blotter table cells */
 #blotter-table-wrapper th, #blotter-table-wrapper td {
-    text-align: left;
-    padding: 8px 10px;
-    white-space: nowrap;
+    text-align: left; /* Left align text */
+    padding: 8px 10px; /* Cell padding */
+    white-space: nowrap; /* Prevent line breaks */
 }
 
+/* Numeric columns right-aligned for readability */
 #blotter-table-wrapper td:nth-child(2), /* Price */
 #blotter-table-wrapper td:nth-child(3)  /* Qty */ {
     text-align: right;
