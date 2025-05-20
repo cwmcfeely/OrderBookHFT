@@ -311,7 +311,6 @@ function refreshMetrics() {
                         <th>Unrealised P&amp;L (%)</th>
                         <th>Total P&amp;L (%)</th>
                         <th>Total P&amp;L (&euro;)</th>
-                        <th>Inventory (%)</th>
                         <th>Total Trades</th>
                     </tr>
                 </thead>
