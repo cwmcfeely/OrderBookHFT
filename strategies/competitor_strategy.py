@@ -1,7 +1,9 @@
 import time
-
 from .base_strategy import BaseStrategy
 import random
+import logging
+
+logger = logging.getLogger(__name__)
 
 class PassiveLiquidityProvider(BaseStrategy):
     def __init__(self, fix_engine, order_book, symbol, params=None):
@@ -21,6 +23,11 @@ class PassiveLiquidityProvider(BaseStrategy):
         return super()._risk_check(side, price, quantity)
 
     def generate_orders(self):
+        # Call the base class logic first
+        base_result = super().generate_orders()
+        if base_result == []:
+            return []  # In cooldown, skip order generation
+
         orders = []
 
         # Cooldown check
@@ -31,8 +38,13 @@ class PassiveLiquidityProvider(BaseStrategy):
         best_bid = self.order_book.get_best_bid()
         best_ask = self.order_book.get_best_ask()
 
+        # Inventory rebalance logic
+        if abs(self.inventory) >= self.max_inventory:
+            logger.info(f"{self.source_name}: Inventory at limit ({self.inventory}), rebalancing to 0.")
+            self.inventory = 0
+
         if best_bid:
-            quantity = random.randint(1, 10)
+            quantity = random.randint(1, self.get_adaptive_order_size(min_size=1, max_size=10))
             if self.inventory + quantity <= self.max_inventory:
                 # Generate buy order (FIX: 1 = Buy)
                 orders.append({
@@ -44,7 +56,7 @@ class PassiveLiquidityProvider(BaseStrategy):
                 self.inventory += quantity  # Update inventory after placing buy
 
         if best_ask:
-            quantity = random.randint(1, 10)
+            quantity = random.randint(1, self.get_adaptive_order_size(min_size=1, max_size=10))
             if self.inventory - quantity >= -self.max_inventory:
                 # Generate sell order (FIX: 2 = Sell)
                 orders.append({
@@ -55,4 +67,5 @@ class PassiveLiquidityProvider(BaseStrategy):
                 self.place_order("2", best_ask["price"], quantity)  # Place sell order
                 self.inventory -= quantity  # Update inventory after placing sell
 
+        self.last_order_time = now
         return orders  # Return actual orders for matching engine

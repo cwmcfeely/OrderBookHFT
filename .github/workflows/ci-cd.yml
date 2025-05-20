@@ -1,0 +1,105 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Python linters
+        run: pip install flake8 black isort
+
+      - name: Run Python linters
+        run: |
+          flake8 app/ strategies/ tests/
+          black --check .
+          isort --check-only .
+
+      - name: Set up Node.js for JS linting
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install ESLint
+        run: npm install eslint
+
+      - name: Run ESLint on JS files
+        run: npx eslint api/static/
+
+      - name: Run Python tests
+        run: pytest tests/
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: lint-test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+
+  deploy-staging:
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    needs: [lint-test, security-scan]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest tests/
+
+      - name: Deploy to Azure Staging
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: OrderBookHFT-Pilot
+          slot-name: staging                     # Optional for slots
+          publish-profile: ${{ secrets.AZURE_STAGING_PUBLISH_PROFILE }}
+          package: .
+
+  deploy-production:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: [lint-test, security-scan]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest tests/
+
+      - name: Deploy to Azure Production
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: OrderBookHFT
+          publish-profile: ${{ secrets.AZURE_PRODUCTION_PUBLISH_PROFILE }}
+          package: .

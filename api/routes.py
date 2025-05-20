@@ -80,6 +80,13 @@ def append_order_book_snapshot(symbol, order_book):
                 trading_state[key][symbol].pop(0)
 
 def auto_update_order_books():
+    min_levels = 3   # Minimum price levels required on each side
+    min_qty = 20     # Minimum total quantity required on each side
+    reseed_interval = 120  # Periodic reseed interval in seconds
+
+    # Track last reseed time per symbol
+    last_reseed_time = {symbol: 0 for symbol in symbols.values()}
+
     while True:
         with state_lock:
             if trading_state["exchange_halted"]:
@@ -90,7 +97,7 @@ def auto_update_order_books():
             try:
                 order_book = trading_state["order_books"][symbol]
 
-                # Adding order expiry
+                # Expire old orders
                 order_book.expire_old_orders(max_age=60)
 
                 # Create or retrieve strategy instances for this symbol
@@ -128,13 +135,30 @@ def auto_update_order_books():
                     state_lock=state_lock
                 )
 
-                # Seed order book with synthetic depth if empty
-                if not order_book.bids and not order_book.asks:
+                # Calculate liquidity on both sides
+                bids_ok = (
+                    len(order_book.bids) >= min_levels and
+                    sum(sum(order["qty"] for order in q) for q in order_book.bids.values()) >= min_qty
+                )
+                asks_ok = (
+                    len(order_book.asks) >= min_levels and
+                    sum(sum(order["qty"] for order in q) for q in order_book.asks.values()) >= min_qty
+                )
+
+                now = time.time()
+                need_reseed = not bids_ok or not asks_ok
+                time_for_reseed = now - last_reseed_time[symbol] > reseed_interval
+
+                if need_reseed or time_for_reseed:
                     price = get_latest_price(symbol)
                     if price:
                         order_book.last_price = price
                         order_book.seed_synthetic_depth(mid_price=price, levels=10, base_qty=100)
-                        logger.info(f"Seeded synthetic depth for {symbol} with mid price {price}")
+                        last_reseed_time[symbol] = now
+                        logger.info(
+                            f"Reseeded synthetic depth for {symbol} at mid price {price} "
+                            f"(bids_ok={bids_ok}, asks_ok={asks_ok}, time_for_reseed={time_for_reseed})"
+                        )
 
                 # Record order book, spread, and liquidity snapshots
                 append_order_book_snapshot(symbol, order_book)
@@ -164,7 +188,7 @@ def auto_update_order_books():
                     except Exception as e:
                         logger.error(f"Strategy {strategy.source_name} error: {str(e)}", exc_info=True)
 
-                # Handle FIX heartbeats (optional: you may want to keep one fix_engine per symbol for heartbeats)
+                # Handle FIX heartbeats
                 for strategy in strategies:
                     if hasattr(strategy, "fix_engine"):
                         fix_engine = strategy.fix_engine
@@ -172,10 +196,10 @@ def auto_update_order_books():
                             fix_engine.create_heartbeat()
                             fix_engine.update_heartbeat()
 
-
             except Exception as e:
                 logger.error(f"Error updating {symbol}: {str(e)}", exc_info=True)
         time.sleep(5)
+
 
 # Start background thread once
 threading.Thread(target=auto_update_order_books, daemon=True).start()
@@ -334,17 +358,34 @@ def register_routes(app):
                 # Defensive fallback
                 if current_price is None:
                     current_price = 0.0
+
+                # Defensive: Ensure all attributes exist
+                realized_pnl = getattr(strat, "realized_pnl", 0.0)
+                initial_capital = getattr(strat, "initial_capital", 100000)
+                max_inventory = getattr(strat, "max_inventory", 1)
+                inventory = getattr(strat, "inventory", 0)
+                total_trades = getattr(strat, "total_trades", 0)
+                win_rate = strat.get_win_rate() if hasattr(strat, "get_win_rate") else 0.0
+
+                # Use per-symbol trades if available (for accurate trade count)
+                symbol_trades = trading_state["trades"].get(symbol, [])
+                strat_trades = [t for t in symbol_trades if t.get("source") == name]
+                total_trades = len(strat_trades)
+
+                # Calculate metrics
                 status[name] = {
-                    "inventory": getattr(strat, "inventory", 0),
-                    "realized_pnl": strat.realized_pnl,
-                    "realized_pnl_percent": strat.realized_pnl / strat.initial_capital * 100 if strat.initial_capital else 0,
-                    "unrealized_pnl": strat.unrealized_pnl(),
-                    "unrealized_pnl_percent": strat.unrealized_pnl() / strat.initial_capital * 100 if strat.initial_capital else 0,
-                    "total_pnl": strat.total_pnl(),
-                    "total_pnl_percent": strat.total_pnl() / strat.initial_capital * 100 if strat.initial_capital else 0,
-                    "inventory_percent": strat.inventory / strat.max_inventory * 100 if hasattr(strat, "max_inventory") and strat.max_inventory else 0,
-                    "total_trades": strat.total_trades,
-                    "win_rate": getattr(strat, "get_win_rate", lambda: 0.0)()
+                    "inventory": inventory,
+                    "realized_pnl": realized_pnl,
+                    "realized_pnl_percent": (realized_pnl / initial_capital * 100) if initial_capital else 0,
+                    "unrealized_pnl": strat.unrealized_pnl() if hasattr(strat, "unrealized_pnl") else 0.0,
+                    "unrealized_pnl_percent": (
+                                strat.unrealized_pnl() / initial_capital * 100) if initial_capital else 0,
+                    "total_pnl": strat.total_pnl() if hasattr(strat, "total_pnl") else realized_pnl,
+                    "total_pnl_percent": (strat.total_pnl() / initial_capital * 100) if initial_capital and hasattr(
+                        strat, "total_pnl") else 0,
+                    "inventory_percent": (inventory / max_inventory * 100) if max_inventory else 0,
+                    "total_trades": total_trades,
+                    "win_rate": win_rate
                 }
             return jsonify(status)
 

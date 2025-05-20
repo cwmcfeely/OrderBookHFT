@@ -1,5 +1,8 @@
-
-OrderBookHFTSimulation/
+OrderBookHFT/
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml
+│
 ├── api/
 │   ├── static/
 │   │   ├── app.js
@@ -23,11 +26,10 @@ OrderBookHFTSimulation/
 │   └── raw
 │
 ├── logs/
-│   ├── api_calls.log
 │   ├── api_calls_today.json
 │   ├── app.debug.log
-│   ├── fix_messages.log
-│   └── fix_messages_*.log
+│   ├── fix_server.log
+│   └── fix_{strategy}.log
 │
 ├── notebooks/
 │   ├── latency_analysis.ipynb
