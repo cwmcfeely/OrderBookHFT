@@ -61,6 +61,7 @@ class PassiveLiquidityProvider(BaseStrategy):
         base_result = super().generate_orders()
         if base_result == []:
             # In cooldown, skip order generation
+            self.logger.info(f"{self.source_name}: In cooldown or risk block, skipping orders.")
             return []
 
         orders = []
@@ -69,11 +70,15 @@ class PassiveLiquidityProvider(BaseStrategy):
         # Enforce minimum interval between orders (cooldown)
         if now - self.last_order_time < self.min_order_interval:
             # Still cooling down, skip order generation
+            self.logger.info(f"{self.source_name}: Cooldown, skipping orders.")
             return orders
 
         # Get current best bid and ask prices from order book
         best_bid = self.order_book.get_best_bid()
         best_ask = self.order_book.get_best_ask()
+        if not (best_bid and best_ask):
+            self.logger.info(f"{self.source_name}: No best bid/ask, skipping orders.")
+            return []
 
         # Inventory rebalancing: if inventory exceeds limits, reset to zero
         if abs(self.inventory) >= self.max_inventory:

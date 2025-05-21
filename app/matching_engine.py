@@ -246,13 +246,16 @@ class MatchingEngine:
                 trades.append(trade)
                 maker_strategy = self.strategies.get(trade['maker_source'])
                 taker_strategy = self.strategies.get(trade['taker_source'])
+
+                symbol = self.order_book.symbol
+
                 if maker_strategy and hasattr(maker_strategy, "logger"):
                     maker_strategy.logger.info(
-                        f"WIN: {maker_strategy.source_name} filled as maker at {level_price} for {trade_qty} against {source}"
+                        f"WIN: {maker_strategy.source_name} filled as maker at {level_price} for {trade_qty} on {symbol} against {source}"
                     )
                 if taker_strategy and hasattr(taker_strategy, "logger"):
                     taker_strategy.logger.info(
-                        f"LOSS: {taker_strategy.source_name} lost maker priority at {level_price} for {trade_qty} to {top_order['source']}"
+                        f"LOSS: {taker_strategy.source_name} lost maker priority at {level_price} for {trade_qty} on {symbol} to {top_order['source']}"
                     )
                 if maker_strategy:
                     exec_id = str(uuid.uuid4())

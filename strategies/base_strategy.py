@@ -2,7 +2,7 @@ import time
 import logging
 from abc import ABC, abstractmethod
 import numpy as np  # Required for volatility calculations
-
+from app.logger import setup_logging
 
 class BaseStrategy(ABC):
     """
@@ -55,7 +55,7 @@ class BaseStrategy(ABC):
         self.winning_trades = 0
 
         # Logger for this strategy instance
-        self.logger = logging.getLogger(f"Strategy.{self.source_name}")
+        self.logger = logging.getLogger(f"FIX_{self.source_name}")
 
 
     def generate_orders(self):

@@ -32,18 +32,17 @@ class MomentumStrategy(BaseStrategy):
     def generate_orders(self):
         base_result = super().generate_orders()
         if base_result == []:
-            logger.info(f"{self.source_name}: In cooldown or risk block, skipping orders.")
+            self.logger.info(f"{self.source_name}: In cooldown or risk block, skipping orders.")
             return []
 
         now = time.time()
         if now - self.last_order_time < self.min_order_interval:
-            logger.info(f"{self.source_name}: Cooldown, skipping orders.")
+            self.logger.info(f"{self.source_name}: Cooldown, skipping orders.")
             return []
 
         prices = self.order_book.get_recent_prices(window=self.lookback)
-        logger.info(f"{self.source_name}: Recent prices: {prices}")
         if len(prices) < self.lookback:
-            logger.info(
+            self.logger.info(
                 f"{self.source_name}: Not enough price history ({len(prices)} < {self.lookback}), skipping orders.")
             return []
 
@@ -51,11 +50,11 @@ class MomentumStrategy(BaseStrategy):
         best_bid = self.order_book.get_best_bid()
         best_ask = self.order_book.get_best_ask()
         if not (best_bid and best_ask):
-            logger.info(f"{self.source_name}: No best bid/ask, skipping orders.")
+            self.logger.info(f"{self.source_name}: No best bid/ask, skipping orders.")
             return []
 
         if abs(self.inventory) >= self.max_inventory:
-            logger.info(f"{self.source_name}: Inventory at limit ({self.inventory}), rebalancing to 0.")
+            self.logger.info(f"{self.source_name}: Inventory at limit ({self.inventory}), rebalancing to 0.")
             # Do not reset inventory here; let on_trade handle it
             return []
 
@@ -75,12 +74,12 @@ class MomentumStrategy(BaseStrategy):
         if self.inventory + buy_qty <= self.max_inventory:
             orders.append({"side": "1", "price": bid_price, "quantity": buy_qty})
             self.place_order("1", bid_price, buy_qty)
-            logger.info(f"{self.source_name}: Placed BID {buy_qty}@{bid_price:.4f} (trend={trend:.4f})")
+            self.logger.info(f"{self.source_name}: Placed BID {buy_qty}@{bid_price:.4f} (trend={trend:.4f})")
 
         if self.inventory - sell_qty >= -self.max_inventory:
             orders.append({"side": "2", "price": ask_price, "quantity": sell_qty})
             self.place_order("2", ask_price, sell_qty)
-            logger.info(f"{self.source_name}: Placed ASK {sell_qty}@{ask_price:.4f} (trend={trend:.4f})")
+            self.logger.info(f"{self.source_name}: Placed ASK {sell_qty}@{ask_price:.4f} (trend={trend:.4f})")
 
         self.last_order_time = now
         return orders

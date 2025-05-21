@@ -38,6 +38,7 @@ class MarketMakerStrategy(BaseStrategy):
         # Call base class generate_orders to respect cooldown and risk checks
         base_result = super().generate_orders()
         if base_result == []:
+            self.logger.info(f"{self.source_name}: In cooldown or risk block, skipping orders.")
             # In cooldown period, skip order generation
             return []
 
@@ -46,6 +47,7 @@ class MarketMakerStrategy(BaseStrategy):
         now = time.time()
         # Enforce minimum interval between orders (cooldown)
         if now - self.last_order_time < self.min_order_interval:
+            self.logger.info(f"{self.source_name}: Cooldown, skipping orders.")
             # Still cooling down, skip order generation
             return orders
 
@@ -53,6 +55,7 @@ class MarketMakerStrategy(BaseStrategy):
         best_bid = self.order_book.get_best_bid()
         best_ask = self.order_book.get_best_ask()
         if not (best_bid and best_ask):
+            self.logger.info(f"{self.source_name}: Missing best bid or ask, skipping orders.")
             # If either side is missing, cannot calculate mid-price; skip
             return orders
 
@@ -74,6 +77,7 @@ class MarketMakerStrategy(BaseStrategy):
             orders.append({"side": "1", "price": bid_price, "quantity": buy_qty})
             # Place the buy order via FIX and update inventory
             self.place_order("1", bid_price, buy_qty)
+            self.logger.info(f"{self.source_name}: Placed BUY order {buy_qty}@{bid_price:.4f}")
             self.inventory += buy_qty
 
         # Determine adaptive sell order size based on recent volatility (1 to 10 units)
@@ -83,6 +87,7 @@ class MarketMakerStrategy(BaseStrategy):
             orders.append({"side": "2", "price": ask_price, "quantity": sell_qty})
             # Place the sell order via FIX and update inventory
             self.place_order("2", ask_price, sell_qty)
+            self.logger.info(f"{self.source_name}: Placed SELL order {sell_qty}@{ask_price:.4f}")
             self.inventory -= sell_qty
 
         # Update last order time to now for cooldown tracking
