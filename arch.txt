@@ -23,7 +23,7 @@ OrderBookHFT/
 │
 ├── data/
 │   ├── processed/
-│   └── raw
+│   └── raw/
 │
 ├── logs/
 │   ├── api_calls_today.json

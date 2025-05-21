@@ -106,7 +106,7 @@ class MatchingEngine:
         side = trade['side']
         position = getattr(strategy, 'inventory', 0)
         avg_price = getattr(strategy, 'avg_entry_price', 0.0)
-        realized_pnl = 0.0
+        realised_pnl = 0.0
 
         # Update inventory and average entry price based on side and quantity
         if side == 'buy' or side == "1":
@@ -117,7 +117,7 @@ class MatchingEngine:
             else:
                 # Closing short position
                 close_qty = min(abs(position), qty)
-                realized_pnl = close_qty * (avg_price - price)
+                realised_pnl = close_qty * (avg_price - price)
                 if qty > close_qty:
                     avg_price = price
             position = new_position
@@ -129,7 +129,7 @@ class MatchingEngine:
             else:
                 # Closing long position
                 close_qty = min(position, qty)
-                realized_pnl = close_qty * (price - avg_price)
+                realised_pnl = close_qty * (price - avg_price)
                 if qty > close_qty:
                     avg_price = price
             position = new_position
@@ -137,8 +137,8 @@ class MatchingEngine:
         # Update strategy state
         strategy.inventory = position
         strategy.avg_entry_price = avg_price
-        strategy.realized_pnl = getattr(strategy, 'realized_pnl', 0.0) + realized_pnl
-        return realized_pnl
+        strategy.realised_pnl = getattr(strategy, 'realised_pnl', 0.0) + realised_pnl
+        return realised_pnl
 
     def create_execution_report(self, fix_engine, cl_ord_id, order_id, exec_id, ord_status, exec_type, symbol, side, order_qty,
                                last_qty=None, last_px=None, leaves_qty=None, cum_qty=None, price=None, source=None, strategy_name=None):
@@ -219,6 +219,10 @@ class MatchingEngine:
         if not self.circuit_breaker.allow_execution():
             self.logger.error("Circuit breaker triggered: halting trading")
             raise TradingHalted("Circuit breaker triggered")
+
+        # Capture submission time when order enters matching engine
+        new_submission_time = time.time_ns()
+
 
         # Select the opposing side of the book for matching
         book = self.order_book.asks if side == "buy" else self.order_book.bids
@@ -320,6 +324,7 @@ class MatchingEngine:
                         taker_strategy.on_trade(trade)
 
                 # Record latency for analytics if trading_state is available
+                # Record MAKER latency
                 if self.trading_state is not None and self.state_lock is not None:
                     symbol = self.order_book.symbol
                     if latency_ms is not None:
@@ -328,11 +333,22 @@ class MatchingEngine:
                             latency_list.append({
                                 "time": trade["time"],
                                 "latency_ms": latency_ms,
-                                "strategy": trade["maker_source"]
+                                "strategy": trade["maker_source"],
+                                "type": "maker"  # Identify as maker latency
                             })
+
+                            # ALSO record TAKER latency
+                            taker_latency = (time.time_ns() - new_submission_time) / 1e6  # Convert ns to ms
+                            latency_list.append({
+                                "time": trade["time"],
+                                "latency_ms": taker_latency,
+                                "strategy": trade["taker_source"],  # Add taker source
+                                "type": "taker"  # Identify as taker latency
+                            })
+
                             # Keep latency history to a manageable size
                             if len(latency_list) > 500:
-                                latency_list.pop(0)
+                                latency_list = latency_list[-500:]  # Keep most recent 500
 
                 # Update remaining quantity for this match
                 quantity -= trade_qty

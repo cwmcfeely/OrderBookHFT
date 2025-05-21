@@ -28,7 +28,7 @@ class BaseStrategy(ABC):
         # Cooldown period after drawdown or risk event
         self.last_order_time = 0
         self.min_order_interval = self.params.get("min_order_interval", 1.0)  # Minimum time between orders (seconds)
-        self.max_unrealized_pnl = 0.0
+        self.max_unrealised_pnl = 0.0
         self.cooldown_until = 0
         self.drawdown_limit = self.params.get("drawdown_limit", 500)  # Drawdown threshold before cooldown (£500)
         self.cooldown_period = self.params.get("cooldown_period", 60)  # Cooldown duration in seconds
@@ -43,7 +43,7 @@ class BaseStrategy(ABC):
         self.position_start_time = None
         self.inventory = 0  # Net position: positive=long, negative=short
         self.avg_entry_price = 0.0
-        self.realized_pnl = 0.0
+        self.realised_pnl = 0.0
 
         # Performance metrics
         self.total_trades = 0
@@ -63,7 +63,7 @@ class BaseStrategy(ABC):
             self.logger.info(f"{self.source_name}: In cooldown until {self.cooldown_until}, skipping orders.")
             return []
         # Optionally update unrealised PnL and check drawdown
-        self.update_unrealized_pnl_and_drawdown()
+        self.update_unrealised_pnl_and_drawdown()
         # By default, base class does not generate orders
         return None
 
@@ -155,7 +155,7 @@ class BaseStrategy(ABC):
             return False
 
         # Daily loss limit check
-        if self.realized_pnl + self.unrealized_pnl() <= self.daily_loss_limit:
+        if self.realised_pnl + self.unrealised_pnl() <= self.daily_loss_limit:
             self.logger.critical("Daily loss limit exceeded")
             return False
 
@@ -234,7 +234,7 @@ class BaseStrategy(ABC):
                 self.avg_entry_price = (self.avg_entry_price * self.inventory + price * qty) / new_position
             else:
                 close_qty = min(abs(self.inventory), qty)
-                self.realized_pnl += close_qty * (self.avg_entry_price - price)
+                self.realised_pnl += close_qty * (self.avg_entry_price - price)
                 if qty > close_qty:
                     self.avg_entry_price = price
             self.inventory = new_position
@@ -246,7 +246,7 @@ class BaseStrategy(ABC):
                 self.avg_entry_price = (self.avg_entry_price * abs(self.inventory) + price * qty) / abs(new_position)
             else:
                 close_qty = min(self.inventory, qty)
-                self.realized_pnl += close_qty * (price - self.avg_entry_price)
+                self.realised_pnl += close_qty * (price - self.avg_entry_price)
                 if qty > close_qty:
                     self.avg_entry_price = price
             self.inventory = new_position
@@ -300,9 +300,9 @@ class BaseStrategy(ABC):
                 f"Per-trade take profit triggered: trade PnL={pnl}. Closing position and resetting inventory.")
             self.reset_inventory()
 
-        return (self.inventory, self.avg_entry_price, self.realized_pnl, self.total_trades, self.winning_trades)
+        return (self.inventory, self.avg_entry_price, self.realised_pnl, self.total_trades, self.winning_trades)
 
-    def unrealized_pnl(self):
+    def unrealised_pnl(self):
         """
         Calculate unrealised PnL based on current mid-price.
 
@@ -321,7 +321,7 @@ class BaseStrategy(ABC):
         """
         Total PnL (realised + unrealised).
         """
-        return self.realized_pnl + self.unrealized_pnl()
+        return self.realised_pnl + self.unrealised_pnl()
 
     def get_win_rate(self):
         """
@@ -338,7 +338,7 @@ class BaseStrategy(ABC):
         """
         self.inventory = 0
         self.avg_entry_price = 0.0
-        self.realized_pnl = 0.0
+        self.realised_pnl = 0.0
         self.order_count = 0
         self.position_start_time = None
         self.total_trades = 0
@@ -370,7 +370,7 @@ class BaseStrategy(ABC):
         adaptive_size = max(min_size, int(max_qty / (vol + 0.01)))
         return min(adaptive_size, max_qty)
 
-    def update_unrealized_pnl_and_drawdown(self):
+    def update_unrealised_pnl_and_drawdown(self):
         """
         Update unrealised PnL and check for drawdown limit breach.
         If drawdown exceeded, enter cooldown period.
@@ -380,12 +380,12 @@ class BaseStrategy(ABC):
             return
         # Calculate current unrealised PnL
         if self.inventory > 0:
-            unrealized = (mid_price - self.avg_entry_price) * self.inventory
+            unrealised = (mid_price - self.avg_entry_price) * self.inventory
         else:
-            unrealized = (self.avg_entry_price - mid_price) * abs(self.inventory)
-        self.max_unrealized_pnl = max(self.max_unrealized_pnl, unrealized)
-        drawdown = self.max_unrealized_pnl - unrealized
+            unrealised = (self.avg_entry_price - mid_price) * abs(self.inventory)
+        self.max_unrealised_pnl = max(self.max_unrealised_pnl, unrealised)
+        drawdown = self.max_unrealised_pnl - unrealised
         if drawdown >= self.drawdown_limit:
             self.logger.warning(f"{self.source_name}: Drawdown limit hit ({drawdown}), entering cooldown.")
             self.cooldown_until = time.time() + self.cooldown_period
-            self.max_unrealized_pnl = unrealized  # Reset peak
+            self.max_unrealised_pnl = unrealised  # Reset peak

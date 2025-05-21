@@ -399,7 +399,7 @@ def register_routes(app):
             strategies = strategy_instances.get(symbol, {})
             status = {}
             for name, strat in strategies.items():
-                # Get current market price for unrealized PnL
+                # Get current market price for unrealised PnL
                 try:
                     current_price = strat.order_book.get_mid_price()
                 except Exception:
@@ -409,7 +409,7 @@ def register_routes(app):
                     current_price = 0.0
 
                 # Defensive: Ensure all attributes exist
-                realized_pnl = getattr(strat, "realized_pnl", 0.0)
+                realised_pnl = getattr(strat, "realised_pnl", 0.0)
                 initial_capital = getattr(strat, "initial_capital", 100000)
                 max_inventory = getattr(strat, "max_inventory", 1)
                 inventory = getattr(strat, "inventory", 0)
@@ -424,12 +424,12 @@ def register_routes(app):
                 # Calculate metrics for the strategy
                 status[name] = {
                     "inventory": inventory,
-                    "realized_pnl": realized_pnl,
-                    "realized_pnl_percent": (realized_pnl / initial_capital * 100) if initial_capital else 0,
-                    "unrealized_pnl": strat.unrealized_pnl() if hasattr(strat, "unrealized_pnl") else 0.0,
-                    "unrealized_pnl_percent": (
-                        strat.unrealized_pnl() / initial_capital * 100) if initial_capital else 0,
-                    "total_pnl": strat.total_pnl() if hasattr(strat, "total_pnl") else realized_pnl,
+                    "realised_pnl": realised_pnl,
+                    "realised_pnl_percent": (realised_pnl / initial_capital * 100) if initial_capital else 0,
+                    "unrealised_pnl": strat.unrealised_pnl() if hasattr(strat, "unrealised_pnl") else 0.0,
+                    "unrealised_pnl_percent": (
+                        strat.unrealised_pnl() / initial_capital * 100) if initial_capital else 0,
+                    "total_pnl": strat.total_pnl() if hasattr(strat, "total_pnl") else realised_pnl,
                     "total_pnl_percent": (strat.total_pnl() / initial_capital * 100) if initial_capital and hasattr(
                         strat, "total_pnl") else 0,
                     "inventory_percent": (inventory / max_inventory * 100) if max_inventory else 0,
