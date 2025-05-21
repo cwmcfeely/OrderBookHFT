@@ -270,3 +270,7 @@ class OrderBook:
             if order["id"] == order_id:
                 return order["source"]
         return None
+
+    def get_orders_by_source(self, side, source):
+        book = self.bids if side == "buy" else self.asks
+        return [order for q in book.values() for order in q if order["source"] == source]

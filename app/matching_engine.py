@@ -215,8 +215,15 @@ class MatchingEngine:
             if (side == "buy" and level_price > price) or (side == "sell" and level_price < price):
                 break
             queue = book[level_price]
-            while queue and quantity > 0:
+            max_attempts = len(queue)
+            attempts = 0
+            while queue and quantity > 0 and attempts < max_attempts:
                 top_order = queue[0]
+                # Self-Trade Prevention: skip if maker and taker are the same
+                if top_order["source"] == source:
+                    queue.rotate(-1)  # Move this order to the end of the queue
+                    attempts += 1
+                    continue
                 trade_qty = min(quantity, top_order["qty"])
                 order_time = top_order.get("order_time", None)
                 current_time = time.time()
@@ -237,7 +244,6 @@ class MatchingEngine:
                 trade['pnl'] = pnl
                 self.circuit_breaker.record_trade(pnl)
                 trades.append(trade)
-                # No global competition log; only per-strategy logs
                 maker_strategy = self.strategies.get(trade['maker_source'])
                 taker_strategy = self.strategies.get(trade['taker_source'])
                 if maker_strategy and hasattr(maker_strategy, "logger"):
@@ -324,6 +330,7 @@ class MatchingEngine:
                     queue.popleft()
                 if quantity > 0:
                     self.order_book.add_order(side, price, quantity, order_id, source)
+            # After max_attempts, break to avoid infinite loop if all orders at this level are from self
         for trade in trades:
             latency_info = f" | Latency: {trade['latency_ms']:.2f} ms" if trade['latency_ms'] is not None else ""
             self.logger.info(
