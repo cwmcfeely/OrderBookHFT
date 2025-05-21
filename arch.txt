@@ -22,7 +22,6 @@ OrderBookHFT/
 │   └── order_book.py
 │
 ├── data/
-│   ├── processed/
 │   └── raw/
 │
 ├── logs/
