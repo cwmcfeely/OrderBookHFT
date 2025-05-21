@@ -338,7 +338,6 @@ def get_status():
         })
 
 def get_order_book():
-
     """
     Get the current order book for the selected symbol.
     """
@@ -349,9 +348,18 @@ def get_order_book():
     with state_lock:
         ob = trading_state["order_books"][symbol]
         return jsonify({
-            "bids": [{"price": p, "qty": sum(o["qty"] for o in q)} for p, q in ob.bids.items()],
-            "asks": [{"price": p, "qty": sum(o["qty"] for o in q)} for p, q in ob.asks.items()],
-            "last_price": ob.last_price
+            "bids": [{
+                "price": p,
+                "qty": sum(o["qty"] for o in q),
+                "sources": [o["source"] for o in q]
+            } for p, q in ob.bids.items()
+            ],
+            "asks": [{
+                    "price": p,
+                    "qty": sum(o["qty"] for o in q),
+                    "sources": [o["source"] for o in q]
+            } for p, q in ob.asks.items()
+            ],
         })
 
 def decode_bytes(obj):

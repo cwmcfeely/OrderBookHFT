@@ -127,14 +127,16 @@ function refreshOrderBook() {
         const rowsToShow = Math.min(maxRows, Math.max(bids.length, asks.length));
         let rows = '';
         for (let i = 0; i < rowsToShow; i++) {
-            let bid = bids[i] || { qty: '', price: '' };
-            let ask = asks[i] || { qty: '', price: '' };
+            let bid = bids[i] || { qty: '', price: '', sources: [] };
+            let ask = asks[i] || { qty: '', price: '', sources: [] };
+            const bidBold = (bid.sources && bid.sources.includes('my_strategy')) ? ' style="font-weight:bold;"' : '';
+            const askBold = (ask.sources && ask.sources.includes('my_strategy')) ? ' style="font-weight:bold;"' : '';
             rows += `<tr>
-            <td>${bid.qty || ''}</td>
-            <td class="bid">${bid.price || ''}</td>
-            <td class="ask">${ask.price || ''}</td>
-            <td>${ask.qty || ''}</td>
-        </tr>`;
+                <td${bidBold}>${bid.qty || ''}</td>
+                <td class="bid"${bidBold}>${bid.price || ''}</td>
+                <td class="ask"${askBold}>${ask.price || ''}</td>
+                <td${askBold}>${ask.qty || ''}</td>
+            </tr>`;
         }
         document.getElementById('orderbook-body').innerHTML = rows;
         document.getElementById('last-price').textContent = data.last_price || '-';
@@ -505,3 +507,12 @@ window.onload = function() {
 };
 
 setInterval(refreshVisibleTab, 2000);
+
+const bidClass = (bid.sources && bid.sources.includes('my_strategy')) ? 'my-strategy-order' : '';
+const askClass = (ask.sources && ask.sources.includes('my_strategy')) ? 'my-strategy-order' : '';
+rows += `<tr>
+    <td class="${bidClass}">${bid.qty || ''}</td>
+    <td class="bid ${bidClass}">${bid.price || ''}</td>
+    <td class="ask ${askClass}">${ask.price || ''}</td>
+    <td class="${askClass}">${ask.qty || ''}</td>
+</tr>`;

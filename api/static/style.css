@@ -351,3 +351,10 @@ button:hover { filter: brightness(1.1); }
 #blotter-table-wrapper td:nth-child(3)  /* Qty */ {
     text-align: right;
 }
+
+/* Adding bold to mystrategy on Order Bool */
+.my-strategy-order {
+    font-weight: bold;
+    background: #222244;
+    color: #ffe066;
+}
