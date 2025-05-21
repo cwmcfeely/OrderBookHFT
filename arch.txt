@@ -31,8 +31,8 @@ OrderBookHFT/
 │   └── fix_{strategy}.log
 │
 ├── notebooks/
-│   ├── latency_analysis.ipynb
-│   └── market_data_exploration.ipynb
+│   ├── latency_and_fill_analysis.ipynb
+│   └── strategy_win_rates.ipynb
 │
 ├── strategies/
 │   ├── __init__.py
