@@ -352,18 +352,16 @@ def get_order_book():
                 "price": p,
                 "qty": sum(o["qty"] for o in q),
                 "sources": [o["source"] for o in q]
-            } for p, q in ob.bids.items()
-            ],
+            } for p, q in ob.bids.items()],
             "asks": [{
-                    "price": p,
-                    "qty": sum(o["qty"] for o in q),
-                    "sources": [o["source"] for o in q]
-            } for p, q in ob.asks.items()
-            ],
+                "price": p,
+                "qty": sum(o["qty"] for o in q),
+                "sources": [o["source"] for o in q]
+            } for p, q in ob.asks.items()],
+            "last_price": float(ob.last_price) if ob.last_price is not None else None
         })
 
 def decode_bytes(obj):
-
     """
     Recursively decode bytes to UTF-8 in nested lists/dicts for JSON serialization.
     """
@@ -512,7 +510,6 @@ def select_symbol():
     return jsonify({"error": "Invalid symbol"}), 400
 
 def order_latency_history():
-
     """
     Get order latency history for the selected symbol.
     """

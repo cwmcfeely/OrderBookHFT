@@ -180,10 +180,10 @@ class OrderBook:
             levels (int): Number of price levels on each side.
             base_qty (int): Base quantity for the first level; subsequent levels decay exponentially.
         """
-        for i in range(1, levels + 1):
-            bid_price = mid_price * (1 - 0.001 * i)  # Decrease price for bids
-            ask_price = mid_price * (1 + 0.001 * i)  # Increase price for asks
-            qty = int(base_qty * (0.8 ** i))  # Exponentially decay quantity
+        for i in range(2, levels + 2):  # start at i=2 to skip top-of-book
+            bid_price = mid_price * (1 - 0.005 * i)  # wider spread
+            ask_price = mid_price * (1 + 0.005 * i)
+            qty = int(base_qty * (0.8 ** i))
             self.add_order("1", bid_price, qty, f"SEED-BID-{i}", "system")
             self.add_order("2", ask_price, qty, f"SEED-ASK-{i}", "system")
 

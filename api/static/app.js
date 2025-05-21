@@ -317,15 +317,12 @@ function refreshExecutionReports() {
             rows += `<tr>
                 <td>${rep.time || '-'}</td>
                 <td>${rep.cl_ord_id || '-'}</td>
-                <td>${rep.order_id || '-'}</td>
                 <td>${rep.exec_id || '-'}</td>
                 <td>${rep.ord_status || '-'}</td>
                 <td>${rep.exec_type || '-'}</td>
                 <td>${rep.side || '-'}</td>
                 <td>${rep.last_qty !== undefined ? rep.last_qty : '-'}</td>
                 <td>${rep.last_px !== undefined ? rep.last_px : '-'}</td>
-                <td>${rep.leaves_qty !== undefined ? rep.leaves_qty : '-'}</td>
-                <td>${rep.cum_qty !== undefined ? rep.cum_qty : '-'}</td>
                 <td>${rep.price !== undefined ? rep.price : '-'}</td>
                 <td>${rep.source || '-'}</td>
             </tr>`;
@@ -387,12 +384,16 @@ function refreshLatencyChart() {
             "momentum": "Momentum"
         };
         const grouped = {};
-        data.forEach(d => {
+        // Filter out 'system' entries
+        const filtered = data.filter(d => d.strategy !== "system");
+
+        filtered.forEach(d => {
             const strat = d.strategy || "Unknown";
             if (!grouped[strat]) grouped[strat] = {x: [], y: []};
             grouped[strat].x.push(d.time);
             grouped[strat].y.push(d.latency_ms);
         });
+
         const traces = Object.keys(grouped).map(strat => ({
             x: grouped[strat].x,
             y: grouped[strat].y,
