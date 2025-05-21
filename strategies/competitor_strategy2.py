@@ -1,93 +1,87 @@
 import time
-from .base_strategy import BaseStrategy
 import random
 import numpy as np
 import logging
+from .base_strategy import BaseStrategy
 
-# Initialise logger for this module
 logger = logging.getLogger(__name__)
 
 class MomentumStrategy(BaseStrategy):
     """
-    Momentum trading strategy that analyses recent price trends and places buy orders
-    when prices are trending upwards and sell orders when prices are trending downwards.
-    Inventory is managed to avoid excessive exposure.
+    A market making strategy that uses momentum signals to skew its quotes.
+    It always provides liquidity (does not cross the spread), but will:
+    - Tighten its quote on the side favored by momentum
+    - Widen its quote (or reduce size) on the opposite side
+    - Manage inventory to avoid excessive exposure
     """
-    def __init__(self, fix_engine, order_book, symbol, params=None):
-        """
-        Initialise the MomentumStrategy.
 
-        Args:
-            fix_engine: FIX engine instance for sending orders.
-            order_book: Reference to the order book object.
-            symbol (str): Trading symbol.
-            params (dict, optional): Strategy parameters.
-        """
-        # Initialise base strategy with source name "momentum"
+    def __init__(self, fix_engine, order_book, symbol, params=None):
         super().__init__(fix_engine, order_book, symbol, "momentum", params)
-        self.inventory = 0  # Track current inventory position
-        self.max_inventory = 100  # Maximum allowed inventory (long or short)
-        # Lookback window for trend calculation, default 5 price points
-        self.lookback = self.params.get("lookback", 5)
+        self.inventory = 0
+        self.max_inventory = self.params.get("max_inventory", 100)
+        self.lookback = self.params.get("lookback", 0)
+        self.base_spread = self.params.get("base_spread", 0.002)
+        self.momentum_skew = self.params.get("momentum_skew", 0.001)
+        self.size_skew = self.params.get("size_skew", 2)
+
+    def _calculate_trend(self, prices):
+        if len(prices) < 2:
+            return 0.0
+        return np.polyfit(range(len(prices)), prices, 1)[0]
 
     def generate_orders(self):
-        """
-        Generate buy or sell orders based on recent price trend.
-
-        Returns:
-            list: List of order dicts with 'side', 'price', and 'quantity' keys.
-        """
-        # Call base class generate_orders to respect cooldown and risk checks
         base_result = super().generate_orders()
         if base_result == []:
-            # In cooldown period, skip order generation
+            logger.info(f"{self.source_name}: In cooldown or risk block, skipping orders.")
             return []
 
-        orders = []
-
         now = time.time()
-        # Enforce minimum interval between orders (cooldown)
         if now - self.last_order_time < self.min_order_interval:
-            # Still cooling down, skip order generation
-            return orders
+            logger.info(f"{self.source_name}: Cooldown, skipping orders.")
+            return []
 
-        # Retrieve recent prices from the order book for trend analysis
         prices = self.order_book.get_recent_prices(window=self.lookback)
+        logger.info(f"{self.source_name}: Recent prices: {prices}")
         if len(prices) < self.lookback:
-            # Not enough data points to calculate trend, skip
-            return orders
+            logger.info(
+                f"{self.source_name}: Not enough price history ({len(prices)} < {self.lookback}), skipping orders.")
+            return []
 
-        # Calculate slope of price trend using linear regression (polyfit degree 1)
-        trend = np.polyfit(range(len(prices)), prices, 1)[0]
-
-        # Get current best bid and ask prices from order book
+        trend = self._calculate_trend(prices)
         best_bid = self.order_book.get_best_bid()
         best_ask = self.order_book.get_best_ask()
         if not (best_bid and best_ask):
-            # Missing bid or ask data, cannot place orders reliably
-            return orders
+            logger.info(f"{self.source_name}: No best bid/ask, skipping orders.")
+            return []
 
-        # Inventory rebalancing: reset inventory if limits exceeded
         if abs(self.inventory) >= self.max_inventory:
             logger.info(f"{self.source_name}: Inventory at limit ({self.inventory}), rebalancing to 0.")
-            self.inventory = 0
+            # Do not reset inventory here; let on_trade handle it
+            return []
 
-        # Determine adaptive order size based on recent volatility (1 to 10 units)
-        qty = random.randint(1, self.get_adaptive_order_size(min_size=1, max_size=10))
+        spread = self.base_spread
+        skew = self.momentum_skew if trend > 0 else -self.momentum_skew if trend < 0 else 0.0
 
-        # If price trend is upwards, place buy order at best ask price
-        if trend > 0 and self.inventory + qty <= self.max_inventory:
-            orders.append({"side": "1", "price": best_ask["price"], "quantity": qty})
-            self.place_order("1", best_ask["price"], qty)
-            self.inventory += qty
-        # If price trend is downwards, place sell order at best bid price
-        elif trend < 0 and self.inventory - qty >= -self.max_inventory:
-            orders.append({"side": "2", "price": best_bid["price"], "quantity": qty})
-            self.place_order("2", best_bid["price"], qty)
-            self.inventory -= qty
+        mid = (best_bid["price"] + best_ask["price"]) / 2
+        bid_price = mid * (1 - spread / 2 + skew)
+        ask_price = mid * (1 + spread / 2 + skew)
 
-        # Update last order time to now for cooldown tracking
+        base_size = self.get_adaptive_order_size(min_size=1, max_size=10)
+        buy_qty = base_size + self.size_skew if trend > 0 else base_size
+        sell_qty = base_size + self.size_skew if trend < 0 else base_size
+
+        orders = []
+
+        if self.inventory + buy_qty <= self.max_inventory:
+            orders.append({"side": "1", "price": bid_price, "quantity": buy_qty})
+            self.place_order("1", bid_price, buy_qty)
+            logger.info(f"{self.source_name}: Placed BID {buy_qty}@{bid_price:.4f} (trend={trend:.4f})")
+
+        if self.inventory - sell_qty >= -self.max_inventory:
+            orders.append({"side": "2", "price": ask_price, "quantity": sell_qty})
+            self.place_order("2", ask_price, sell_qty)
+            logger.info(f"{self.source_name}: Placed ASK {sell_qty}@{ask_price:.4f} (trend={trend:.4f})")
+
         self.last_order_time = now
-
-        # Return list of generated orders (used by matching engine)
         return orders
+
