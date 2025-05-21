@@ -1,0 +1,1032 @@
+[
+  {
+    "timestamp": 1747724400,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 07:00:00",
+    "open": 19.069999,
+    "high": 19.17,
+    "low": 19.063999,
+    "close": 19.17,
+    "volume": null
+  },
+  {
+    "timestamp": 1747724700,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 07:05:00",
+    "open": 19.17,
+    "high": 19.194,
+    "low": 19.152,
+    "close": 19.163999,
+    "volume": 44943
+  },
+  {
+    "timestamp": 1747725000,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 07:10:00",
+    "open": 19.159999,
+    "high": 19.177999,
+    "low": 19.143999,
+    "close": 19.148,
+    "volume": 49628
+  },
+  {
+    "timestamp": 1747725300,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 07:15:00",
+    "open": 19.149999,
+    "high": 19.149999,
+    "low": 19.107999,
+    "close": 19.118,
+    "volume": 57734
+  },
+  {
+    "timestamp": 1747725600,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 07:20:00",
+    "open": 19.121999,
+    "high": 19.139999,
+    "low": 19.11,
+    "close": 19.139999,
+    "volume": 11714
+  },
+  {
+    "timestamp": 1747725900,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 07:25:00",
+    "open": 19.139999,
+    "high": 19.162,
+    "low": 19.125999,
+    "close": 19.129999,
+    "volume": 14781
+  },
+  {
+    "timestamp": 1747726200,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 07:30:00",
+    "open": 19.129999,
+    "high": 19.153999,
+    "low": 19.129999,
+    "close": 19.148,
+    "volume": 23581
+  },
+  {
+    "timestamp": 1747726500,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 07:35:00",
+    "open": 19.148,
+    "high": 19.152,
+    "low": 19.134,
+    "close": 19.135999,
+    "volume": 34966
+  },
+  {
+    "timestamp": 1747726800,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 07:40:00",
+    "open": 19.134,
+    "high": 19.134,
+    "low": 19.121999,
+    "close": 19.129999,
+    "volume": 12986
+  },
+  {
+    "timestamp": 1747727100,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 07:45:00",
+    "open": 19.129999,
+    "high": 19.129999,
+    "low": 19.091999,
+    "close": 19.101999,
+    "volume": 40389
+  },
+  {
+    "timestamp": 1747727400,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 07:50:00",
+    "open": 19.096,
+    "high": 19.134,
+    "low": 19.093999,
+    "close": 19.121999,
+    "volume": 24004
+  },
+  {
+    "timestamp": 1747727700,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 07:55:00",
+    "open": 19.118,
+    "high": 19.152,
+    "low": 19.118,
+    "close": 19.139999,
+    "volume": 13169
+  },
+  {
+    "timestamp": 1747728000,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 08:00:00",
+    "open": 19.139999,
+    "high": 19.142,
+    "low": 19.118,
+    "close": 19.134,
+    "volume": 27882
+  },
+  {
+    "timestamp": 1747728300,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 08:05:00",
+    "open": 19.135999,
+    "high": 19.143999,
+    "low": 19.129999,
+    "close": 19.138,
+    "volume": 34089
+  },
+  {
+    "timestamp": 1747728600,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 08:10:00",
+    "open": 19.139999,
+    "high": 19.153999,
+    "low": 19.138,
+    "close": 19.153999,
+    "volume": 65297
+  },
+  {
+    "timestamp": 1747728900,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 08:15:00",
+    "open": 19.156,
+    "high": 19.17,
+    "low": 19.142,
+    "close": 19.166,
+    "volume": 34989
+  },
+  {
+    "timestamp": 1747729200,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 08:20:00",
+    "open": 19.163999,
+    "high": 19.167999,
+    "low": 19.143999,
+    "close": 19.148,
+    "volume": 34251
+  },
+  {
+    "timestamp": 1747729500,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 08:25:00",
+    "open": 19.148,
+    "high": 19.149999,
+    "low": 19.129999,
+    "close": 19.129999,
+    "volume": 46192
+  },
+  {
+    "timestamp": 1747729800,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 08:30:00",
+    "open": 19.129999,
+    "high": 19.139999,
+    "low": 19.128,
+    "close": 19.139999,
+    "volume": 23768
+  },
+  {
+    "timestamp": 1747730100,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 08:35:00",
+    "open": 19.142,
+    "high": 19.152,
+    "low": 19.134,
+    "close": 19.148,
+    "volume": 31650
+  },
+  {
+    "timestamp": 1747730400,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 08:40:00",
+    "open": 19.145999,
+    "high": 19.159999,
+    "low": 19.145999,
+    "close": 19.159999,
+    "volume": 22841
+  },
+  {
+    "timestamp": 1747730700,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 08:45:00",
+    "open": 19.162,
+    "high": 19.162,
+    "low": 19.143999,
+    "close": 19.153999,
+    "volume": 24804
+  },
+  {
+    "timestamp": 1747731000,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 08:50:00",
+    "open": 19.153999,
+    "high": 19.153999,
+    "low": 19.145999,
+    "close": 19.149999,
+    "volume": 31795
+  },
+  {
+    "timestamp": 1747731300,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 08:55:00",
+    "open": 19.153999,
+    "high": 19.156,
+    "low": 19.145999,
+    "close": 19.149999,
+    "volume": 36203
+  },
+  {
+    "timestamp": 1747731600,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 09:00:00",
+    "open": 19.152,
+    "high": 19.162,
+    "low": 19.152,
+    "close": 19.156,
+    "volume": 16646
+  },
+  {
+    "timestamp": 1747731900,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 09:05:00",
+    "open": 19.156,
+    "high": 19.162,
+    "low": 19.149999,
+    "close": 19.156,
+    "volume": 17807
+  },
+  {
+    "timestamp": 1747732200,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 09:10:00",
+    "open": 19.153999,
+    "high": 19.153999,
+    "low": 19.125999,
+    "close": 19.134,
+    "volume": 37556
+  },
+  {
+    "timestamp": 1747732500,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 09:15:00",
+    "open": 19.135999,
+    "high": 19.162,
+    "low": 19.135999,
+    "close": 19.162,
+    "volume": 44387
+  },
+  {
+    "timestamp": 1747732800,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 09:20:00",
+    "open": 19.159999,
+    "high": 19.17,
+    "low": 19.159999,
+    "close": 19.166,
+    "volume": 72907
+  },
+  {
+    "timestamp": 1747733100,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 09:25:00",
+    "open": 19.166,
+    "high": 19.173999,
+    "low": 19.163999,
+    "close": 19.163999,
+    "volume": 27192
+  },
+  {
+    "timestamp": 1747733400,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 09:30:00",
+    "open": 19.166,
+    "high": 19.184,
+    "low": 19.158,
+    "close": 19.184,
+    "volume": 41109
+  },
+  {
+    "timestamp": 1747733700,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 09:35:00",
+    "open": 19.184,
+    "high": 19.195999,
+    "low": 19.181999,
+    "close": 19.186,
+    "volume": 52841
+  },
+  {
+    "timestamp": 1747734000,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 09:40:00",
+    "open": 19.187999,
+    "high": 19.187999,
+    "low": 19.173999,
+    "close": 19.18,
+    "volume": 17353
+  },
+  {
+    "timestamp": 1747734300,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 09:45:00",
+    "open": 19.181999,
+    "high": 19.19,
+    "low": 19.18,
+    "close": 19.19,
+    "volume": 33823
+  },
+  {
+    "timestamp": 1747734600,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 09:50:00",
+    "open": 19.195999,
+    "high": 19.209999,
+    "low": 19.195999,
+    "close": 19.2,
+    "volume": 154834
+  },
+  {
+    "timestamp": 1747734900,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 09:55:00",
+    "open": 19.201999,
+    "high": 19.205999,
+    "low": 19.197999,
+    "close": 19.197999,
+    "volume": 24790
+  },
+  {
+    "timestamp": 1747735200,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 10:00:00",
+    "open": 19.197999,
+    "high": 19.208,
+    "low": 19.191999,
+    "close": 19.208,
+    "volume": 32829
+  },
+  {
+    "timestamp": 1747735500,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 10:05:00",
+    "open": 19.209999,
+    "high": 19.209999,
+    "low": 19.19,
+    "close": 19.191999,
+    "volume": 52904
+  },
+  {
+    "timestamp": 1747735800,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 10:10:00",
+    "open": 19.191999,
+    "high": 19.225999,
+    "low": 19.186,
+    "close": 19.225999,
+    "volume": 64470
+  },
+  {
+    "timestamp": 1747736100,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 10:15:00",
+    "open": 19.229999,
+    "high": 19.243999,
+    "low": 19.229999,
+    "close": 19.239999,
+    "volume": 70151
+  },
+  {
+    "timestamp": 1747736400,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 10:20:00",
+    "open": 19.238,
+    "high": 19.26,
+    "low": 19.238,
+    "close": 19.25,
+    "volume": 81706
+  },
+  {
+    "timestamp": 1747736700,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 10:25:00",
+    "open": 19.247999,
+    "high": 19.247999,
+    "low": 19.211999,
+    "close": 19.215999,
+    "volume": 54710
+  },
+  {
+    "timestamp": 1747737000,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 10:30:00",
+    "open": 19.215999,
+    "high": 19.225999,
+    "low": 19.215999,
+    "close": 19.224,
+    "volume": 31420
+  },
+  {
+    "timestamp": 1747737300,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 10:35:00",
+    "open": 19.225999,
+    "high": 19.239999,
+    "low": 19.225999,
+    "close": 19.232,
+    "volume": 30734
+  },
+  {
+    "timestamp": 1747737600,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 10:40:00",
+    "open": 19.228,
+    "high": 19.228,
+    "low": 19.204,
+    "close": 19.218,
+    "volume": 33944
+  },
+  {
+    "timestamp": 1747737900,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 10:45:00",
+    "open": 19.214,
+    "high": 19.228,
+    "low": 19.211999,
+    "close": 19.225999,
+    "volume": 11734
+  },
+  {
+    "timestamp": 1747738200,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 10:50:00",
+    "open": 19.222,
+    "high": 19.232,
+    "low": 19.219999,
+    "close": 19.219999,
+    "volume": 28861
+  },
+  {
+    "timestamp": 1747738500,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 10:55:00",
+    "open": 19.219999,
+    "high": 19.225999,
+    "low": 19.214,
+    "close": 19.222,
+    "volume": 31557
+  },
+  {
+    "timestamp": 1747738800,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 11:00:00",
+    "open": 19.224,
+    "high": 19.229999,
+    "low": 19.209999,
+    "close": 19.209999,
+    "volume": 32491
+  },
+  {
+    "timestamp": 1747739100,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 11:05:00",
+    "open": 19.208,
+    "high": 19.209999,
+    "low": 19.191999,
+    "close": 19.2,
+    "volume": 78475
+  },
+  {
+    "timestamp": 1747739400,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 11:10:00",
+    "open": 19.201999,
+    "high": 19.201999,
+    "low": 19.184,
+    "close": 19.184,
+    "volume": 26938
+  },
+  {
+    "timestamp": 1747739700,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 11:15:00",
+    "open": 19.187999,
+    "high": 19.191999,
+    "low": 19.18,
+    "close": 19.18,
+    "volume": 21274
+  },
+  {
+    "timestamp": 1747740000,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 11:20:00",
+    "open": 19.18,
+    "high": 19.197999,
+    "low": 19.177999,
+    "close": 19.194,
+    "volume": 22124
+  },
+  {
+    "timestamp": 1747740300,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 11:25:00",
+    "open": 19.194,
+    "high": 19.208,
+    "low": 19.187999,
+    "close": 19.208,
+    "volume": 56665
+  },
+  {
+    "timestamp": 1747740600,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 11:30:00",
+    "open": 19.208,
+    "high": 19.229999,
+    "low": 19.208,
+    "close": 19.224,
+    "volume": 49753
+  },
+  {
+    "timestamp": 1747740900,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 11:35:00",
+    "open": 19.219999,
+    "high": 19.232,
+    "low": 19.219999,
+    "close": 19.228,
+    "volume": 28284
+  },
+  {
+    "timestamp": 1747741200,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 11:40:00",
+    "open": 19.228,
+    "high": 19.239999,
+    "low": 19.222,
+    "close": 19.236,
+    "volume": 70559
+  },
+  {
+    "timestamp": 1747741500,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 11:45:00",
+    "open": 19.238,
+    "high": 19.246,
+    "low": 19.229999,
+    "close": 19.246,
+    "volume": 17683
+  },
+  {
+    "timestamp": 1747741800,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 11:50:00",
+    "open": 19.246,
+    "high": 19.246,
+    "low": 19.239999,
+    "close": 19.239999,
+    "volume": 29149
+  },
+  {
+    "timestamp": 1747742100,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 11:55:00",
+    "open": 19.246,
+    "high": 19.252,
+    "low": 19.242,
+    "close": 19.242,
+    "volume": 72116
+  },
+  {
+    "timestamp": 1747742400,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 12:00:00",
+    "open": 19.243999,
+    "high": 19.263999,
+    "low": 19.242,
+    "close": 19.26,
+    "volume": 34535
+  },
+  {
+    "timestamp": 1747742700,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 12:05:00",
+    "open": 19.261999,
+    "high": 19.27,
+    "low": 19.26,
+    "close": 19.266,
+    "volume": 33263
+  },
+  {
+    "timestamp": 1747743000,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 12:10:00",
+    "open": 19.267999,
+    "high": 19.275999,
+    "low": 19.263999,
+    "close": 19.275999,
+    "volume": 38719
+  },
+  {
+    "timestamp": 1747743300,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 12:15:00",
+    "open": 19.275999,
+    "high": 19.277999,
+    "low": 19.261999,
+    "close": 19.277999,
+    "volume": 54218
+  },
+  {
+    "timestamp": 1747743600,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 12:20:00",
+    "open": 19.275999,
+    "high": 19.275999,
+    "low": 19.26,
+    "close": 19.261999,
+    "volume": 48669
+  },
+  {
+    "timestamp": 1747743900,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 12:25:00",
+    "open": 19.261999,
+    "high": 19.261999,
+    "low": 19.25,
+    "close": 19.256,
+    "volume": 33783
+  },
+  {
+    "timestamp": 1747744200,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 12:30:00",
+    "open": 19.257999,
+    "high": 19.257999,
+    "low": 19.242,
+    "close": 19.246,
+    "volume": 16375
+  },
+  {
+    "timestamp": 1747744500,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 12:35:00",
+    "open": 19.243999,
+    "high": 19.243999,
+    "low": 19.232,
+    "close": 19.232,
+    "volume": 25443
+  },
+  {
+    "timestamp": 1747744800,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 12:40:00",
+    "open": 19.233999,
+    "high": 19.238,
+    "low": 19.219999,
+    "close": 19.233999,
+    "volume": 79124
+  },
+  {
+    "timestamp": 1747745100,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 12:45:00",
+    "open": 19.233999,
+    "high": 19.266,
+    "low": 19.233999,
+    "close": 19.266,
+    "volume": 84827
+  },
+  {
+    "timestamp": 1747745400,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 12:50:00",
+    "open": 19.271999,
+    "high": 19.281999,
+    "low": 19.27,
+    "close": 19.277999,
+    "volume": 32189
+  },
+  {
+    "timestamp": 1747745700,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 12:55:00",
+    "open": 19.28,
+    "high": 19.28,
+    "low": 19.266,
+    "close": 19.266,
+    "volume": 38590
+  },
+  {
+    "timestamp": 1747746000,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 13:00:00",
+    "open": 19.267999,
+    "high": 19.295999,
+    "low": 19.267999,
+    "close": 19.291999,
+    "volume": 41102
+  },
+  {
+    "timestamp": 1747746300,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 13:05:00",
+    "open": 19.291999,
+    "high": 19.299999,
+    "low": 19.281999,
+    "close": 19.285999,
+    "volume": 71144
+  },
+  {
+    "timestamp": 1747746600,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 13:10:00",
+    "open": 19.284,
+    "high": 19.288,
+    "low": 19.274,
+    "close": 19.277999,
+    "volume": 67335
+  },
+  {
+    "timestamp": 1747746900,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 13:15:00",
+    "open": 19.28,
+    "high": 19.281999,
+    "low": 19.275999,
+    "close": 19.28,
+    "volume": 31674
+  },
+  {
+    "timestamp": 1747747200,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 13:20:00",
+    "open": 19.28,
+    "high": 19.308,
+    "low": 19.28,
+    "close": 19.304,
+    "volume": 54347
+  },
+  {
+    "timestamp": 1747747500,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 13:25:00",
+    "open": 19.304,
+    "high": 19.305999,
+    "low": 19.294,
+    "close": 19.295999,
+    "volume": 61983
+  },
+  {
+    "timestamp": 1747747800,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 13:30:00",
+    "open": 19.294,
+    "high": 19.298999,
+    "low": 19.27,
+    "close": 19.28,
+    "volume": 112714
+  },
+  {
+    "timestamp": 1747748100,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 13:35:00",
+    "open": 19.281999,
+    "high": 19.299999,
+    "low": 19.281999,
+    "close": 19.298,
+    "volume": 64962
+  },
+  {
+    "timestamp": 1747748400,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 13:40:00",
+    "open": 19.298,
+    "high": 19.305999,
+    "low": 19.275999,
+    "close": 19.285999,
+    "volume": 94975
+  },
+  {
+    "timestamp": 1747748700,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 13:45:00",
+    "open": 19.285999,
+    "high": 19.299999,
+    "low": 19.263,
+    "close": 19.266,
+    "volume": 85464
+  },
+  {
+    "timestamp": 1747749000,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 13:50:00",
+    "open": 19.267999,
+    "high": 19.271999,
+    "low": 19.254999,
+    "close": 19.261999,
+    "volume": 68384
+  },
+  {
+    "timestamp": 1747749300,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 13:55:00",
+    "open": 19.261999,
+    "high": 19.271999,
+    "low": 19.246,
+    "close": 19.25,
+    "volume": 116467
+  },
+  {
+    "timestamp": 1747749600,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 14:00:00",
+    "open": 19.243999,
+    "high": 19.246,
+    "low": 19.224,
+    "close": 19.225999,
+    "volume": 48056
+  },
+  {
+    "timestamp": 1747749900,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 14:05:00",
+    "open": 19.222,
+    "high": 19.225999,
+    "low": 19.194,
+    "close": 19.197999,
+    "volume": 53056
+  },
+  {
+    "timestamp": 1747750200,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 14:10:00",
+    "open": 19.195999,
+    "high": 19.2,
+    "low": 19.172,
+    "close": 19.18,
+    "volume": 101195
+  },
+  {
+    "timestamp": 1747750500,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 14:15:00",
+    "open": 19.18,
+    "high": 19.186,
+    "low": 19.163999,
+    "close": 19.167999,
+    "volume": 58240
+  },
+  {
+    "timestamp": 1747750800,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 14:20:00",
+    "open": 19.17,
+    "high": 19.177999,
+    "low": 19.163999,
+    "close": 19.176,
+    "volume": 25343
+  },
+  {
+    "timestamp": 1747751100,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 14:25:00",
+    "open": 19.173999,
+    "high": 19.177999,
+    "low": 19.163999,
+    "close": 19.17,
+    "volume": 15728
+  },
+  {
+    "timestamp": 1747751400,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 14:30:00",
+    "open": 19.17,
+    "high": 19.187999,
+    "low": 19.17,
+    "close": 19.18,
+    "volume": 16854
+  },
+  {
+    "timestamp": 1747751700,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 14:35:00",
+    "open": 19.177999,
+    "high": 19.186,
+    "low": 19.167999,
+    "close": 19.184,
+    "volume": 17917
+  },
+  {
+    "timestamp": 1747752000,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 14:40:00",
+    "open": 19.184,
+    "high": 19.187999,
+    "low": 19.17,
+    "close": 19.176,
+    "volume": 40662
+  },
+  {
+    "timestamp": 1747752300,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 14:45:00",
+    "open": 19.173999,
+    "high": 19.173999,
+    "low": 19.163999,
+    "close": 19.166,
+    "volume": 24187
+  },
+  {
+    "timestamp": 1747752600,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 14:50:00",
+    "open": 19.167999,
+    "high": 19.173999,
+    "low": 19.167999,
+    "close": 19.17,
+    "volume": 18413
+  },
+  {
+    "timestamp": 1747752900,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 14:55:00",
+    "open": 19.17,
+    "high": 19.173999,
+    "low": 19.158,
+    "close": 19.162,
+    "volume": 30741
+  },
+  {
+    "timestamp": 1747753200,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 15:00:00",
+    "open": 19.163999,
+    "high": 19.167999,
+    "low": 19.149999,
+    "close": 19.149999,
+    "volume": 48724
+  },
+  {
+    "timestamp": 1747753500,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 15:05:00",
+    "open": 19.149999,
+    "high": 19.158,
+    "low": 19.145999,
+    "close": 19.158,
+    "volume": 49951
+  },
+  {
+    "timestamp": 1747753800,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 15:10:00",
+    "open": 19.156,
+    "high": 19.159999,
+    "low": 19.149999,
+    "close": 19.153999,
+    "volume": 34833
+  },
+  {
+    "timestamp": 1747754100,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 15:15:00",
+    "open": 19.150999,
+    "high": 19.156,
+    "low": 19.149,
+    "close": 19.152,
+    "volume": 33161
+  },
+  {
+    "timestamp": 1747754400,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 15:20:00",
+    "open": 19.149999,
+    "high": 19.162,
+    "low": 19.149999,
+    "close": 19.153999,
+    "volume": 72904
+  },
+  {
+    "timestamp": 1747754700,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 15:25:00",
+    "open": 19.152,
+    "high": 19.162,
+    "low": 19.145999,
+    "close": 19.145999,
+    "volume": 66438
+  },
+  {
+    "timestamp": 1747755000,
+    "gmtoffset": 0,
+    "datetime": "2025-05-20 15:30:00",
+    "open": 19.149999,
+    "high": 19.149999,
+    "low": 19.149999,
+    "close": 19.149999,
+    "volume": null
+  }
+]

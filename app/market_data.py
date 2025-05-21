@@ -17,7 +17,6 @@ logger.propagate = False  # Prevent double logging if root logger also logs
 
 # Define directories for raw and processed data storage
 DATA_DIR_RAW = Path("data/raw")
-DATA_DIR_PROCESSED = Path("data/processed")
 
 # Load configuration from YAML file
 with open("config.yaml", "r") as f:
@@ -117,7 +116,7 @@ def load_cached_data(symbol):
     Returns:
         dict or None: Cached JSON data or None if no valid cache.
     """
-    cache_dir = DATA_DIR_PROCESSED
+    cache_dir = DATA_DIR_RAW
     files = sorted(cache_dir.glob(f"{symbol}_*.json"), reverse=True)  # Latest first
     if not files:
         return None
