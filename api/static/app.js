@@ -11,12 +11,10 @@ for (const [key, val] of Object.entries(symbols)) {
 }
 symbolSelect.value = currentSymbol;
 refreshVisibleTab();
-refreshMetrics();
 symbolSelect.onchange = function() {
     currentSymbol = this.value;
     selectSymbol(currentSymbol);
     refreshVisibleTab();
-    refreshMetrics();
 };
 
 function fetchWithRetry(url, options = {}, retries = 2) {
@@ -179,7 +177,7 @@ function refreshTrades() {
 function refreshMetrics() {
     document.getElementById('metrics-feedback').style.display = '';
     document.getElementById('metrics-error').style.display = 'none';
-    fetchWithRetry(`/strategy_status?symbol=${encodeURIComponent(currentSymbol)}`)
+    fetch(`/strategy_status?symbol=${encodeURIComponent(currentSymbol)}`)
     .then(response => {
         if (!response.ok) throw new Error(`HTTP ${response.status} - ${response.statusText}`);
         return response.json();
@@ -483,7 +481,6 @@ function refreshVisibleTab() {
     if (orderBookTab && orderBookTab.style.display === "block") {
         refreshOrderBook();
         refreshTrades();
-        refreshMetrics();
         refreshDepthChart();
     }
     if (tradeBlotterTab && tradeBlotterTab.style.display === "block") {
@@ -494,6 +491,7 @@ function refreshVisibleTab() {
         refreshSpreadChart();
         refreshLatencyChart();
         refreshLiquidityChart();
+        refreshMetrics();
     }
     if (execReportTab && execReportTab.style.display === "block") {
         refreshExecutionReports();
