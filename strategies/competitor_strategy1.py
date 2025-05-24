@@ -21,12 +21,11 @@ class MarketMakerStrategy(BaseStrategy):
             symbol (str): Trading symbol.
             params (dict, optional): Strategy parameters.
         """
-        # Initialise base strategy with source name "market_maker"
         super().__init__(fix_engine, order_book, symbol, "market_maker", params)
-        # Spread to apply around mid-price for bid and ask orders (default 0.2%)
         self.spread = self.params.get("spread", 0.002)
         self.inventory = 0  # Track current inventory position
         self.max_inventory = 100  # Maximum allowed inventory (long or short)
+        self.rebalance_pending = False  # Flag for rebalancing
 
     def generate_orders(self):
         """
@@ -35,63 +34,51 @@ class MarketMakerStrategy(BaseStrategy):
         Returns:
             list: List of order dicts with 'side', 'price', and 'quantity' keys.
         """
-        # Call base class generate_orders to respect cooldown and risk checks
         base_result = super().generate_orders()
         if base_result == []:
             self.logger.info(f"{self.source_name}: In cooldown or risk block, skipping orders.")
-            # In cooldown period, skip order generation
             return []
 
         orders = []
 
         now = time.time()
-        # Enforce minimum interval between orders (cooldown)
         if now - self.last_order_time < self.min_order_interval:
             self.logger.info(f"{self.source_name}: Cooldown, skipping orders.")
-            # Still cooling down, skip order generation
             return orders
 
-        # Get current best bid and ask prices from order book
         best_bid = self.order_book.get_best_bid()
         best_ask = self.order_book.get_best_ask()
         if not (best_bid and best_ask):
             self.logger.info(f"{self.source_name}: Missing best bid or ask, skipping orders.")
-            # If either side is missing, cannot calculate mid-price; skip
             return orders
 
-        # Inventory rebalancing: reset inventory if limits exceeded
+        # If inventory is at or beyond limits, flag for rebalancing (do not reset directly)
         if abs(self.inventory) >= self.max_inventory:
-            logger.info(f"{self.source_name}: Inventory at limit ({self.inventory}), rebalancing to 0.")
-            self.inventory = 0
+            logger.info(f"{self.source_name}: Inventory at limit ({self.inventory}), rebalancing required.")
+            self.rebalance_pending = True
+            # Optionally, generate offsetting order here or in a separate rebalancing routine
+            return orders  # Skip placing further orders until rebalanced
 
         # Calculate mid-price as average of best bid and ask
         mid = (best_bid["price"] + best_ask["price"]) / 2
-        # Calculate bid and ask prices by applying half the spread below and above mid-price
         bid_price = mid * (1 - self.spread / 2)
         ask_price = mid * (1 + self.spread / 2)
 
-        # Determine adaptive buy order size based on recent volatility (1 to 10 units)
+        # Determine adaptive buy order size
         buy_qty = random.randint(1, self.get_adaptive_order_size(min_size=1, max_size=10))
         if self.inventory + buy_qty <= self.max_inventory:
-            # Append buy order dict to orders list (FIX side '1' = buy)
             orders.append({"side": "1", "price": bid_price, "quantity": buy_qty})
-            # Place the buy order via FIX and update inventory
             self.place_order("1", bid_price, buy_qty)
             self.logger.info(f"{self.source_name}: Placed BUY order {buy_qty}@{bid_price:.4f}")
-            self.inventory += buy_qty
+            # Do NOT update inventory here
 
-        # Determine adaptive sell order size based on recent volatility (1 to 10 units)
+        # Determine adaptive sell order size
         sell_qty = random.randint(1, self.get_adaptive_order_size(min_size=1, max_size=10))
         if self.inventory - sell_qty >= -self.max_inventory:
-            # Append sell order dict to orders list (FIX side '2' = sell)
             orders.append({"side": "2", "price": ask_price, "quantity": sell_qty})
-            # Place the sell order via FIX and update inventory
             self.place_order("2", ask_price, sell_qty)
             self.logger.info(f"{self.source_name}: Placed SELL order {sell_qty}@{ask_price:.4f}")
-            self.inventory -= sell_qty
+            # Do NOT update inventory here
 
-        # Update last order time to now for cooldown tracking
         self.last_order_time = now
-
-        # Return list of generated orders (used by matching engine)
         return orders

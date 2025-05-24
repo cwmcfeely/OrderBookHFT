@@ -219,83 +219,91 @@ class BaseStrategy(ABC):
 
     def on_trade(self, trade):
         """
-        Update position, realised PnL, daily PnL, and win rate after a trade.
-        Implements per-trade stop loss, take profit, and trailing stop logic.
-        Args:
-            trade (dict): Trade details, including side, price, qty, and pnl.
-        Returns:
-            tuple: (inventory, avg_entry_price, realised_pnl, total_trades, winning_trades)
+        Update position, realised PnL, and win rate after a trade.
+        Uses average cost method and handles all position transitions.
         """
         qty = trade['qty']
         side = trade['side']
         price = trade['price']
-        pnl = trade.get('pnl', 0)  # PnL should be calculated and passed in trade dict
+        pnl = trade.get('pnl', 0)  # Optional, for per-trade stop logic
 
-        # Update position and realised PnL using average cost method
-        if side == 'buy' or side == "1":
-            new_position = self.inventory + qty
-            if new_position == 0:
-                self.avg_entry_price = 0.0
-            elif self.inventory >= self.max_order_qty or self.inventory >= 0:
-                self.avg_entry_price = (self.avg_entry_price * self.inventory + price * qty) / new_position
+        prev_inventory = self.inventory
+
+        if side in ('buy', "1"):
+            if self.inventory >= 0:
+                # Increasing or opening a long position
+                total_cost = self.avg_entry_price * self.inventory + price * qty
+                self.inventory += qty
+                self.avg_entry_price = total_cost / self.inventory if self.inventory != 0 else 0.0
             else:
+                # Reducing or flipping a short position
                 close_qty = min(abs(self.inventory), qty)
                 self.realised_pnl += close_qty * (self.avg_entry_price - price)
-                if qty > close_qty:
-                    self.avg_entry_price = price
-            self.inventory = new_position
-        else:
-            new_position = self.inventory - qty
-            if new_position == 0:
-                self.avg_entry_price = 0.0
-            elif self.inventory <= self.max_order_qty or self.inventory <= 0.0 or self.inventory <= -self.max_order_qty or self.inventory <= -1.0 * self.max_order_qty:
-                self.avg_entry_price = (self.avg_entry_price * abs(self.inventory) + price * qty) / abs(new_position)
+                self.inventory += qty
+                if self.inventory > 0:
+                    # Flipped to long, set new avg entry price for remaining qty
+                    open_qty = self.inventory
+                    self.avg_entry_price = price if open_qty > 0 else 0.0
+                elif self.inventory == 0:
+                    self.avg_entry_price = 0.0
+
+        elif side in ('sell', "2"):
+            if self.inventory <= 0:
+                # Increasing or opening a short position
+                total_cost = self.avg_entry_price * abs(self.inventory) + price * qty
+                self.inventory -= qty
+                self.avg_entry_price = total_cost / abs(self.inventory) if self.inventory != 0 else 0.0
             else:
+                # Reducing or flipping a long position
                 close_qty = min(self.inventory, qty)
                 self.realised_pnl += close_qty * (price - self.avg_entry_price)
-                if qty > close_qty:
-                    self.avg_entry_price = price
-            self.inventory = new_position
+                self.inventory -= qty
+                if self.inventory < 0:
+                    # Flipped to short, set new avg entry price for remaining qty
+                    open_qty = abs(self.inventory)
+                    self.avg_entry_price = price if open_qty > 0 else 0.0
+                elif self.inventory == 0:
+                    self.avg_entry_price = 0.0
 
         self.total_trades += 1
         if pnl > 0:
             self.winning_trades += 1
 
-        # --- Trailing stop logic initialisation ---
+        # Reset position start time if flat
+        if self.inventory == 0:
+            self.position_start_time = None
+
+        # --- Trailing stop logic ---
         if not hasattr(self, 'highest_price'):
             self.highest_price = None
         if not hasattr(self, 'lowest_price'):
             self.lowest_price = None
 
-        # --- Update trailing stop prices ---
-        if self.inventory > 0:  # Long position
+        if self.inventory > 0:
             if self.highest_price is None or price > self.highest_price:
                 self.highest_price = price
-            trailing_stop_pct = self.params.get("trailing_stop_pct", 0.01)  # 1% default
-            # Check trailing stop for long
+            trailing_stop_pct = self.params.get("trailing_stop_pct", 0.01)
             if price < self.highest_price * (1 - trailing_stop_pct):
                 self.logger.info(f"{self.source_name}: Trailing stop hit on long at {price}, closing position.")
                 self.reset_inventory()
                 self.highest_price = None
                 self.lowest_price = None
-        elif self.inventory < 0:  # Short position
+        elif self.inventory < 0:
             if self.lowest_price is None or price < self.lowest_price:
                 self.lowest_price = price
-            trailing_stop_pct = self.params.get("trailing_stop_pct", 0.01)  # 1% default
-            # Check trailing stop for short
+            trailing_stop_pct = self.params.get("trailing_stop_pct", 0.01)
             if price > self.lowest_price * (1 + trailing_stop_pct):
                 self.logger.info(f"{self.source_name}: Trailing stop hit on short at {price}, closing position.")
                 self.reset_inventory()
                 self.highest_price = None
                 self.lowest_price = None
         else:
-            # No position, reset trailing stop trackers
             self.highest_price = None
             self.lowest_price = None
 
         # --- Per-trade stop loss and take profit logic ---
-        stop_loss = self.params.get("per_trade_stop_loss", 100)  # Example: 100 currency units
-        take_profit = self.params.get("per_trade_take_profit", 150)  # Example: 150 currency units
+        stop_loss = self.params.get("per_trade_stop_loss", 100)
+        take_profit = self.params.get("per_trade_take_profit", 150)
 
         if pnl <= -abs(stop_loss):
             self.logger.warning(
@@ -307,20 +315,6 @@ class BaseStrategy(ABC):
             self.reset_inventory()
 
         return (self.inventory, self.avg_entry_price, self.realised_pnl, self.total_trades, self.winning_trades)
-
-    def unrealised_pnl(self):
-        """
-        Calculate unrealised PnL based on current mid-price.
-        Returns:
-            float: Unrealised profit or loss.
-        """
-        mid_price = self.order_book.get_mid_price()
-        if mid_price is None or self.inventory == 0:
-            return 0.0
-        if self.inventory > 0:
-            return (mid_price - self.avg_entry_price) * self.inventory
-        else:
-            return (self.avg_entry_price - mid_price) * abs(self.inventory)
 
     def total_pnl(self):
         """
@@ -393,3 +387,17 @@ class BaseStrategy(ABC):
             self.logger.warning(f"{self.source_name}: Drawdown limit hit ({drawdown}), entering cooldown.")
             self.cooldown_until = time.time() + self.cooldown_period
             self.max_unrealised_pnl = unrealised  # Reset peak
+
+    def unrealised_pnl(self, mark_price=None):
+        """
+        Calculate unrealised PnL based on current inventory and market price.
+        Args:
+            mark_price (float, optional): The price to value the position at. If None, use last price from order book.
+        Returns:
+            float: Unrealised PnL.
+        """
+        if mark_price is None:
+            mark_price = self.order_book.last_price
+        if self.inventory == 0 or mark_price is None:
+            return 0.0
+        return (mark_price - self.avg_entry_price) * self.inventory

@@ -14,59 +14,42 @@ class MyStrategy(BaseStrategy):
     managing inventory to avoid excessive exposure.
     """
     def __init__(self, fix_engine, order_book, symbol, params=None):
-        """
-        Initialise MyStrategy instance.
-
-        Args:
-            fix_engine: FIX engine instance for sending orders.
-            order_book: Reference to the order book object.
-            symbol (str): Trading symbol.
-            params (dict, optional): Strategy parameters.
-        """
-        # Initialise base strategy with source name "my_strategy"
         super().__init__(fix_engine, order_book, symbol, "my_strategy", params)
-        # Spread factor to adjust bid and ask prices (default 1%)
         self.spread_factor = self.params.get("spread_factor", 0.01)
-        self.inventory = 0  # Track current inventory of assets held
-        self.max_inventory = 100  # Maximum allowed inventory (long or short)
+        self.inventory = 0
+        self.max_inventory = 100
+        self.rebalance_pending = False  # Flag for rebalancing
 
     def _risk_check(self, side, price, quantity):
         """
         Risk check override to prevent overexposure and large orders.
-
-        Args:
-            side (str): '1' for buy, '2' for sell.
-            price (float): Order price.
-            quantity (int): Order quantity.
-
-        Returns:
-            bool: True if order passes risk checks, False otherwise.
         """
         if side == "1":  # Buy order
             if self.inventory + quantity > self.max_inventory:
-                # Reject buy if it would exceed max inventory
+                logger.warning(f"{self.source_name}: Buy order rejected (would exceed max inventory).")
                 return False
         elif side == "2":  # Sell order
             if self.inventory - quantity < -self.max_inventory:
-                # Reject sell if it would exceed short max inventory
+                logger.warning(f"{self.source_name}: Sell order rejected (would exceed short max inventory).")
                 return False
         if quantity > 500:
-            # Reject orders larger than 500 units as additional risk control
+            logger.warning(f"{self.source_name}: Order rejected (quantity > 500).")
             return False
-        # Call base class risk check for other checks
         return super()._risk_check(side, price, quantity)
 
     def generate_orders(self):
         """
         Generate buy and sell orders with adjusted prices based on spread factor.
-
-        Returns:
-            list: List of order dicts with 'side', 'price', and 'quantity' keys.
         """
-        # Call base class generate_orders to handle cooldown and drawdown checks
+        # Call base class generate_orders to handle cooldown and drawdown chec
         base_result = super().generate_orders()
         if base_result == []:
-            # In cooldown period, skip order generation
+            logger.info(f"{self.source_name}: In cooldown or risk block, skipping orders.")
+            return []
+
+        now = time.time()
+        if now - self.last_order_time < self.min_order_interval:
+            logger.info(f"{self.source_name}: Cooldown, skipping orders.")
             return []
 
         orders = []
@@ -75,42 +58,49 @@ class MyStrategy(BaseStrategy):
         best_bid = self.order_book.get_best_bid()
         best_ask = self.order_book.get_best_ask()
 
-        # Inventory rebalancing: reset inventory if limits exceeded (simulation only)
+        # If inventory is at or beyond limits, flag for rebalancing (do not reset directly)
         if abs(self.inventory) >= self.max_inventory:
-            logger.info(f"{self.source_name}: Inventory at limit ({self.inventory}), rebalancing to 0.")
-            self.inventory = 0
+            logger.info(f"{self.source_name}: Inventory at limit ({self.inventory}), rebalancing required.")
+            self.rebalance_pending = True
+            # Optionally, generate offsetting order here or in a separate rebalancing routine
+            return orders  # Skip placing further orders until rebalanced
 
         if best_bid and best_ask:
-            # Adjust bid price downward by spread factor to be more competitive
             adjusted_bid = best_bid["price"] * (1 - self.spread_factor)
-            # Adjust ask price upward by spread factor
             adjusted_ask = best_ask["price"] * (1 + self.spread_factor)
 
-            # Determine adaptive buy order size based on recent volatility (1 to 10 units)
             buy_qty = random.randint(1, self.get_adaptive_order_size(min_size=1, max_size=10))
             if self.inventory + buy_qty <= self.max_inventory:
-                # Append buy order dict to orders list (FIX side '1' = buy)
                 orders.append({
-                    "side": "1",  # Buy
+                    "side": "1",
                     "price": adjusted_bid,
                     "quantity": buy_qty
                 })
-                # Place the buy order via FIX and update inventory
                 self.place_order("1", adjusted_bid, buy_qty)
-                self.inventory += buy_qty
+                logger.info(f"{self.source_name}: Placed BUY order {buy_qty}@{adjusted_bid:.4f}")
 
-            # Determine adaptive sell order size based on recent volatility (1 to 10 units)
             sell_qty = random.randint(1, self.get_adaptive_order_size(min_size=1, max_size=10))
             if self.inventory - sell_qty >= -self.max_inventory:
-                # Append sell order dict to orders list (FIX side '2' = sell)
                 orders.append({
-                    "side": "2",  # Sell
+                    "side": "2",
                     "price": adjusted_ask,
                     "quantity": sell_qty
                 })
-                # Place the sell order via FIX and update inventory
                 self.place_order("2", adjusted_ask, sell_qty)
-                self.inventory -= sell_qty
+                logger.info(f"{self.source_name}: Placed SELL order {sell_qty}@{adjusted_ask:.4f}")
 
-        # Return list of generated orders (used by matching engine)
+        self.last_order_time = now
         return orders
+
+    # Inventory will be updated in on_trade (in BaseStrategy) only, not here.
+    # You may wish to override on_trade to add additional logging if desired.
+
+    def on_trade(self, trade):
+        """
+        Handle trade execution events. Update inventory and log details.
+        """
+        super().on_trade(trade)
+        logger.info(f"{self.source_name}: Trade executed. Side: {trade.get('side')}, "
+                    f"Qty: {trade.get('qty')}, Price: {trade.get('price')}, "
+                    f"New inventory: {self.inventory}")
+

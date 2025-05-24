@@ -14,6 +14,7 @@ symbolSelect.onchange = function() {
     currentSymbol = this.value;
     selectSymbol(currentSymbol);
     refreshVisibleTab();
+    refreshMetrics();
 };
 
 function fetchWithRetry(url, options = {}, retries = 2) {
@@ -213,7 +214,6 @@ function refreshMetrics() {
             <th>Inventory</th>
             <th>Realised P&L (%)</th>
             <th>Unrealised P&L (%)</th>
-            <th>Total P&L (%)</th>
             <th>Total P&L (€)</th>
             <th>Inventory (%)</th>
             <th>Total Trades</th>
@@ -361,6 +361,7 @@ function openTab(evt, tabName) {
     document.getElementById(tabName).style.display = "block";
     evt.currentTarget.className += " active";
     refreshVisibleTab();
+    refreshMetrics()
 }
 
 function refreshLatencyChart() {

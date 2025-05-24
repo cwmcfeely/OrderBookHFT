@@ -23,6 +23,7 @@ class MomentumStrategy(BaseStrategy):
         self.base_spread = self.params.get("base_spread", 0.002)
         self.momentum_skew = self.params.get("momentum_skew", 0.001)
         self.size_skew = self.params.get("size_skew", 2)
+        self.rebalance_pending = False  # Flag for rebalancing
 
     def _calculate_trend(self, prices):
         if len(prices) < 2:
@@ -54,8 +55,9 @@ class MomentumStrategy(BaseStrategy):
             return []
 
         if abs(self.inventory) >= self.max_inventory:
-            self.logger.info(f"{self.source_name}: Inventory at limit ({self.inventory}), rebalancing to 0.")
-            # Do not reset inventory here; let on_trade handle it
+            self.logger.info(f"{self.source_name}: Inventory at limit ({self.inventory}), rebalancing required.")
+            self.rebalance_pending = True
+            # Optionally, generate offsetting order here or in a separate rebalancing routine
             return []
 
         spread = self.base_spread
@@ -75,12 +77,13 @@ class MomentumStrategy(BaseStrategy):
             orders.append({"side": "1", "price": bid_price, "quantity": buy_qty})
             self.place_order("1", bid_price, buy_qty)
             self.logger.info(f"{self.source_name}: Placed BID {buy_qty}@{bid_price:.4f} (trend={trend:.4f})")
+            # Do NOT update inventory here
 
         if self.inventory - sell_qty >= -self.max_inventory:
             orders.append({"side": "2", "price": ask_price, "quantity": sell_qty})
             self.place_order("2", ask_price, sell_qty)
             self.logger.info(f"{self.source_name}: Placed ASK {sell_qty}@{ask_price:.4f} (trend={trend:.4f})")
+            # Do NOT update inventory here
 
         self.last_order_time = now
         return orders
-
