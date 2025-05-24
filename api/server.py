@@ -1,9 +1,7 @@
 # Import the logging module to handle logging across the application
 import logging
-
 # Import the custom logging setup function from the app.logger module
 from app.logger import setup_logging
-
 # Import the create_app factory function from the api package to create the Flask app instance
 from api import create_app
 

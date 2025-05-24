@@ -347,6 +347,18 @@ def get_status():
             "symbol": trading_state["current_symbol"]
         })
 
+def safe_get_data(data_dict, symbol):
+    """
+    Safely get data for a symbol from a dictionary.
+    Returns empty list if symbol not found or data is None.
+    """
+    if symbol not in data_dict:
+        return []
+    data = data_dict.get(symbol)
+    if data is None:
+        return []
+    return data
+
 def get_order_book():
     """
     Get the current order book for the selected symbol.
@@ -393,34 +405,30 @@ def get_trades():
     min_price = request.args.get("min_price", type=float)
     max_price = request.args.get("max_price", type=float)
     with state_lock:
-        if symbol not in trading_state["trades"]:
-            return jsonify({'error': 'Invalid or missing symbol'}), 400
-        trades = trading_state["trades"][symbol]
+        trades = safe_get_data(trading_state["trades"], symbol)
         filtered_trades = filter_trades(trades, side, source, min_price, max_price)
-        trades = decode_bytes(filtered_trades)
-        return jsonify(trades)
+        trades_decoded = decode_bytes(filtered_trades)
+        return jsonify(trades_decoded)
 
 def get_order_book_history():
-    """
-    Get historical snapshots of the order book for the selected symbol.
-    """
     symbol = request.args.get('symbol') or trading_state["current_symbol"]
     with state_lock:
-        if symbol not in trading_state['order_book_history']:
-            return jsonify({'error': 'Invalid or missing symbol'}), 400
-        history = []
-        for entry in trading_state['order_book_history'][symbol]:
+        history = safe_get_data(trading_state['order_book_history'], symbol)
+        if not history:
+            return jsonify([])  # Return empty list if no data
+        processed = []
+        for entry in history:
             snapshot = entry['snapshot']
             bids = snapshot.get('bids', [])
             asks = snapshot.get('asks', [])
             price_levels = [b['price'] for b in bids] + [a['price'] for a in asks]
             quantities = [b['quantity'] for b in bids] + [a['quantity'] for a in asks]
-            history.append({
+            processed.append({
                 "time": entry['time'],
                 "price_levels": price_levels,
                 "quantities": quantities
             })
-        return jsonify(history)
+        return jsonify(processed)
 
 def get_spread_history():
     """
@@ -428,9 +436,8 @@ def get_spread_history():
     """
     symbol = request.args.get('symbol') or trading_state["current_symbol"]
     with state_lock:
-        if symbol not in trading_state['spread_history']:
-            return jsonify({'error': 'Invalid or missing symbol'}), 400
-        return jsonify(trading_state['spread_history'][symbol])
+        spread_history = safe_get_data(trading_state['spread_history'], symbol)
+        return jsonify(spread_history)
 
 def get_liquidity_history():
     """
@@ -438,9 +445,8 @@ def get_liquidity_history():
     """
     symbol = request.args.get('symbol') or trading_state["current_symbol"]
     with state_lock:
-        if symbol not in trading_state['liquidity_history']:
-            return jsonify({'error': 'Invalid or missing symbol'}), 400
-        return jsonify(trading_state['liquidity_history'][symbol])
+        liquidity_history = safe_get_data(trading_state['liquidity_history'], symbol)
+        return jsonify(liquidity_history)
 
 def strategy_status():
     symbol = request.args.get("symbol") or trading_state["current_symbol"]

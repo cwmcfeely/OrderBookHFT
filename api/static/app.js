@@ -179,7 +179,7 @@ function refreshTrades() {
 function refreshMetrics() {
     document.getElementById('metrics-feedback').style.display = '';
     document.getElementById('metrics-error').style.display = 'none';
-    fetch(`/strategy_status?symbol=${encodeURIComponent(currentSymbol)}`)
+    fetchWithRetry(`/strategy_status?symbol=${encodeURIComponent(currentSymbol)}`)
     .then(response => {
         if (!response.ok) throw new Error(`HTTP ${response.status} - ${response.statusText}`);
         return response.json();
