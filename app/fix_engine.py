@@ -214,7 +214,7 @@ class FixEngine:
         return due
 
     def create_execution_report(self, cl_ord_id, order_id, exec_id, ord_status, exec_type, symbol, side, order_qty,
-                               last_qty=None, last_px=None, leaves_qty=None, cum_qty=None, price=None, source=None):
+                               last_qty=None, last_px=None, leaves_qty=None, cum_qty=None, price=None, source=None, text=None):
         """
         Create a FIX ExecutionReport message.
 
@@ -233,7 +233,7 @@ class FixEngine:
             cum_qty (int, optional): Cumulative quantity.
             price (float, optional): Order price.
             source (str, optional): Source identifier.
-
+            text (str, optional): Free text or rejection reason (tag 58).
         Returns:
             bytes: Encoded FIX ExecutionReport message.
         """
@@ -263,6 +263,9 @@ class FixEngine:
             msg.append_pair(44, f"{price:.8f}")  # Price
         if source:
             msg.append_pair(6007, source)  # Custom source tag
+        msg.append_utc_timestamp(52)  # SendingTime
+        if text:
+            msg.append_pair(58, text)  # Tag 58: Free text or rejection reason
         msg.append_utc_timestamp(52)  # SendingTime
 
         self._log_fix_message(msg, incoming=False)  # Log outgoing execution report

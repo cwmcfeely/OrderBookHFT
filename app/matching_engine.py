@@ -139,10 +139,6 @@ class MatchingEngine:
                                  last_qty=None, last_px=None, leaves_qty=None, cum_qty=None, price=None, source=None, strategy_name=None):
         """
         Create and log a FIX execution report, and append it to the trading state for UI/API.
-        Args:
-            fix_engine: The FIX engine instance to use for message creation.
-            cl_ord_id, order_id, exec_id, ...: Standard FIX fields.
-            strategy_name (str, optional): Name of the strategy for logging.
         """
         msg = fix_engine.create_execution_report(
             cl_ord_id=cl_ord_id,
