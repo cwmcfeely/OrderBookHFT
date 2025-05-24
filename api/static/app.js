@@ -10,6 +10,8 @@ for (const [key, val] of Object.entries(symbols)) {
     symbolSelect.appendChild(opt);
 }
 symbolSelect.value = currentSymbol;
+refreshVisibleTab();
+refreshMetrics();
 symbolSelect.onchange = function() {
     currentSymbol = this.value;
     selectSymbol(currentSymbol);

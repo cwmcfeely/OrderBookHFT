@@ -82,3 +82,12 @@ class MarketMakerStrategy(BaseStrategy):
 
         self.last_order_time = now
         return orders
+
+    def on_trade(self, trade):
+        """
+        Handle trade execution events. Update inventory and log details.
+        """
+        super().on_trade(trade)
+        logger.info(f"{self.source_name}: Trade executed. Side: {trade.get('side')}, "
+                    f"Qty: {trade.get('qty')}, Price: {trade.get('price')}, "
+                    f"New inventory: {self.inventory}, Realised PnL: {self.realised_pnl}")
