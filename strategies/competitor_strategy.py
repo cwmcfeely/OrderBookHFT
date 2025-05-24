@@ -77,7 +77,7 @@ class PassiveLiquidityProvider(BaseStrategy):
 
         # If inventory is at or beyond limits, flag for rebalancing (do not reset directly)
         if abs(self.inventory) >= self.max_inventory:
-            logger.info(f"{self.source_name}: Inventory at limit ({self.inventory}), rebalancing required.")
+            self.logger.info(f"{self.source_name}: Inventory at limit ({self.inventory}), rebalancing required.")
             self.rebalance_pending = True
             # Optionally, generate offsetting order here or in a separate rebalancing routine
             return orders  # Skip placing further orders until rebalanced
@@ -114,6 +114,6 @@ class PassiveLiquidityProvider(BaseStrategy):
         Handle trade execution events. Update inventory and log details.
         """
         super().on_trade(trade)
-        logger.info(f"{self.source_name}: Trade executed. Side: {trade.get('side')}, "
+        self.logger.info(f"{self.source_name}: Trade executed. Side: {trade.get('side')}, "
                     f"Qty: {trade.get('qty')}, Price: {trade.get('price')}, "
                     f"New inventory: {self.inventory}, Realised PnL: {self.realised_pnl}")
