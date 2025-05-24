@@ -203,9 +203,7 @@ function refreshMetrics() {
                 <td>${m.inventory !== undefined ? m.inventory : '-'}</td>
                 <td class="${realisedClass}">${formatPercent(m.realised_pnl_percent)}</td>
                 <td class="${unrealisedClass}">${formatPercent(m.unrealised_pnl_percent)}</td>
-                <td class="${totalClass}">${formatPercent(m.total_pnl_percent)}</td>
                 <td class="${totalClass}">${formatEuro(m.total_pnl)}</td>
-                <td class="${inventoryPercentClass}">${formatPercent(m.inventory_percent)}</td>
                 <td>${m.total_trades !== undefined ? m.total_trades : '-'}</td>
             </tr>`;
         });
@@ -215,7 +213,6 @@ function refreshMetrics() {
             <th>Realised P&L (%)</th>
             <th>Unrealised P&L (%)</th>
             <th>Total P&L (€)</th>
-            <th>Inventory (%)</th>
             <th>Total Trades</th>
         </tr>${rows}`;
     })
