@@ -150,7 +150,7 @@ class FixEngine:
             msg (simplefix.FixMessage): The heartbeat message.
             incoming (bool): True if received, False if sent.
         """
-        direction = "HEARTBEAT RECEIVED" if incoming else "HEARBEAT SENT"
+        direction = "HEARTBEAT RECEIVED" if incoming else "HEARTBEAT SENT"
         try:
             # Convert FIX message to readable string (replace SOH with '|')
             raw = msg.encode().decode(errors='replace').replace('\x01', '|')
