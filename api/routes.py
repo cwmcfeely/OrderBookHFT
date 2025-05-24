@@ -1,45 +1,27 @@
 import threading
-
 import time
-
 import uuid
-
 import yaml
-
 import logging
-
 from flask import request, jsonify, render_template
-
 from app.market_data import get_latest_price
-
 from app.matching_engine import MatchingEngine, TradingHalted
-
 from app.order_book import OrderBook
-
 from strategies.my_strategy import MyStrategy
-
 from strategies.competitor_strategy import PassiveLiquidityProvider
-
 from strategies.competitor_strategy1 import MarketMakerStrategy
-
 from strategies.competitor_strategy2 import MomentumStrategy
-
 from app.fix_engine import FixEngine
-
 from datetime import datetime
+from collections import deque
 
 # Set up logger for this module
-
 logger = logging.getLogger(__name__)
-
 logger.propagate = False
 
 # Load configuration file and extract symbols to be traded
-
 with open("config.yaml", "r") as f:
-
     config = yaml.safe_load(f)
-
     symbols = config.get("symbols", {})
 
 # Initialize the global trading state used by all routes and background threads
@@ -110,7 +92,6 @@ def append_order_book_snapshot(symbol, order_book):
             trading_state[key][symbol].pop(0)
 
 def auto_update_order_books():
-
     """
     Background thread function to keep order books updated, reseed synthetic depth,
     run strategies, and process trades.
@@ -278,7 +259,6 @@ def register_routes(app):
     app.route("/competition_logs")(get_competition_logs)  # NEW ENDPOINT
 
 def toggle_exchange():
-
     """
     Toggle the exchange halted/active state.
     """
@@ -286,10 +266,17 @@ def toggle_exchange():
         trading_state["exchange_halted"] = not trading_state["exchange_halted"]
     status = "halted" if trading_state["exchange_halted"] else "active"
     trading_state["log"].append(f"Exchange {status}")
+
+    # Logging to the general application log
+    app_logger = logging.getLogger()
+    app_logger.info(f"Exchange has been {status} by user action.")
+
+    # Optional: Logging to the per-strategy FIX log for audit trail
+    logging.getLogger("FIX_my_strategy").info(f"EXCHANGE: Exchange has been {status} by user action.")
+
     return jsonify({"exchange_halted": trading_state["exchange_halted"]})
 
 def toggle_my_strategy():
-
     """
     Enable or pause MyStrategy (user's strategy).
     """
@@ -297,13 +284,25 @@ def toggle_my_strategy():
         trading_state["my_strategy_enabled"] = not trading_state["my_strategy_enabled"]
     status = "enabled" if trading_state["my_strategy_enabled"] else "paused"
     trading_state["log"].append(f"MyStrategy {status}")
+
+    # Logging
+    app_logger = logging.getLogger()  # Root logger for app.debug.log
+    strat_logger = logging.getLogger("FIX_my_strategy")  # Per-strategy logger
+
+    if trading_state["my_strategy_enabled"]:
+        app_logger.info("my_strategy has been started/enabled by user action.")
+        strat_logger.info("START: my_strategy has been started/enabled by user action.")
+    else:
+        app_logger.info("my_strategy has been paused by user action.")
+        strat_logger.info("PAUSE: my_strategy has been paused by user action.")
+
     return jsonify({"my_strategy_enabled": trading_state["my_strategy_enabled"]})
 
 def cancel_mystrategy_orders():
-
     """
     Cancel all orders in the order book that were submitted by MyStrategy.
     """
+    logger = logging.getLogger("FIX_my_strategy")
     data = request.get_json() or {}
     symbol = data.get("symbol") or trading_state["current_symbol"]
     with state_lock:
@@ -312,21 +311,34 @@ def cancel_mystrategy_orders():
         order_book = trading_state["order_books"][symbol]
         removed_orders = []
         for book_side in [order_book.bids, order_book.asks]:
+            # Determine side for FIX (1=Buy for bids, 2=Sell for asks)
+            side_value = "1" if book_side is order_book.bids else "2"
             for price in list(book_side.keys()):
                 queue = book_side[price]
                 new_queue = [order for order in queue if order.get("source") != "my_strategy"]
                 if len(new_queue) != len(queue):
-                    removed_orders.extend([order for order in queue if order.get("source") == "my_strategy"])
+                    cancelled = [order for order in queue if order.get("source") == "my_strategy"]
+                    removed_orders.extend(cancelled)
+                    for order in cancelled:
+                        # Use order's side if present, otherwise infer
+                        side = order.get('side', side_value)
+                        # Format price to 8 decimals if it's a float
+                        price_val = order.get('price')
+                        if isinstance(price_val, float):
+                            price_val = f"{price_val:.8f}"
+                        # Tag 52: SendingTime in FIX UTC format
+                        sending_time = datetime.utcnow().strftime("%Y%m%d-%H:%M:%S.%f")[:-3]
+                        logger.info(
+                            f"8=FIX.4.4|35=8|39=4|150=4|11={order.get('id')}|55={symbol}|54={side}|38={order.get('qty')}|44={price_val}|58=Order cancelled by my_strategy|52={sending_time}|10=000"
+                        )
                 if new_queue:
-                    book_side[price] = new_queue
+                    book_side[price] = deque(new_queue)
                 else:
                     del book_side[price]
-        # Decode bytes in removed_orders before jsonify
         decoded_removed_orders = decode_bytes(removed_orders)
         return jsonify({"status": "success", "removed_orders": decoded_removed_orders})
 
 def get_status():
-
     """
     Get the current status of the exchange and MyStrategy.
     """
