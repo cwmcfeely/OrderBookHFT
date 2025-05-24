@@ -219,7 +219,6 @@ def auto_update_order_books():
 threading.Thread(target=auto_update_order_books, daemon=True).start()
 
 def filter_trades(trades, side=None, source=None, min_price=None, max_price=None):
-
     """
     Filter trades by side, source, and price range.
     """
@@ -238,7 +237,6 @@ def filter_trades(trades, side=None, source=None, min_price=None, max_price=None
     return filtered
 
 def register_routes(app):
-
     """
     Register all Flask routes for the trading dashboard and API.
     """
@@ -386,7 +384,6 @@ def decode_bytes(obj):
     return obj
 
 def get_trades():
-
     """
     Get trades for the selected symbol, optionally filtered by side, source, and price.
     """
@@ -404,7 +401,6 @@ def get_trades():
         return jsonify(trades)
 
 def get_order_book_history():
-
     """
     Get historical snapshots of the order book for the selected symbol.
     """
@@ -427,7 +423,6 @@ def get_order_book_history():
         return jsonify(history)
 
 def get_spread_history():
-
     """
     Get historical bid-ask spread and mid price for the selected symbol.
     """
@@ -438,7 +433,6 @@ def get_spread_history():
         return jsonify(trading_state['spread_history'][symbol])
 
 def get_liquidity_history():
-
     """
     Get historical liquidity at top levels for the selected symbol.
     """
@@ -449,10 +443,6 @@ def get_liquidity_history():
         return jsonify(trading_state['liquidity_history'][symbol])
 
 def strategy_status():
-
-    """
-    Get status and performance metrics for all strategies for the selected symbol.
-    """
     symbol = request.args.get("symbol") or trading_state["current_symbol"]
     with state_lock:
         strategies = strategy_instances.get(symbol, {})
@@ -463,6 +453,7 @@ def strategy_status():
                 current_price = strat.order_book.get_mid_price()
             except Exception:
                 current_price = strat.order_book.last_price
+
             # Defensive fallback
             if current_price is None:
                 current_price = 0.0
@@ -471,7 +462,6 @@ def strategy_status():
             initial_capital = getattr(strat, "initial_capital", 100000)
             max_inventory = getattr(strat, "max_inventory", 1)
             inventory = getattr(strat, "inventory", 0)
-            total_trades = getattr(strat, "total_trades", 0)
             win_rate = strat.get_win_rate() if hasattr(strat, "get_win_rate") else 0.0
             # Use per-symbol trades if available (for accurate trade count)
             symbol_trades = trading_state["trades"].get(symbol, [])
@@ -495,7 +485,6 @@ def strategy_status():
         return jsonify(status)
 
 def get_execution_reports():
-
     """
     Get execution reports for the selected symbol, optionally filtered by source.
     """
@@ -508,7 +497,6 @@ def get_execution_reports():
         return jsonify(reports)
 
 def select_symbol():
-
     """
     Change the currently selected trading symbol.
     """
@@ -531,14 +519,12 @@ def order_latency_history():
         return jsonify(latency_data)
 
 def index():
-
     """
     Render the main dashboard page.
     """
     return render_template("index.html", symbols=symbols)
 
 def get_competition_logs():
-
     """
     Get strategy competition logs for the selected symbol.
     """
