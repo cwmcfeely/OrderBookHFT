@@ -332,15 +332,12 @@ class BaseStrategy(ABC):
 
     def reset_inventory(self):
         """
-        Reset all position and PnL state for this strategy.
+        Reset only the position-related state (inventory, avg_entry_price, position_start_time).
+        Do NOT reset realised_pnl or cumulative metrics here.
         """
         self.inventory = 0
         self.avg_entry_price = 0.0
-        self.realised_pnl = 0.0
-        self.order_count = 0
         self.position_start_time = None
-        self.total_trades = 0
-        self.winning_trades = 0
 
     def can_place_order(self):
         """
