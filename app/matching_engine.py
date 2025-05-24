@@ -257,23 +257,40 @@ class MatchingEngine:
                     taker_strategy.logger.info(
                         f"LOSS: {taker_strategy.source_name} lost maker priority at {level_price} for {trade_qty} on {symbol} to {top_order['source']}"
                     )
+
                 if maker_strategy:
                     exec_id = str(uuid.uuid4())
                     fix_engine = maker_strategy.fix_engine
+
+                    # Get original order quantity
+                    original_qty = top_order.get("original_qty", top_order["qty"] + trade_qty)
+                    leaves_qty = top_order["qty"] - trade_qty
+                    if leaves_qty < 0:
+                        leaves_qty = 0
+                    cum_qty = original_qty - leaves_qty
+
+                    # Determine partial/full fill status
+                    if leaves_qty > 0:
+                        ord_status = "1"  # Partially Filled
+                        exec_type = "1"  # Partial Fill
+                    else:
+                        ord_status = "2"  # Filled
+                        exec_type = "F"  # Fil
+
                     self.create_execution_report(
                         fix_engine=fix_engine,
                         cl_ord_id=top_order["id"],
                         order_id=top_order["id"],
                         exec_id=exec_id,
-                        ord_status="2",
-                        exec_type="F",
+                        ord_status=ord_status,
+                        exec_type=exec_type,
                         symbol=self.order_book.symbol,
                         side="1" if trade['side'] == "buy" else "2",
-                        order_qty=trade_qty,
+                        order_qty=original_qty,
                         last_qty=trade_qty,
                         last_px=level_price,
-                        leaves_qty=0,
-                        cum_qty=trade_qty,
+                        leaves_qty=leaves_qty,
+                        cum_qty=cum_qty,
                         price=level_price,
                         source=trade['maker_source'],
                         strategy_name=maker_strategy.source_name
@@ -282,23 +299,35 @@ class MatchingEngine:
                         maker_strategy.on_execution_report(trade)
                     if hasattr(maker_strategy, 'on_trade'):
                         maker_strategy.on_trade(trade)
+
                 if taker_strategy:
                     exec_id = str(uuid.uuid4())
                     fix_engine = taker_strategy.fix_engine
+
+                    # For the taker, original_qty is the total quantity they submitted (track this if needed)
+                    # Here, we use the trade_qty for this fill, but you may want to track cumulative fills
+                    leaves_qty = quantity - trade_qty
+                    if leaves_qty < 0:
+                        leaves_qty = 0
+                    cum_qty = (quantity + trade_qty) - leaves_qty
+
+                    ord_status = "1" if leaves_qty > 0 else "2"
+                    exec_type = "1" if leaves_qty > 0 else "F"
+
                     self.create_execution_report(
                         fix_engine=fix_engine,
                         cl_ord_id=order_id,
                         order_id=order_id,
                         exec_id=exec_id,
-                        ord_status="2",
-                        exec_type="F",
+                        ord_status=ord_status,
+                        exec_type=exec_type,
                         symbol=self.order_book.symbol,
                         side="1" if trade['side'] == "buy" else "2",
-                        order_qty=trade_qty,
+                        order_qty=quantity + trade_qty,  # Or track the taker's original order size
                         last_qty=trade_qty,
                         last_px=level_price,
-                        leaves_qty=0,
-                        cum_qty=trade_qty,
+                        leaves_qty=leaves_qty,
+                        cum_qty=cum_qty,
                         price=level_price,
                         source=trade['taker_source'],
                         strategy_name=taker_strategy.source_name
@@ -307,6 +336,7 @@ class MatchingEngine:
                         taker_strategy.on_execution_report(trade)
                     if hasattr(taker_strategy, 'on_trade'):
                         taker_strategy.on_trade(trade)
+
                 if self.trading_state is not None and self.state_lock is not None:
                     symbol = self.order_book.symbol
                     if latency_ms is not None:
@@ -318,6 +348,7 @@ class MatchingEngine:
                                 "strategy": trade["maker_source"],
                                 "type": "maker"
                             })
+
                     taker_latency = (time.time_ns() - new_submission_time) / 1e6
                     latency_list.append({
                         "time": trade["time"],
@@ -327,12 +358,15 @@ class MatchingEngine:
                     })
                     if len(latency_list) > 500:
                         latency_list = latency_list[-500:]
+
                 quantity -= trade_qty
                 top_order["qty"] -= trade_qty
                 if top_order["qty"] == 0:
                     queue.popleft()
+
                 if quantity > 0:
                     self.order_book.add_order(side, price, quantity, order_id, source)
+
             # After max_attempts, break to avoid infinite loop if all orders at this level are from self
         for trade in trades:
             latency_info = f" | Latency: {trade['latency_ms']:.2f} ms" if trade['latency_ms'] is not None else ""

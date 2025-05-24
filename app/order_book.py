@@ -60,6 +60,7 @@ class OrderBook:
         order = {
             "id": order_id,
             "qty": quantity,
+            "original_qty": quantity,
             "source": source,
             "order_time": order_time or time.time(),
             "price": price,
