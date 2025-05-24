@@ -46,7 +46,6 @@ def ensure_directories():
     and logs exist, creating them if necessary.
     """
     DATA_DIR_RAW.mkdir(parents=True, exist_ok=True)
-    DATA_DIR_PROCESSED.mkdir(parents=True, exist_ok=True)
     API_COUNT_FILE.parent.mkdir(parents=True, exist_ok=True)
 
 def load_api_count():
@@ -109,10 +108,8 @@ def get_last_trading_day(current_date=None):
 def load_cached_data(symbol):
     """
     Load cached intraday data for a symbol if available and not expired.
-
     Args:
         symbol (str): Trading symbol.
-
     Returns:
         dict or None: Cached JSON data or None if no valid cache.
     """
@@ -190,28 +187,10 @@ def _fetch_for_day(symbol, trading_day, interval="5m"):
         return None
 
 def fetch_intraday_data(symbol, interval="5m"):
-    """
-    Fetch intraday data for a symbol, using cache if available and valid.
-    Falls back to previous trading day if no data for last trading day.
-
-    Args:
-        symbol (str): Trading symbol.
-        interval (str): Data interval (default "5m").
-
-    Returns:
-        list or None: Intraday data list or None if fetch failed.
-    """
-    # Attempt to load cached data first
-    cached = load_cached_data(symbol)
-    if cached:
-        logger.info(f"Using cached data for {symbol}")
-        return cached
-
-    # Fetch data for last trading day
+    # Try to fetch fresh data from the API for the last trading day
     trading_day = get_last_trading_day()
     data = _fetch_for_day(symbol, trading_day, interval)
     if data:
-        # Cache raw and processed data for future use
         cache_data(symbol, data)
         processed = sorted(data, key=lambda x: x.get('date', ''))
         cache_data(symbol, processed, processed=True)
@@ -226,47 +205,57 @@ def fetch_intraday_data(symbol, interval="5m"):
         cache_data(symbol, data)
         processed = sorted(data, key=lambda x: x.get('date', ''))
         cache_data(symbol, processed, processed=True)
-    return data
+        return data
+
+    # If API fails for both days, use cached data as a last resort
+    cached = load_cached_data(symbol)
+    if cached:
+        logger.warning(f"API unavailable for {symbol}, using cached data.")
+        return cached
+
+    logger.error(f"No data available for {symbol} from API or cache.")
+    return None
 
 def get_latest_price(symbol):
     """
-    Get the latest known price for a symbol from cache or fetch fresh data if missing.
-
+    Always attempt to fetch the latest price from the API first.
+    If API fails, use the in-memory cache as a fallback.
     Args:
         symbol (str): Trading symbol.
-
     Returns:
         float or None: Latest price or None if unavailable.
     """
+    # Try to fetch fresh intraday data (API-first)
+    data = fetch_intraday_data(symbol)
+    if data:
+        latest = data[-1]
+        price = latest.get('close') or latest.get('c') or (
+            (latest.get('bid', 0) + latest.get('ask', 0)) / 2
+        )
+        if price is not None:
+            # Optionally update the in-memory cache
+            with latest_prices_lock:
+                latest_prices[symbol] = price
+            return price
+
+    # Fallback: use in-memory cache if API/data fails
     with latest_prices_lock:
         price = latest_prices.get(symbol)
-    if price is not None:
-        return price
-
-    # If not cached, fetch fresh intraday data and extract latest price
-    data = fetch_intraday_data(symbol)
-    if not data:
-        return None
-    latest = data[-1]
-    return latest.get('close') or latest.get('c') or (
-        (latest.get('bid', 0) + latest.get('ask', 0)) / 2
-    )
+    return price
 
 def cache_data(symbol, data, processed=False):
     """
     Cache data to disk as JSON file in appropriate directory.
-
     Args:
         symbol (str): Trading symbol.
         data (list or dict): Data to cache.
         processed (bool): Whether data is processed (goes to processed directory).
-
     Returns:
         Path or None: Path to cached file or None if failed.
     """
     try:
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        directory = DATA_DIR_PROCESSED if processed else DATA_DIR_RAW
+        directory = DATA_DIR_RAW
         filepath = directory / f"{symbol}_{ts}.json"
         with open(filepath, "w") as f:
             json.dump(data, f, indent=2)
