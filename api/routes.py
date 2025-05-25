@@ -1,19 +1,21 @@
+import logging
 import threading
 import time
 import uuid
+from collections import deque
+from datetime import datetime
+
 import yaml
-import logging
-from flask import request, jsonify, render_template
+from flask import jsonify, render_template, request
+
+from app.fix_engine import FixEngine
 from app.market_data import get_latest_price
 from app.matching_engine import MatchingEngine, TradingHalted
 from app.order_book import OrderBook
-from strategies.my_strategy import MyStrategy
 from strategies.competitor_strategy import PassiveLiquidityProvider
 from strategies.competitor_strategy1 import MarketMakerStrategy
 from strategies.competitor_strategy2 import MomentumStrategy
-from app.fix_engine import FixEngine
-from datetime import datetime
-from collections import deque
+from strategies.my_strategy import MyStrategy
 
 # Set up logger for this module
 logger = logging.getLogger(__name__)

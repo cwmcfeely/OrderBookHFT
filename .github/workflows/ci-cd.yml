@@ -25,7 +25,7 @@ jobs:
 
       - name: Run Python linters
         run: |
-          flake8 app/ strategies/ tests/
+          flake8 app/ strategies/ tests/ api/
           black --check .
           isort --check-only .
 

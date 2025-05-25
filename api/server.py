@@ -1,6 +1,7 @@
 import logging
-from app.logger import setup_logging
+
 from api import create_app
+from app.logger import setup_logging
 
 # Set up logging before app creation
 setup_logging(
