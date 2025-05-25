@@ -1,0 +1,443 @@
+2025-05-25 20:21:46,978 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL ASML.AS =====
+2025-05-25 20:21:46,978 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL PHIA.AS =====
+2025-05-25 20:21:46,978 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL INGA.AS =====
+2025-05-25 20:21:46,978 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL AD.AS =====
+2025-05-25 20:21:46,978 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL OR.PA =====
+2025-05-25 20:21:46,978 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL SAN.PA =====
+2025-05-25 20:21:46,978 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL my_strategy =====
+2025-05-25 20:21:46,979 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL passive_liquidity_provider =====
+2025-05-25 20:21:46,979 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL market_maker =====
+2025-05-25 20:21:46,979 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL momentum =====
+2025-05-25 20:21:47,056 [INFO] Exchange has been halted by user action.
+2025-05-25 20:21:47,056 [INFO] EXCHANGE: Exchange has been halted by user action.
+2025-05-25 20:21:47,059 [INFO] my_strategy has been paused by user action.
+2025-05-25 20:21:47,059 [INFO] PAUSE: my_strategy has been paused by user action.
+2025-05-25 20:21:47,117 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4972341648'>
+2025-05-25 20:21:47,117 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4972146384'>
+2025-05-25 20:21:47,119 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4969747216'>
+2025-05-25 20:21:47,119 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4993545712'>
+2025-05-25 20:21:47,119 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4969747216'>
+2025-05-25 20:21:47,119 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4993545712'>
+2025-05-25 20:21:47,121 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4971981248'>
+2025-05-25 20:21:47,121 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4412875376'>
+2025-05-25 20:21:47,122 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4972144464'>
+2025-05-25 20:21:47,122 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4971753312'>
+1970-01-01 01:16:40,000 [INFO] TestSource: Order skipped due to cooldown: 1 10@101
+1970-01-01 01:16:40,000 [INFO] TestSource: Order placed: Side=1, Qty=10, Price=101
+2025-05-25 20:21:47,128 [CRITICAL] Daily loss limit exceeded
+2025-05-25 20:21:47,128 [ERROR] Daily order limit reached
+2025-05-25 20:21:47,129 [ERROR] Order quantity 1000 exceeds max 100
+2025-05-25 20:21:47,129 [WARNING] Position held beyond max duration
+2025-05-25 20:21:47,130 [WARNING] Price deviation 18.81% exceeds max 5.00%
+2025-05-25 20:21:47,130 [ERROR] Order quantity 200 exceeds max 100
+2025-05-25 20:21:47,131 [WARNING] Volatility threshold exceeded
+2025-05-25 20:21:47,131 [INFO] TestSource: Trailing stop hit on long at 107, closing position.
+2025-05-25 20:21:47,132 [WARNING] TestSource: Drawdown limit hit (95.0), entering cooldown.
+1970-01-01 01:16:40,000 [INFO] passive_liquidity_provider: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] passive_liquidity_provider: No best bid/ask, skipping orders.
+2025-05-25 20:21:47,135 [WARNING] passive_liquidity_provider: Buy order rejected (would exceed max inventory).
+2025-05-25 20:21:47,136 [WARNING] passive_liquidity_provider: Buy order rejected (would exceed max inventory).
+2025-05-25 20:21:47,136 [WARNING] passive_liquidity_provider: Sell order rejected (would exceed short max inventory).
+1970-01-01 01:16:40,000 [INFO] market_maker: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] market_maker: Inventory at limit (100), rebalancing required.
+1970-01-01 01:16:40,000 [INFO] market_maker: Missing best bid or ask, skipping orders.
+1970-01-01 01:16:40,000 [INFO] market_maker: Placed BUY order 5@100.3995
+1970-01-01 01:16:40,000 [INFO] market_maker: Placed SELL order 5@100.6005
+1970-01-01 01:16:40,000 [WARNING] market_maker: Drawdown limit hit (1005.0), entering cooldown.
+2025-05-25 20:21:47,141 [WARNING] market_maker: Buy order rejected (would exceed max inventory).
+2025-05-25 20:21:47,141 [WARNING] market_maker: Buy order rejected (would exceed max inventory).
+2025-05-25 20:21:47,141 [WARNING] market_maker: Sell order rejected (would exceed short max inventory).
+1970-01-01 01:16:40,000 [INFO] momentum: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] momentum: Inventory at limit (100), rebalancing required.
+1970-01-01 01:16:40,000 [INFO] momentum: No best bid/ask, skipping orders.
+1970-01-01 01:16:40,000 [INFO] momentum: Placed BID 7@100.5000 (trend=1.0000)
+1970-01-01 01:16:40,000 [INFO] momentum: Placed ASK 5@100.7010 (trend=1.0000)
+1970-01-01 01:16:40,000 [INFO] momentum: Not enough price history (2 < 10), skipping orders.
+1970-01-01 01:16:40,000 [WARNING] momentum: Drawdown limit hit (1005.0), entering cooldown.
+2025-05-25 20:21:47,147 [WARNING] momentum: Buy order rejected (would exceed max inventory).
+2025-05-25 20:21:47,147 [WARNING] momentum: Buy order rejected (would exceed max inventory).
+2025-05-25 20:21:47,147 [WARNING] momentum: Sell order rejected (would exceed short max inventory).
+1970-01-01 01:16:40,000 [INFO] my_strategy: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] my_strategy: Inventory at limit (100), rebalancing required.
+1970-01-01 01:16:40,000 [INFO] my_strategy: Placed BUY order 5@99.0000
+1970-01-01 01:16:40,000 [INFO] my_strategy: Placed SELL order 5@102.0100
+1970-01-01 01:16:40,000 [WARNING] my_strategy: Drawdown limit hit (1005.0), entering cooldown.
+2025-05-25 20:21:47,153 [WARNING] my_strategy: Buy order rejected (would exceed max inventory).
+2025-05-25 20:21:47,154 [WARNING] my_strategy: Buy order rejected (would exceed max inventory).
+2025-05-25 20:21:47,154 [WARNING] my_strategy: Sell order rejected (would exceed short max inventory).
+2025-05-25 21:23:08,826 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL ASML.AS =====
+2025-05-25 21:23:08,826 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL PHIA.AS =====
+2025-05-25 21:23:08,826 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL INGA.AS =====
+2025-05-25 21:23:08,826 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL AD.AS =====
+2025-05-25 21:23:08,826 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL OR.PA =====
+2025-05-25 21:23:08,826 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL SAN.PA =====
+2025-05-25 21:23:08,827 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL my_strategy =====
+2025-05-25 21:23:08,827 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL passive_liquidity_provider =====
+2025-05-25 21:23:08,827 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL market_maker =====
+2025-05-25 21:23:08,828 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL momentum =====
+2025-05-25 21:23:08,914 [INFO] Exchange has been halted by user action.
+2025-05-25 21:23:08,914 [INFO] EXCHANGE: Exchange has been halted by user action.
+2025-05-25 21:23:08,917 [INFO] my_strategy has been paused by user action.
+2025-05-25 21:23:08,917 [INFO] PAUSE: my_strategy has been paused by user action.
+2025-05-25 21:23:08,974 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4747110944'>
+2025-05-25 21:23:08,974 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4747800080'>
+2025-05-25 21:23:08,976 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4748088032'>
+2025-05-25 21:23:08,976 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4748091632'>
+2025-05-25 21:23:08,976 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4748088032'>
+2025-05-25 21:23:08,976 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4748091632'>
+2025-05-25 21:23:08,978 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4745940528'>
+2025-05-25 21:23:08,978 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4747330144'>
+1970-01-01 01:16:40,000 [INFO] TestSource: Order skipped due to cooldown: 1 10@101
+1970-01-01 01:16:40,000 [INFO] TestSource: Order placed: Side=1, Qty=10, Price=101
+2025-05-25 21:23:09,031 [CRITICAL] Daily loss limit exceeded
+2025-05-25 21:23:09,032 [ERROR] Daily order limit reached
+2025-05-25 21:23:09,032 [ERROR] Order quantity 1000 exceeds max 100
+2025-05-25 21:23:09,032 [WARNING] Position held beyond max duration
+2025-05-25 21:23:09,033 [WARNING] Price deviation 18.81% exceeds max 5.00%
+2025-05-25 21:23:09,033 [ERROR] Order quantity 200 exceeds max 100
+2025-05-25 21:23:09,033 [WARNING] Volatility threshold exceeded
+2025-05-25 21:23:09,034 [INFO] TestSource: Trailing stop hit on long at 107, closing position.
+2025-05-25 21:23:09,034 [WARNING] TestSource: Drawdown limit hit (95.0), entering cooldown.
+1970-01-01 01:16:40,000 [INFO] passive_liquidity_provider: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] passive_liquidity_provider: No best bid/ask, skipping orders.
+2025-05-25 21:23:09,037 [WARNING] passive_liquidity_provider: Buy order rejected (would exceed max inventory).
+2025-05-25 21:23:09,038 [WARNING] passive_liquidity_provider: Buy order rejected (would exceed max inventory).
+2025-05-25 21:23:09,038 [WARNING] passive_liquidity_provider: Sell order rejected (would exceed short max inventory).
+1970-01-01 01:16:40,000 [INFO] market_maker: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] market_maker: Inventory at limit (100), rebalancing required.
+1970-01-01 01:16:40,000 [INFO] market_maker: Missing best bid or ask, skipping orders.
+1970-01-01 01:16:40,000 [INFO] market_maker: Placed BUY order 5@100.3995
+1970-01-01 01:16:40,000 [INFO] market_maker: Placed SELL order 5@100.6005
+1970-01-01 01:16:40,000 [WARNING] market_maker: Drawdown limit hit (1005.0), entering cooldown.
+2025-05-25 21:23:09,042 [WARNING] market_maker: Buy order rejected (would exceed max inventory).
+2025-05-25 21:23:09,043 [WARNING] market_maker: Buy order rejected (would exceed max inventory).
+2025-05-25 21:23:09,043 [WARNING] market_maker: Sell order rejected (would exceed short max inventory).
+1970-01-01 01:16:40,000 [INFO] momentum: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] momentum: Inventory at limit (100), rebalancing required.
+1970-01-01 01:16:40,000 [INFO] momentum: No best bid/ask, skipping orders.
+1970-01-01 01:16:40,000 [INFO] momentum: Placed BID 7@100.5000 (trend=1.0000)
+1970-01-01 01:16:40,000 [INFO] momentum: Placed ASK 5@100.7010 (trend=1.0000)
+1970-01-01 01:16:40,000 [INFO] momentum: Not enough price history (2 < 10), skipping orders.
+1970-01-01 01:16:40,000 [WARNING] momentum: Drawdown limit hit (1005.0), entering cooldown.
+2025-05-25 21:23:09,048 [WARNING] momentum: Buy order rejected (would exceed max inventory).
+2025-05-25 21:23:09,049 [WARNING] momentum: Buy order rejected (would exceed max inventory).
+2025-05-25 21:23:09,049 [WARNING] momentum: Sell order rejected (would exceed short max inventory).
+1970-01-01 01:16:40,000 [INFO] my_strategy: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] my_strategy: Inventory at limit (100), rebalancing required.
+1970-01-01 01:16:40,000 [INFO] my_strategy: Placed BUY order 5@99.0000
+1970-01-01 01:16:40,000 [INFO] my_strategy: Placed SELL order 5@102.0100
+1970-01-01 01:16:40,000 [WARNING] my_strategy: Drawdown limit hit (1005.0), entering cooldown.
+2025-05-25 21:23:09,054 [WARNING] my_strategy: Buy order rejected (would exceed max inventory).
+2025-05-25 21:23:09,054 [WARNING] my_strategy: Buy order rejected (would exceed max inventory).
+2025-05-25 21:23:09,054 [WARNING] my_strategy: Sell order rejected (would exceed short max inventory).
+2025-05-25 21:23:29,027 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL ASML.AS =====
+2025-05-25 21:23:29,027 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL PHIA.AS =====
+2025-05-25 21:23:29,027 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL INGA.AS =====
+2025-05-25 21:23:29,027 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL AD.AS =====
+2025-05-25 21:23:29,027 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL OR.PA =====
+2025-05-25 21:23:29,027 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL SAN.PA =====
+2025-05-25 21:23:29,031 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL my_strategy =====
+2025-05-25 21:23:29,037 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL passive_liquidity_provider =====
+2025-05-25 21:23:29,037 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL market_maker =====
+2025-05-25 21:23:29,038 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL momentum =====
+2025-05-25 21:23:29,113 [INFO] Exchange has been halted by user action.
+2025-05-25 21:23:29,113 [INFO] EXCHANGE: Exchange has been halted by user action.
+2025-05-25 21:23:29,115 [INFO] my_strategy has been paused by user action.
+2025-05-25 21:23:29,116 [INFO] PAUSE: my_strategy has been paused by user action.
+2025-05-25 21:23:29,174 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4516218880'>
+2025-05-25 21:23:29,175 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4516022848'>
+2025-05-25 21:23:29,176 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4512951632'>
+2025-05-25 21:23:29,176 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4516149008'>
+2025-05-25 21:23:29,176 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4512951632'>
+2025-05-25 21:23:29,176 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4516149008'>
+2025-05-25 21:23:29,179 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4516785968'>
+2025-05-25 21:23:29,179 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4512994784'>
+2025-05-25 21:23:29,180 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4515427872'>
+2025-05-25 21:23:29,180 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4516030528'>
+1970-01-01 01:16:40,000 [INFO] TestSource: Order skipped due to cooldown: 1 10@101
+1970-01-01 01:16:40,000 [INFO] TestSource: Order placed: Side=1, Qty=10, Price=101
+2025-05-25 21:23:29,186 [CRITICAL] Daily loss limit exceeded
+2025-05-25 21:23:29,186 [ERROR] Daily order limit reached
+2025-05-25 21:23:29,187 [ERROR] Order quantity 1000 exceeds max 100
+2025-05-25 21:23:29,187 [WARNING] Position held beyond max duration
+2025-05-25 21:23:29,187 [WARNING] Price deviation 18.81% exceeds max 5.00%
+2025-05-25 21:23:29,188 [ERROR] Order quantity 200 exceeds max 100
+2025-05-25 21:23:29,188 [WARNING] Volatility threshold exceeded
+2025-05-25 21:23:29,189 [INFO] TestSource: Trailing stop hit on long at 107, closing position.
+2025-05-25 21:23:29,189 [WARNING] TestSource: Drawdown limit hit (95.0), entering cooldown.
+1970-01-01 01:16:40,000 [INFO] passive_liquidity_provider: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] passive_liquidity_provider: No best bid/ask, skipping orders.
+2025-05-25 21:23:29,193 [WARNING] passive_liquidity_provider: Buy order rejected (would exceed max inventory).
+2025-05-25 21:23:29,193 [WARNING] passive_liquidity_provider: Buy order rejected (would exceed max inventory).
+2025-05-25 21:23:29,193 [WARNING] passive_liquidity_provider: Sell order rejected (would exceed short max inventory).
+1970-01-01 01:16:40,000 [INFO] market_maker: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] market_maker: Inventory at limit (100), rebalancing required.
+1970-01-01 01:16:40,000 [INFO] market_maker: Missing best bid or ask, skipping orders.
+1970-01-01 01:16:40,000 [INFO] market_maker: Placed BUY order 5@100.3995
+1970-01-01 01:16:40,000 [INFO] market_maker: Placed SELL order 5@100.6005
+1970-01-01 01:16:40,000 [WARNING] market_maker: Drawdown limit hit (1005.0), entering cooldown.
+2025-05-25 21:23:29,198 [WARNING] market_maker: Buy order rejected (would exceed max inventory).
+2025-05-25 21:23:29,198 [WARNING] market_maker: Buy order rejected (would exceed max inventory).
+2025-05-25 21:23:29,198 [WARNING] market_maker: Sell order rejected (would exceed short max inventory).
+1970-01-01 01:16:40,000 [INFO] momentum: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] momentum: Inventory at limit (100), rebalancing required.
+1970-01-01 01:16:40,000 [INFO] momentum: No best bid/ask, skipping orders.
+1970-01-01 01:16:40,000 [INFO] momentum: Placed BID 7@100.5000 (trend=1.0000)
+1970-01-01 01:16:40,000 [INFO] momentum: Placed ASK 5@100.7010 (trend=1.0000)
+1970-01-01 01:16:40,000 [INFO] momentum: Not enough price history (2 < 10), skipping orders.
+1970-01-01 01:16:40,000 [WARNING] momentum: Drawdown limit hit (1005.0), entering cooldown.
+2025-05-25 21:23:29,203 [WARNING] momentum: Buy order rejected (would exceed max inventory).
+2025-05-25 21:23:29,204 [WARNING] momentum: Buy order rejected (would exceed max inventory).
+2025-05-25 21:23:29,204 [WARNING] momentum: Sell order rejected (would exceed short max inventory).
+1970-01-01 01:16:40,000 [INFO] my_strategy: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] my_strategy: Inventory at limit (100), rebalancing required.
+1970-01-01 01:16:40,000 [INFO] my_strategy: Placed BUY order 5@99.0000
+1970-01-01 01:16:40,000 [INFO] my_strategy: Placed SELL order 5@102.0100
+1970-01-01 01:16:40,000 [WARNING] my_strategy: Drawdown limit hit (1005.0), entering cooldown.
+2025-05-25 21:23:29,210 [WARNING] my_strategy: Buy order rejected (would exceed max inventory).
+2025-05-25 21:23:29,211 [WARNING] my_strategy: Buy order rejected (would exceed max inventory).
+2025-05-25 21:23:29,211 [WARNING] my_strategy: Sell order rejected (would exceed short max inventory).
+2025-05-25 21:28:24,974 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL ASML.AS =====
+2025-05-25 21:28:24,974 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL PHIA.AS =====
+2025-05-25 21:28:24,974 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL INGA.AS =====
+2025-05-25 21:28:24,974 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL AD.AS =====
+2025-05-25 21:28:24,974 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL OR.PA =====
+2025-05-25 21:28:24,974 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL SAN.PA =====
+2025-05-25 21:28:24,975 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL my_strategy =====
+2025-05-25 21:28:24,978 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL passive_liquidity_provider =====
+2025-05-25 21:28:24,978 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL market_maker =====
+2025-05-25 21:28:24,978 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL momentum =====
+2025-05-25 21:28:25,051 [INFO] Exchange has been halted by user action.
+2025-05-25 21:28:25,051 [INFO] EXCHANGE: Exchange has been halted by user action.
+2025-05-25 21:28:25,054 [INFO] my_strategy has been paused by user action.
+2025-05-25 21:28:25,054 [INFO] PAUSE: my_strategy has been paused by user action.
+2025-05-25 21:28:25,112 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4918423152'>
+2025-05-25 21:28:25,112 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4918447616'>
+2025-05-25 21:28:25,113 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4920110896'>
+2025-05-25 21:28:25,113 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4920459920'>
+2025-05-25 21:28:25,113 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4920110896'>
+2025-05-25 21:28:25,114 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4920459920'>
+2025-05-25 21:28:25,115 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4920466352'>
+2025-05-25 21:28:25,116 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4920108496'>
+2025-05-25 21:28:25,117 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4918451504'>
+2025-05-25 21:28:25,117 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4919914816'>
+1970-01-01 01:16:40,000 [INFO] TestSource: Order skipped due to cooldown: 1 10@101
+1970-01-01 01:16:40,000 [INFO] TestSource: Order placed: Side=1, Qty=10, Price=101
+2025-05-25 21:28:25,124 [CRITICAL] Daily loss limit exceeded
+2025-05-25 21:28:25,124 [ERROR] Daily order limit reached
+2025-05-25 21:28:25,124 [ERROR] Order quantity 1000 exceeds max 100
+2025-05-25 21:28:25,125 [WARNING] Position held beyond max duration
+2025-05-25 21:28:25,126 [WARNING] Price deviation 18.81% exceeds max 5.00%
+2025-05-25 21:28:25,126 [ERROR] Order quantity 200 exceeds max 100
+2025-05-25 21:28:25,126 [WARNING] Volatility threshold exceeded
+2025-05-25 21:28:25,127 [INFO] TestSource: Trailing stop hit on long at 107, closing position.
+2025-05-25 21:28:25,127 [WARNING] TestSource: Drawdown limit hit (95.0), entering cooldown.
+1970-01-01 01:16:40,000 [INFO] passive_liquidity_provider: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] passive_liquidity_provider: No best bid/ask, skipping orders.
+2025-05-25 21:28:25,131 [WARNING] passive_liquidity_provider: Buy order rejected (would exceed max inventory).
+2025-05-25 21:28:25,131 [WARNING] passive_liquidity_provider: Buy order rejected (would exceed max inventory).
+2025-05-25 21:28:25,131 [WARNING] passive_liquidity_provider: Sell order rejected (would exceed short max inventory).
+1970-01-01 01:16:40,000 [INFO] market_maker: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] market_maker: Inventory at limit (100), rebalancing required.
+1970-01-01 01:16:40,000 [INFO] market_maker: Missing best bid or ask, skipping orders.
+1970-01-01 01:16:40,000 [INFO] market_maker: Placed BUY order 5@100.3995
+1970-01-01 01:16:40,000 [INFO] market_maker: Placed SELL order 5@100.6005
+1970-01-01 01:16:40,000 [WARNING] market_maker: Drawdown limit hit (1005.0), entering cooldown.
+2025-05-25 21:28:25,136 [WARNING] market_maker: Buy order rejected (would exceed max inventory).
+2025-05-25 21:28:25,136 [WARNING] market_maker: Buy order rejected (would exceed max inventory).
+2025-05-25 21:28:25,137 [WARNING] market_maker: Sell order rejected (would exceed short max inventory).
+1970-01-01 01:16:40,000 [INFO] momentum: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] momentum: Inventory at limit (100), rebalancing required.
+1970-01-01 01:16:40,000 [INFO] momentum: No best bid/ask, skipping orders.
+1970-01-01 01:16:40,000 [INFO] momentum: Placed BID 7@100.5000 (trend=1.0000)
+1970-01-01 01:16:40,000 [INFO] momentum: Placed ASK 5@100.7010 (trend=1.0000)
+1970-01-01 01:16:40,000 [INFO] momentum: Not enough price history (2 < 10), skipping orders.
+1970-01-01 01:16:40,000 [WARNING] momentum: Drawdown limit hit (1005.0), entering cooldown.
+2025-05-25 21:28:25,143 [WARNING] momentum: Buy order rejected (would exceed max inventory).
+2025-05-25 21:28:25,143 [WARNING] momentum: Buy order rejected (would exceed max inventory).
+2025-05-25 21:28:25,144 [WARNING] momentum: Sell order rejected (would exceed short max inventory).
+1970-01-01 01:16:40,000 [INFO] my_strategy: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] my_strategy: Inventory at limit (100), rebalancing required.
+1970-01-01 01:16:40,000 [INFO] my_strategy: Placed BUY order 5@99.0000
+1970-01-01 01:16:40,000 [INFO] my_strategy: Placed SELL order 5@102.0100
+1970-01-01 01:16:40,000 [WARNING] my_strategy: Drawdown limit hit (1005.0), entering cooldown.
+2025-05-25 21:28:25,148 [WARNING] my_strategy: Buy order rejected (would exceed max inventory).
+2025-05-25 21:28:25,148 [WARNING] my_strategy: Buy order rejected (would exceed max inventory).
+2025-05-25 21:28:25,149 [WARNING] my_strategy: Sell order rejected (would exceed short max inventory).
+2025-05-25 21:32:59,329 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL ASML.AS =====
+2025-05-25 21:32:59,329 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL PHIA.AS =====
+2025-05-25 21:32:59,329 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL INGA.AS =====
+2025-05-25 21:32:59,329 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL AD.AS =====
+2025-05-25 21:32:59,330 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL OR.PA =====
+2025-05-25 21:32:59,330 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL SAN.PA =====
+2025-05-25 21:32:59,330 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL my_strategy =====
+2025-05-25 21:32:59,330 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL passive_liquidity_provider =====
+2025-05-25 21:32:59,330 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL market_maker =====
+2025-05-25 21:32:59,330 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL momentum =====
+2025-05-25 21:32:59,406 [INFO] Exchange has been halted by user action.
+2025-05-25 21:32:59,406 [INFO] EXCHANGE: Exchange has been halted by user action.
+2025-05-25 21:32:59,408 [INFO] my_strategy has been paused by user action.
+2025-05-25 21:32:59,408 [INFO] PAUSE: my_strategy has been paused by user action.
+2025-05-25 21:32:59,466 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4815078512'>
+2025-05-25 21:32:59,466 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4815263776'>
+2025-05-25 21:32:59,467 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4815381296'>
+2025-05-25 21:32:59,468 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4815114112'>
+2025-05-25 21:32:59,468 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4815381296'>
+2025-05-25 21:32:59,468 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4815114112'>
+2025-05-25 21:32:59,470 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4815110224'>
+2025-05-25 21:32:59,470 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4815472448'>
+2025-05-25 21:32:59,471 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4815277904'>
+2025-05-25 21:32:59,471 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4770567504'>
+1970-01-01 01:16:40,000 [INFO] TestSource: Order skipped due to cooldown: 1 10@101
+1970-01-01 01:16:40,000 [INFO] TestSource: Order placed: Side=1, Qty=10, Price=101
+2025-05-25 21:32:59,477 [CRITICAL] Daily loss limit exceeded
+2025-05-25 21:32:59,477 [ERROR] Daily order limit reached
+2025-05-25 21:32:59,477 [ERROR] Order quantity 1000 exceeds max 100
+2025-05-25 21:32:59,478 [WARNING] Position held beyond max duration
+2025-05-25 21:32:59,478 [WARNING] Price deviation 18.81% exceeds max 5.00%
+2025-05-25 21:32:59,478 [ERROR] Order quantity 200 exceeds max 100
+2025-05-25 21:32:59,479 [WARNING] Volatility threshold exceeded
+2025-05-25 21:32:59,479 [INFO] TestSource: Trailing stop hit on long at 107, closing position.
+2025-05-25 21:32:59,479 [WARNING] TestSource: Drawdown limit hit (95.0), entering cooldown.
+1970-01-01 01:16:40,000 [INFO] passive_liquidity_provider: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] passive_liquidity_provider: No best bid/ask, skipping orders.
+2025-05-25 21:32:59,483 [WARNING] passive_liquidity_provider: Buy order rejected (would exceed max inventory).
+2025-05-25 21:32:59,483 [WARNING] passive_liquidity_provider: Buy order rejected (would exceed max inventory).
+2025-05-25 21:32:59,484 [WARNING] passive_liquidity_provider: Sell order rejected (would exceed short max inventory).
+1970-01-01 01:16:40,000 [INFO] market_maker: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] market_maker: Inventory at limit (100), rebalancing required.
+1970-01-01 01:16:40,000 [INFO] market_maker: Missing best bid or ask, skipping orders.
+1970-01-01 01:16:40,000 [INFO] market_maker: Placed BUY order 5@100.3995
+1970-01-01 01:16:40,000 [INFO] market_maker: Placed SELL order 5@100.6005
+1970-01-01 01:16:40,000 [WARNING] market_maker: Drawdown limit hit (1005.0), entering cooldown.
+2025-05-25 21:32:59,488 [WARNING] market_maker: Buy order rejected (would exceed max inventory).
+2025-05-25 21:32:59,488 [WARNING] market_maker: Buy order rejected (would exceed max inventory).
+2025-05-25 21:32:59,488 [WARNING] market_maker: Sell order rejected (would exceed short max inventory).
+1970-01-01 01:16:40,000 [INFO] momentum: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] momentum: Inventory at limit (100), rebalancing required.
+1970-01-01 01:16:40,000 [INFO] momentum: No best bid/ask, skipping orders.
+1970-01-01 01:16:40,000 [INFO] momentum: Placed BID 7@100.5000 (trend=1.0000)
+1970-01-01 01:16:40,000 [INFO] momentum: Placed ASK 5@100.7010 (trend=1.0000)
+1970-01-01 01:16:40,000 [INFO] momentum: Not enough price history (2 < 10), skipping orders.
+1970-01-01 01:16:40,000 [WARNING] momentum: Drawdown limit hit (1005.0), entering cooldown.
+2025-05-25 21:32:59,494 [WARNING] momentum: Buy order rejected (would exceed max inventory).
+2025-05-25 21:32:59,494 [WARNING] momentum: Buy order rejected (would exceed max inventory).
+2025-05-25 21:32:59,494 [WARNING] momentum: Sell order rejected (would exceed short max inventory).
+1970-01-01 01:16:40,000 [INFO] my_strategy: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] my_strategy: Inventory at limit (100), rebalancing required.
+1970-01-01 01:16:40,000 [INFO] my_strategy: Placed BUY order 5@99.0000
+1970-01-01 01:16:40,000 [INFO] my_strategy: Placed SELL order 5@102.0100
+1970-01-01 01:16:40,000 [WARNING] my_strategy: Drawdown limit hit (1005.0), entering cooldown.
+2025-05-25 21:32:59,498 [WARNING] my_strategy: Buy order rejected (would exceed max inventory).
+2025-05-25 21:32:59,499 [WARNING] my_strategy: Buy order rejected (would exceed max inventory).
+2025-05-25 21:32:59,499 [WARNING] my_strategy: Sell order rejected (would exceed short max inventory).
+2025-05-25 21:33:17,626 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL ASML.AS =====
+2025-05-25 21:33:17,627 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL PHIA.AS =====
+2025-05-25 21:33:17,627 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL INGA.AS =====
+2025-05-25 21:33:17,627 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL AD.AS =====
+2025-05-25 21:33:17,627 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL OR.PA =====
+2025-05-25 21:33:17,627 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL SAN.PA =====
+2025-05-25 21:33:17,631 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL my_strategy =====
+2025-05-25 21:33:17,631 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL passive_liquidity_provider =====
+2025-05-25 21:33:17,631 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL market_maker =====
+2025-05-25 21:33:17,632 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL momentum =====
+2025-05-25 21:33:17,639 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-05-25 21:33:17,639 [INFO] [33mPress CTRL+C to quit[0m
+2025-05-25 21:33:18,451 [INFO] ExecutionReport: 8=FIX.4.4|9=305|35=8|49=EXCHANGE|56=MY_COMPANY|34=1|11=1470aaab-9c69-4f88-9777-db7e24a7bd84|37=1470aaab-9c69-4f88-9777-db7e24a7bd84|17=8e542ef8-7154-427b-b6d6-ed6b0a22d941|39=2|150=F|55=ASML.AS|54=2|38=18|32=9|31=636.17397525|151=0|14=18|44=636.17397525|6007=my_strategy|52=20250525-20:33:18.450|52=20250525-20:33:18.450|10=224|
+2025-05-25 21:33:18,451 [INFO] ExecutionReport: 8=FIX.4.4|9=303|35=8|49=EXCHANGE|56=MY_COMPANY|34=2|11=f9255b92-bbd6-4038-b709-85eb2c3d6d3c|37=f9255b92-bbd6-4038-b709-85eb2c3d6d3c|17=0764a12a-e8ca-419d-a40f-1537bac6ae99|39=2|150=F|55=ASML.AS|54=1|38=2|32=1|31=636.17397525|151=0|14=2|44=636.17397525|6007=my_strategy|52=20250525-20:33:18.451|52=20250525-20:33:18.451|10=159|
+2025-05-25 21:33:18,452 [INFO] ExecutionReport: 8=FIX.4.4|9=320|35=8|49=EXCHANGE|56=MY_COMPANY|34=2|11=c979bbec-b773-4a69-ab9a-09832b83015c|37=c979bbec-b773-4a69-ab9a-09832b83015c|17=48c8812a-2ee3-4d8e-a155-768f5a412afb|39=2|150=F|55=ASML.AS|54=2|38=10|32=5|31=636.17397525|151=0|14=10|44=636.17397525|6007=passive_liquidity_provider|52=20250525-20:33:18.452|52=20250525-20:33:18.452|10=043|
+2025-05-25 21:33:18,453 [INFO] ExecutionReport: 8=FIX.4.4|9=320|35=8|49=EXCHANGE|56=MY_COMPANY|34=3|11=9e1551a4-bda9-45e6-9079-cb6acfaa16c4|37=9e1551a4-bda9-45e6-9079-cb6acfaa16c4|17=1c0bd9bd-33eb-4427-805a-c521b29f6367|39=2|150=F|55=ASML.AS|54=1|38=16|32=8|31=636.17397525|151=0|14=16|44=636.17397525|6007=passive_liquidity_provider|52=20250525-20:33:18.452|52=20250525-20:33:18.452|10=177|
+2025-05-25 21:33:18,454 [INFO] ExecutionReport: 8=FIX.4.4|9=306|35=8|49=EXCHANGE|56=MY_COMPANY|34=2|11=88d8e57c-b3ee-4d75-a213-5ce527ad4c68|37=88d8e57c-b3ee-4d75-a213-5ce527ad4c68|17=7605b3d1-a32a-46db-a15b-75539b6816b2|39=2|150=F|55=ASML.AS|54=2|38=12|32=6|31=636.17397525|151=0|14=12|44=636.17397525|6007=market_maker|52=20250525-20:33:18.453|52=20250525-20:33:18.453|10=037|
+2025-05-25 21:33:18,454 [INFO] ExecutionReport: 8=FIX.4.4|9=307|35=8|49=EXCHANGE|56=MY_COMPANY|34=3|11=90ebca5f-795b-4aa0-84ac-3064ea40413b|37=90ebca5f-795b-4aa0-84ac-3064ea40413b|17=e273593f-2dc3-4e48-9717-a3c72dffb773|39=2|150=F|55=ASML.AS|54=1|38=20|32=10|31=636.17397525|151=0|14=20|44=636.17397525|6007=market_maker|52=20250525-20:33:18.454|52=20250525-20:33:18.454|10=093|
+2025-05-25 21:33:18,455 [INFO] ExecutionReport: 8=FIX.4.4|9=294|35=8|49=EXCHANGE|56=MY_COMPANY|34=4|11=market_maker-1748205198.4531982|37=market_maker-1748205198.4531982|17=ac71b87c-2f50-4fcb-b66c-531de3982929|39=2|150=F|55=ASML.AS|54=2|38=6|32=6|31=641.95737502|151=0|14=6|44=641.95737502|6007=market_maker|52=20250525-20:33:18.455|52=20250525-20:33:18.455|10=114|
+2025-05-25 21:33:18,455 [INFO] ExecutionReport: 8=FIX.4.4|9=302|35=8|49=EXCHANGE|56=MY_COMPANY|34=2|11=8deec300-f0bb-4d28-9c4f-f2d05ec9a608|37=8deec300-f0bb-4d28-9c4f-f2d05ec9a608|17=32ae37bc-623c-4955-91b5-d2d39f705961|39=1|150=1|55=ASML.AS|54=2|38=16|32=6|31=641.95737502|151=4|14=12|44=641.95737502|6007=momentum|52=20250525-20:33:18.455|52=20250525-20:33:18.455|10=016|
+2025-05-25 21:33:18,455 [INFO] ExecutionReport: 8=FIX.4.4|9=300|35=8|49=EXCHANGE|56=MY_COMPANY|34=3|11=8deec300-f0bb-4d28-9c4f-f2d05ec9a608|37=8deec300-f0bb-4d28-9c4f-f2d05ec9a608|17=04095733-352c-469d-997b-7f07bebb1d4d|39=2|150=F|55=ASML.AS|54=2|38=8|32=4|31=636.17397525|151=0|14=8|44=636.17397525|6007=momentum|52=20250525-20:33:18.455|52=20250525-20:33:18.455|10=001|
+2025-05-25 21:33:18,456 [INFO] ExecutionReport: 8=FIX.4.4|9=303|35=8|49=EXCHANGE|56=MY_COMPANY|34=4|11=03e3da03-5e16-4e11-9da6-ffdd4f466768|37=03e3da03-5e16-4e11-9da6-ffdd4f466768|17=dedb1a5d-8243-4374-8bb5-9d028011e6d4|39=2|150=F|55=ASML.AS|54=1|38=20|32=10|31=636.17397525|151=0|14=20|44=636.17397525|6007=momentum|52=20250525-20:33:18.456|52=20250525-20:33:18.456|10=149|
+2025-05-25 21:33:19,269 [INFO] ExecutionReport: 8=FIX.4.4|9=303|35=8|49=EXCHANGE|56=MY_COMPANY|34=1|11=eeff3786-d5cd-43ea-8ab2-52e54e8fbb7f|37=eeff3786-d5cd-43ea-8ab2-52e54e8fbb7f|17=6afe6bbc-2d2e-4f7e-a4b3-d5077b2a28f4|39=2|150=F|55=PHIA.AS|54=2|38=16|32=8|31=19.86929901|151=0|14=16|44=19.86929901|6007=my_strategy|52=20250525-20:33:19.269|52=20250525-20:33:19.269|10=061|
+2025-05-25 21:33:19,270 [INFO] ExecutionReport: 8=FIX.4.4|9=303|35=8|49=EXCHANGE|56=MY_COMPANY|34=2|11=5a68f049-84ce-4115-ae7c-efb5b7acc2f1|37=5a68f049-84ce-4115-ae7c-efb5b7acc2f1|17=cf3b49f7-1ebf-47b3-842b-c5519f2a6cab|39=2|150=F|55=PHIA.AS|54=1|38=16|32=8|31=19.86929901|151=0|14=16|44=19.86929901|6007=my_strategy|52=20250525-20:33:19.270|52=20250525-20:33:19.270|10=035|
+2025-05-25 21:33:19,271 [INFO] ExecutionReport: 8=FIX.4.4|9=318|35=8|49=EXCHANGE|56=MY_COMPANY|34=2|11=14489dcc-f48d-42a0-a628-1ff7657eda59|37=14489dcc-f48d-42a0-a628-1ff7657eda59|17=8253f277-391d-4610-98f2-e19bd0ce483e|39=2|150=F|55=PHIA.AS|54=2|38=10|32=5|31=19.86929901|151=0|14=10|44=19.86929901|6007=passive_liquidity_provider|52=20250525-20:33:19.271|52=20250525-20:33:19.271|10=081|
+2025-05-25 21:33:19,272 [INFO] ExecutionReport: 8=FIX.4.4|9=316|35=8|49=EXCHANGE|56=MY_COMPANY|34=3|11=5f2378d2-e34a-4d0b-8a73-9a629fb81caf|37=5f2378d2-e34a-4d0b-8a73-9a629fb81caf|17=abe3f9b5-48a8-4e6e-8db7-dda91e2bd01b|39=2|150=F|55=PHIA.AS|54=1|38=4|32=2|31=19.86929901|151=0|14=4|44=19.86929901|6007=passive_liquidity_provider|52=20250525-20:33:19.271|52=20250525-20:33:19.271|10=176|
+2025-05-25 21:33:19,273 [INFO] ExecutionReport: 8=FIX.4.4|9=304|35=8|49=EXCHANGE|56=MY_COMPANY|34=2|11=6638b11c-262e-4d64-850f-46cc4eb0b5e6|37=6638b11c-262e-4d64-850f-46cc4eb0b5e6|17=155364aa-a5c3-463e-921e-ce5ff1c92df7|39=2|150=F|55=PHIA.AS|54=2|38=16|32=8|31=19.86929901|151=0|14=16|44=19.86929901|6007=market_maker|52=20250525-20:33:19.273|52=20250525-20:33:19.273|10=130|
+2025-05-25 21:33:19,273 [INFO] ExecutionReport: 8=FIX.4.4|9=304|35=8|49=EXCHANGE|56=MY_COMPANY|34=3|11=a03fe2b5-02af-4868-9021-7233711006f5|37=a03fe2b5-02af-4868-9021-7233711006f5|17=22d89f7c-eff9-439d-bfac-23ed8c46a1f0|39=2|150=F|55=PHIA.AS|54=1|38=18|32=9|31=19.86929901|151=0|14=18|44=19.86929901|6007=market_maker|52=20250525-20:33:19.273|52=20250525-20:33:19.273|10=133|
+2025-05-25 21:33:19,275 [INFO] ExecutionReport: 8=FIX.4.4|9=290|35=8|49=EXCHANGE|56=MY_COMPANY|34=4|11=market_maker-1748205199.272358|37=market_maker-1748205199.272358|17=3b960562-ea9c-4e27-b89c-e97833773494|39=2|150=F|55=PHIA.AS|54=2|38=8|32=8|31=20.04992900|151=0|14=8|44=20.04992900|6007=market_maker|52=20250525-20:33:19.274|52=20250525-20:33:19.274|10=220|
+2025-05-25 21:33:19,275 [INFO] ExecutionReport: 8=FIX.4.4|9=300|35=8|49=EXCHANGE|56=MY_COMPANY|34=2|11=0a7b687a-5591-4546-9e9e-633108562827|37=0a7b687a-5591-4546-9e9e-633108562827|17=a8603090-7484-489e-ba98-324d16998d50|39=1|150=1|55=PHIA.AS|54=2|38=18|32=8|31=20.04992900|151=2|14=16|44=20.04992900|6007=momentum|52=20250525-20:33:19.275|52=20250525-20:33:19.275|10=124|
+2025-05-25 21:33:19,275 [INFO] ExecutionReport: 8=FIX.4.4|9=298|35=8|49=EXCHANGE|56=MY_COMPANY|34=3|11=0a7b687a-5591-4546-9e9e-633108562827|37=0a7b687a-5591-4546-9e9e-633108562827|17=74de9345-7a20-4657-930c-fd9c974b998c|39=2|150=F|55=PHIA.AS|54=2|38=4|32=2|31=19.86929901|151=0|14=4|44=19.86929901|6007=momentum|52=20250525-20:33:19.275|52=20250525-20:33:19.275|10=243|
+2025-05-25 21:33:19,276 [INFO] ExecutionReport: 8=FIX.4.4|9=301|35=8|49=EXCHANGE|56=MY_COMPANY|34=4|11=f3565ecb-1914-403c-bd84-8bc09f0eb90e|37=f3565ecb-1914-403c-bd84-8bc09f0eb90e|17=dc01f16b-fe3d-452e-a508-df5635115633|39=2|150=F|55=PHIA.AS|54=1|38=20|32=10|31=19.86929901|151=0|14=20|44=19.86929901|6007=momentum|52=20250525-20:33:19.276|52=20250525-20:33:19.276|10=121|
+2025-05-25 21:33:20,089 [INFO] ExecutionReport: 8=FIX.4.4|9=303|35=8|49=EXCHANGE|56=MY_COMPANY|34=1|11=33e54c6d-f352-4407-9523-da92d700c84b|37=33e54c6d-f352-4407-9523-da92d700c84b|17=3bb03aa5-0fd5-453b-b6c1-d806299c8fb8|39=2|150=F|55=INGA.AS|54=2|38=14|32=7|31=18.39024000|151=0|14=14|44=18.39024000|6007=my_strategy|52=20250525-20:33:20.089|52=20250525-20:33:20.089|10=058|
+2025-05-25 21:33:20,090 [INFO] ExecutionReport: 8=FIX.4.4|9=303|35=8|49=EXCHANGE|56=MY_COMPANY|34=2|11=ffabeb1b-83dc-4320-bfb1-64583adc4c29|37=ffabeb1b-83dc-4320-bfb1-64583adc4c29|17=e109e253-d077-4b17-b389-97ab799a893f|39=2|150=F|55=INGA.AS|54=1|38=14|32=7|31=18.39024000|151=0|14=14|44=18.39024000|6007=my_strategy|52=20250525-20:33:20.090|52=20250525-20:33:20.090|10=018|
+2025-05-25 21:33:20,091 [INFO] ExecutionReport: 8=FIX.4.4|9=318|35=8|49=EXCHANGE|56=MY_COMPANY|34=2|11=21390f13-7e26-4ed0-8f15-3b7277f01dbf|37=21390f13-7e26-4ed0-8f15-3b7277f01dbf|17=87d8cf9e-7d5f-4a1e-a60c-6ea695be93e2|39=2|150=F|55=INGA.AS|54=2|38=14|32=7|31=18.39024000|151=0|14=14|44=18.39024000|6007=passive_liquidity_provider|52=20250525-20:33:20.091|52=20250525-20:33:20.091|10=085|
+2025-05-25 21:33:20,092 [INFO] ExecutionReport: 8=FIX.4.4|9=318|35=8|49=EXCHANGE|56=MY_COMPANY|34=3|11=4d19904e-1fe0-4f76-a363-9f271cc1b2ff|37=4d19904e-1fe0-4f76-a363-9f271cc1b2ff|17=358c7fb7-cc71-4b7d-8de4-4fd5fb8bb077|39=2|150=F|55=INGA.AS|54=1|38=14|32=7|31=18.39024000|151=0|14=14|44=18.39024000|6007=passive_liquidity_provider|52=20250525-20:33:20.091|52=20250525-20:33:20.091|10=030|
+2025-05-25 21:33:20,093 [INFO] ExecutionReport: 8=FIX.4.4|9=304|35=8|49=EXCHANGE|56=MY_COMPANY|34=2|11=94a5173c-76b5-4391-99de-6d8998e1ed36|37=94a5173c-76b5-4391-99de-6d8998e1ed36|17=f1e8e9f8-712a-435d-ba09-ce1a3357f3a3|39=2|150=F|55=INGA.AS|54=2|38=10|32=5|31=18.39024000|151=0|14=10|44=18.39024000|6007=market_maker|52=20250525-20:33:20.092|52=20250525-20:33:20.092|10=178|
+2025-05-25 21:33:20,093 [INFO] ExecutionReport: 8=FIX.4.4|9=304|35=8|49=EXCHANGE|56=MY_COMPANY|34=3|11=884265cc-8df9-43cc-948f-8428b1fb2aaf|37=884265cc-8df9-43cc-948f-8428b1fb2aaf|17=1a0ae53d-c98f-45d8-b3b1-b3b7b71a34a8|39=2|150=F|55=INGA.AS|54=1|38=16|32=8|31=18.39024000|151=0|14=16|44=18.39024000|6007=market_maker|52=20250525-20:33:20.093|52=20250525-20:33:20.093|10=071|
+2025-05-25 21:33:20,094 [INFO] ExecutionReport: 8=FIX.4.4|9=288|35=8|49=EXCHANGE|56=MY_COMPANY|34=4|11=market_maker-1748205200.09225|37=market_maker-1748205200.09225|17=8fafc608-31c9-4788-9f47-5d0e893258ec|39=2|150=F|55=INGA.AS|54=2|38=5|32=5|31=18.55742400|151=0|14=5|44=18.55742400|6007=market_maker|52=20250525-20:33:20.094|52=20250525-20:33:20.094|10=153|
+2025-05-25 21:33:20,094 [INFO] ExecutionReport: 8=FIX.4.4|9=300|35=8|49=EXCHANGE|56=MY_COMPANY|34=2|11=f5af7b49-0983-4310-96bd-5ae57ea7c324|37=f5af7b49-0983-4310-96bd-5ae57ea7c324|17=4f2d0397-1e39-4f5a-b9d2-a90890077ad8|39=1|150=1|55=INGA.AS|54=2|38=15|32=5|31=18.55742400|151=5|14=10|44=18.55742400|6007=momentum|52=20250525-20:33:20.094|52=20250525-20:33:20.094|10=059|
+2025-05-25 21:33:20,095 [INFO] ExecutionReport: 8=FIX.4.4|9=300|35=8|49=EXCHANGE|56=MY_COMPANY|34=3|11=f5af7b49-0983-4310-96bd-5ae57ea7c324|37=f5af7b49-0983-4310-96bd-5ae57ea7c324|17=bdf84bb5-6bde-41ba-9147-8f0a565d8de3|39=2|150=F|55=INGA.AS|54=2|38=10|32=5|31=18.39024000|151=0|14=10|44=18.39024000|6007=momentum|52=20250525-20:33:20.095|52=20250525-20:33:20.095|10=034|
+2025-05-25 21:33:20,095 [INFO] ExecutionReport: 8=FIX.4.4|9=301|35=8|49=EXCHANGE|56=MY_COMPANY|34=4|11=f1581382-b07f-49d3-bb18-b62870ea3199|37=f1581382-b07f-49d3-bb18-b62870ea3199|17=746ed93e-3ef3-4fc8-a00a-6fb30055a771|39=2|150=F|55=INGA.AS|54=1|38=20|32=10|31=18.39024000|151=0|14=20|44=18.39024000|6007=momentum|52=20250525-20:33:20.095|52=20250525-20:33:20.095|10=245|
+2025-05-25 21:36:43,180 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL ASML.AS =====
+2025-05-25 21:36:43,181 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL PHIA.AS =====
+2025-05-25 21:36:43,181 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL INGA.AS =====
+2025-05-25 21:36:43,181 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL AD.AS =====
+2025-05-25 21:36:43,181 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL OR.PA =====
+2025-05-25 21:36:43,181 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL SAN.PA =====
+2025-05-25 21:36:43,181 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL my_strategy =====
+2025-05-25 21:36:43,181 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL passive_liquidity_provider =====
+2025-05-25 21:36:43,182 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL market_maker =====
+2025-05-25 21:36:43,183 [INFO] ===== FIX ENGINE INITIALISED FOR SYMBOL momentum =====
+2025-05-25 21:36:43,254 [INFO] Exchange has been halted by user action.
+2025-05-25 21:36:43,254 [INFO] EXCHANGE: Exchange has been halted by user action.
+2025-05-25 21:36:43,257 [INFO] my_strategy has been paused by user action.
+2025-05-25 21:36:43,257 [INFO] PAUSE: my_strategy has been paused by user action.
+2025-05-25 21:36:43,312 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4942894176'>
+2025-05-25 21:36:43,312 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4943854000'>
+2025-05-25 21:36:43,314 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4942451280'>
+2025-05-25 21:36:43,314 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4379152880'>
+2025-05-25 21:36:43,314 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4942451280'>
+2025-05-25 21:36:43,314 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4379152880'>
+2025-05-25 21:36:43,316 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4944604928'>
+2025-05-25 21:36:43,316 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4942482320'>
+2025-05-25 21:36:43,317 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4943248272'>
+2025-05-25 21:36:43,317 [INFO] ExecutionReport: <MagicMock name='mock.create_execution_report()' id='4943846368'>
+1970-01-01 01:16:40,000 [INFO] TestSource: Order skipped due to cooldown: 1 10@101
+1970-01-01 01:16:40,000 [INFO] TestSource: Order placed: Side=1, Qty=10, Price=101
+2025-05-25 21:36:43,324 [CRITICAL] Daily loss limit exceeded
+2025-05-25 21:36:43,324 [ERROR] Daily order limit reached
+2025-05-25 21:36:43,325 [ERROR] Order quantity 1000 exceeds max 100
+2025-05-25 21:36:43,325 [WARNING] Position held beyond max duration
+2025-05-25 21:36:43,325 [WARNING] Price deviation 18.81% exceeds max 5.00%
+2025-05-25 21:36:43,326 [ERROR] Order quantity 200 exceeds max 100
+2025-05-25 21:36:43,326 [WARNING] Volatility threshold exceeded
+2025-05-25 21:36:43,327 [INFO] TestSource: Trailing stop hit on long at 107, closing position.
+2025-05-25 21:36:43,327 [WARNING] TestSource: Drawdown limit hit (95.0), entering cooldown.
+1970-01-01 01:16:40,000 [INFO] passive_liquidity_provider: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] passive_liquidity_provider: No best bid/ask, skipping orders.
+2025-05-25 21:36:43,330 [WARNING] passive_liquidity_provider: Buy order rejected (would exceed max inventory).
+2025-05-25 21:36:43,331 [WARNING] passive_liquidity_provider: Buy order rejected (would exceed max inventory).
+2025-05-25 21:36:43,331 [WARNING] passive_liquidity_provider: Sell order rejected (would exceed short max inventory).
+1970-01-01 01:16:40,000 [INFO] market_maker: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] market_maker: Inventory at limit (100), rebalancing required.
+1970-01-01 01:16:40,000 [INFO] market_maker: Missing best bid or ask, skipping orders.
+1970-01-01 01:16:40,000 [INFO] market_maker: Placed BUY order 5@100.3995
+1970-01-01 01:16:40,000 [INFO] market_maker: Placed SELL order 5@100.6005
+1970-01-01 01:16:40,000 [WARNING] market_maker: Drawdown limit hit (1005.0), entering cooldown.
+2025-05-25 21:36:43,335 [WARNING] market_maker: Buy order rejected (would exceed max inventory).
+2025-05-25 21:36:43,335 [WARNING] market_maker: Buy order rejected (would exceed max inventory).
+2025-05-25 21:36:43,336 [WARNING] market_maker: Sell order rejected (would exceed short max inventory).
+1970-01-01 01:16:40,000 [INFO] momentum: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] momentum: Inventory at limit (100), rebalancing required.
+1970-01-01 01:16:40,000 [INFO] momentum: No best bid/ask, skipping orders.
+1970-01-01 01:16:40,000 [INFO] momentum: Placed BID 7@100.5000 (trend=1.0000)
+1970-01-01 01:16:40,000 [INFO] momentum: Placed ASK 5@100.7010 (trend=1.0000)
+1970-01-01 01:16:40,000 [INFO] momentum: Not enough price history (2 < 10), skipping orders.
+1970-01-01 01:16:40,000 [WARNING] momentum: Drawdown limit hit (1005.0), entering cooldown.
+2025-05-25 21:36:43,341 [WARNING] momentum: Buy order rejected (would exceed max inventory).
+2025-05-25 21:36:43,341 [WARNING] momentum: Buy order rejected (would exceed max inventory).
+2025-05-25 21:36:43,342 [WARNING] momentum: Sell order rejected (would exceed short max inventory).
+1970-01-01 01:16:40,000 [INFO] my_strategy: Cooldown, skipping orders.
+1970-01-01 01:16:40,000 [INFO] my_strategy: Inventory at limit (100), rebalancing required.
+1970-01-01 01:16:40,000 [INFO] my_strategy: Placed BUY order 5@99.0000
+1970-01-01 01:16:40,000 [INFO] my_strategy: Placed SELL order 5@102.0100
+1970-01-01 01:16:40,000 [WARNING] my_strategy: Drawdown limit hit (1005.0), entering cooldown.
+2025-05-25 21:36:43,346 [WARNING] my_strategy: Buy order rejected (would exceed max inventory).
+2025-05-25 21:36:43,346 [WARNING] my_strategy: Buy order rejected (would exceed max inventory).
+2025-05-25 21:36:43,347 [WARNING] my_strategy: Sell order rejected (would exceed short max inventory).

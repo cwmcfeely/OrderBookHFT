@@ -1,7 +1,7 @@
 import time
 import random
-
 from .base_strategy import BaseStrategy
+
 
 class MyStrategy(BaseStrategy):
     """
@@ -52,20 +52,20 @@ class MyStrategy(BaseStrategy):
         best_bid = self.order_book.get_best_bid()
         best_ask = self.order_book.get_best_ask()
 
-        # --- Rebalancing logic implementation ---
+        # Rebalancing logic implementation
         if self.rebalance_pending:
             qty = min(abs(self.inventory), 10)
             if self.inventory > 0:
-                # Reduce long inventory by selling
+                best_ask = self.order_book.get_best_ask()
                 if best_ask:
                     self.place_order("2", best_ask["price"], qty)
-                    self.logger.info(f"{self.source_name}: Rebalancing SELL {qty}@{best_ask['price']}")
+                    orders.append({"side": "2", "price": best_ask["price"], "quantity": qty})
             elif self.inventory < 0:
-                # Reduce short inventory by buying
+                best_bid = self.order_book.get_best_bid()
                 if best_bid:
                     self.place_order("1", best_bid["price"], qty)
-                    self.logger.info(f"{self.source_name}: Rebalancing BUY {qty}@{best_bid['price']}")
-            # Reset flag if inventory is now zero
+                    orders.append({"side": "1", "price": best_bid["price"], "quantity": qty})
+            # **Add this block to reset rebalance_pending if inventory is zero**
             if self.inventory == 0:
                 self.rebalance_pending = False
             return orders

@@ -97,14 +97,9 @@ class OrderBook:
         """
         cumulative = 0
         result = []
-        # Get the price keys (already sorted ascending)
+
         prices = list(book.keys())[:levels]
-
-        # If descending requested, reverse the price list
-        if descending:
-            prices = prices[::-1]
-        prices = prices[:levels]
-
+        # REMOVE the prices[::-1] reversal!
         for price in prices:
             orders = list(book[price])
             total_qty = sum(order["qty"] for order in orders)

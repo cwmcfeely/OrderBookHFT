@@ -2,6 +2,7 @@ import time
 from .base_strategy import BaseStrategy
 import random
 
+
 class MarketMakerStrategy(BaseStrategy):
     """
     Market Maker strategy that places buy and sell limit orders around the mid-price,
@@ -21,6 +22,23 @@ class MarketMakerStrategy(BaseStrategy):
         self.spread = self.params.get("spread", 0.002)
         self.max_inventory = 100  # Maximum allowed inventory (long or short)
         self.rebalance_pending = False  # Flag for rebalancing
+
+    def _risk_check(self, side, price, quantity):
+        """
+        Risk check override to prevent overexposure and large orders.
+        """
+        if side == "1":  # Buy order
+            if self.inventory + quantity > self.max_inventory:
+                self.logger.warning(f"{self.source_name}: Buy order rejected (would exceed max inventory).")
+                return False
+        elif side == "2":  # Sell order
+            if self.inventory - quantity < -self.max_inventory:
+                self.logger.warning(f"{self.source_name}: Sell order rejected (would exceed short max inventory).")
+                return False
+        if quantity > 500:
+            self.logger.warning(f"{self.source_name}: Order rejected (quantity > 500).")
+            return False
+        return super()._risk_check(side, price, quantity)
 
     def generate_orders(self):
         """
@@ -46,20 +64,20 @@ class MarketMakerStrategy(BaseStrategy):
             self.logger.info(f"{self.source_name}: Missing best bid or ask, skipping orders.")
             return orders
 
-        # --- Rebalancing logic implementation ---
+        # Rebalancing logic implementation
         if self.rebalance_pending:
             qty = min(abs(self.inventory), 10)
             if self.inventory > 0:
-                # Reduce long inventory by selling
+                best_ask = self.order_book.get_best_ask()
                 if best_ask:
                     self.place_order("2", best_ask["price"], qty)
                     orders.append({"side": "2", "price": best_ask["price"], "quantity": qty})
             elif self.inventory < 0:
-                # Reduce short inventory by buying
+                best_bid = self.order_book.get_best_bid()
                 if best_bid:
                     self.place_order("1", best_bid["price"], qty)
                     orders.append({"side": "1", "price": best_bid["price"], "quantity": qty})
-            # Reset flag if inventory is now zero
+            # **Add this block to reset rebalance_pending if inventory is zero**
             if self.inventory == 0:
                 self.rebalance_pending = False
             return orders

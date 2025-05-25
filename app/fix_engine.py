@@ -2,6 +2,7 @@ import simplefix
 import time
 import logging
 
+
 class FixEngine:
     def __init__(self, symbol=None, heartbeat_interval=30):
         """
@@ -210,8 +211,7 @@ class FixEngine:
                 )
         return due
 
-    def create_execution_report(self, cl_ord_id, order_id, exec_id, ord_status, exec_type, symbol, side, order_qty,
-                               last_qty=None, last_px=None, leaves_qty=None, cum_qty=None, price=None, source=None, text=None):
+    def create_execution_report(self, cl_ord_id, order_id, exec_id, ord_status, exec_type, symbol, side, order_qty, last_qty=None, last_px=None, leaves_qty=None, cum_qty=None, price=None, source=None, text=None):
         """
         Create a FIX ExecutionReport message.
 

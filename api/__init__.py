@@ -5,6 +5,7 @@ from flask import Flask
 # This function is assumed to define and register all the routes (endpoints) of the web application
 from .routes import register_routes
 
+
 # Define a factory function to create and configure a new Flask application instance
 def create_app():
     # Create a new Flask app instance

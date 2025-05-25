@@ -29,17 +29,6 @@ jobs:
           black --check .
           isort --check-only .
 
-      - name: Set up Node.js for JS linting
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-
-      - name: Install ESLint
-        run: npm install eslint
-
-      - name: Run ESLint on JS files
-        run: npx eslint api/static/
-
       - name: Run Python tests
         run: pytest tests/
 

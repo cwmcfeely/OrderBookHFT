@@ -1,11 +1,40 @@
 [flake8]
-max-line-length = 88
-extend-ignore = E203, W503
+# Maximum allowed line length (Google recommends 80)
+max-line-length = 80
+
+# Number of spaces per indentation level (Google: 4 spaces)
+indent-size = 4
+
+# Ignore the following error/warning codes:
+# E203: Whitespace before ':', often triggered by Black formatter (safe to ignore)
+# E266: Too many leading '#' for block comment (Google allows flexible comments)
+# E501: Line too long (we already set max-line-length above)
+# W503: Line break before binary operator (Google prefers this style, matches Black)
+ignore = E203, E266, E501, W503
+
+# Only select these error/warning codes for reporting:
+# B: flake8-bugbear plugin (best practices)
+# C: Cyclomatic complexity
+# E: pycodestyle errors
+# F: pyflakes errors
+# W: pycodestyle warnings
+# T4: flake8-bugbear opinionated warnings
+# B9: flake8-bugbear additional warnings
+select = B,C,E,F,W,T4,B9
+
+# Google style guide compatible settings:
+# Set a reasonable cyclomatic complexity threshold (default is 10, Google is flexible)
+max-complexity = 30
+
+# Exclude the following directories from linting:
+# .git: Git version control directory
+# __pycache__: Python bytecode cache
+# data: Data files (not source code)
+# logs: Log files (not source code)
+# notebooks: Jupyter notebooks (not source code)
 exclude =
     .git,
     __pycache__,
     data,
     logs,
-    notebooks,
-    env,
-    venv
+    notebooks

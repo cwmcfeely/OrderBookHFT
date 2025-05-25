@@ -10,9 +10,11 @@ from concurrent.futures import ThreadPoolExecutor
 logger = logging.getLogger("MatchingEngine")
 logger.propagate = False  # Prevent duplicate log entries from propagation
 
+
 class TradingHalted(Exception):
     """Custom exception to indicate trading is halted, e.g. by a circuit breaker."""
     pass
+
 
 class CircuitBreaker:
     """
@@ -56,6 +58,7 @@ class CircuitBreaker:
         self.daily_loss += pnl
         self.order_count += 1
 
+
 def decode_if_bytes(val):
     """
     Helper function to decode bytes to string for logging or storage.
@@ -68,6 +71,7 @@ def decode_if_bytes(val):
         return val.decode('utf-8', errors='replace')
     return val
 
+
 class MatchingEngine:
     """
     Core class for matching incoming orders against the order book,
@@ -79,10 +83,7 @@ class MatchingEngine:
         self.logger.propagate = False
 
         # Circuit breaker for risk management (limits daily loss and order rate)
-        self.circuit_breaker = CircuitBreaker(
-            max_daily_loss=-10000,
-            max_order_rate=1000
-        )
+        self.circuit_breaker = CircuitBreaker(max_daily_loss=-10000, max_order_rate=1000)
 
         self.strategies = strategies if strategies else {}  # Mapping of strategy name to strategy instance
         self.trading_state = trading_state  # Shared trading state for analytics and UI
@@ -135,8 +136,7 @@ class MatchingEngine:
 
         return realised_pnl
 
-    def create_execution_report(self, fix_engine, cl_ord_id, order_id, exec_id, ord_status, exec_type, symbol, side, order_qty,
-                                 last_qty=None, last_px=None, leaves_qty=None, cum_qty=None, price=None, source=None, strategy_name=None):
+    def create_execution_report(self, fix_engine, cl_ord_id, order_id, exec_id, ord_status, exec_type, symbol, side, order_qty, last_qty=None, last_px=None, leaves_qty=None, cum_qty=None, price=None, source=None, strategy_name=None):
         """
         Create and log a FIX execution report, and append it to the trading state for UI/API.
         """
@@ -231,7 +231,7 @@ class MatchingEngine:
                     "maker_source": top_order["source"],
                     "taker_id": order_id,
                     "taker_source": source,
-                    "side": "buy" if side == "buy" or side == "1" else "sell",
+                    "side": "sell" if side == "buy" or side == "1" else "buy",
                     "source": source,
                     "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "latency_ms": latency_ms
@@ -301,7 +301,6 @@ class MatchingEngine:
                     fix_engine = taker_strategy.fix_engine
 
                     # For the taker, original_qty is the total quantity they submitted (track this if needed)
-                    # Here, we use the trade_qty for this fill, but you may want to track cumulative fills
                     leaves_qty = quantity - trade_qty
                     if leaves_qty < 0:
                         leaves_qty = 0
@@ -319,7 +318,7 @@ class MatchingEngine:
                         exec_type=exec_type,
                         symbol=self.order_book.symbol,
                         side="1" if trade['side'] == "buy" else "2",
-                        order_qty=quantity + trade_qty,  # Or track the taker's original order size
+                        order_qty=quantity + trade_qty,
                         last_qty=trade_qty,
                         last_px=level_price,
                         leaves_qty=leaves_qty,
@@ -331,6 +330,11 @@ class MatchingEngine:
                     if hasattr(taker_strategy, 'on_execution_report'):
                         taker_strategy.on_execution_report(trade)
                     if hasattr(taker_strategy, 'on_trade'):
+                        # Update taker inventory: taker is the buyer if maker's side is "sell"
+                        if trade["side"] == "sell":
+                            taker_strategy.inventory += trade["qty"]
+                        else:
+                            taker_strategy.inventory -= trade["qty"]
                         taker_strategy.on_trade(trade)
 
                 if self.trading_state is not None and self.state_lock is not None:

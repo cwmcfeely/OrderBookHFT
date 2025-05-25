@@ -2,6 +2,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
+
 def setup_logging(
     level=logging.INFO,
     app_log_file="logs/app.debug.log",

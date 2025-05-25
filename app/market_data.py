@@ -39,6 +39,7 @@ CACHE_EXPIRY_SECONDS = 3600  # Cache expiry time in seconds (1 hour)
 latest_prices = {}
 latest_prices_lock = threading.Lock()  # Lock for thread-safe access to latest_prices
 
+
 def ensure_directories():
     """
     Ensure that the required directories for raw data
@@ -46,6 +47,7 @@ def ensure_directories():
     """
     DATA_DIR_RAW.mkdir(parents=True, exist_ok=True)
     API_COUNT_FILE.parent.mkdir(parents=True, exist_ok=True)
+
 
 def load_api_count():
     """
@@ -62,6 +64,7 @@ def load_api_count():
     except Exception as e:
         logger.error(f"Error loading API count: {str(e)}")
 
+
 def save_api_count():
     """
     Save the current API call count and last call date to a JSON file.
@@ -74,6 +77,7 @@ def save_api_count():
             }, f, indent=2)
     except Exception as e:
         logger.error(f"Error saving API count: {str(e)}")
+
 
 def increment_api_count():
     """
@@ -89,6 +93,7 @@ def increment_api_count():
         api_calls_today += 1
         save_api_count()
 
+
 def get_last_trading_day(current_date=None):
     """
     Get the last business (trading) day before the given date.
@@ -103,6 +108,7 @@ def get_last_trading_day(current_date=None):
     current_date = current_date or pd.Timestamp.today().date()
     last_business_day = pd.Timestamp(current_date) - pd.tseries.offsets.BusinessDay(1)
     return last_business_day.date()
+
 
 def load_cached_data(symbol):
     """
@@ -126,6 +132,7 @@ def load_cached_data(symbol):
     except Exception as e:
         logger.error(f"Failed to load cache {latest_file}: {e}")
         return None
+
 
 def _fetch_for_day(symbol, trading_day, interval="5m"):
     """
@@ -185,6 +192,7 @@ def _fetch_for_day(symbol, trading_day, interval="5m"):
         logger.error(f"Failed to fetch {symbol}: {str(e)}")
         return None
 
+
 def fetch_intraday_data(symbol, interval="5m"):
     # Try to fetch fresh data from the API for the last trading day
     trading_day = get_last_trading_day()
@@ -215,6 +223,7 @@ def fetch_intraday_data(symbol, interval="5m"):
     logger.error(f"No data available for {symbol} from API or cache.")
     return None
 
+
 def get_latest_price(symbol: str) -> float | None:
     """
     Always attempt to fetch the latest price from the API first.
@@ -242,6 +251,7 @@ def get_latest_price(symbol: str) -> float | None:
         price = latest_prices.get(symbol)
     return price
 
+
 def cache_data(symbol, data, processed=False):
     """
     Cache data to disk as JSON file in appropriate directory.
@@ -262,6 +272,7 @@ def cache_data(symbol, data, processed=False):
     except Exception as e:
         logger.error(f"Cache failed for {symbol}: {str(e)}")
         return None
+
 
 def update_all_symbols():
     """
@@ -284,6 +295,7 @@ def update_all_symbols():
 
         except Exception as e:
             logger.error(f"Failed processing {symbol_key}: {str(e)}")
+
 
 # If this module is run as the main program, update all symbols immediately
 if __name__ == "__main__":

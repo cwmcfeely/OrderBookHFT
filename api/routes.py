@@ -56,6 +56,7 @@ fix_engines = {
 
 strategy_instances = {}
 
+
 def append_order_book_snapshot(symbol, order_book):
 
     """
@@ -90,6 +91,7 @@ def append_order_book_snapshot(symbol, order_book):
     for key in ["order_book_history", "spread_history", "liquidity_history"]:
         if len(trading_state[key][symbol]) > 500:
             trading_state[key][symbol].pop(0)
+
 
 def auto_update_order_books():
     """
@@ -154,14 +156,8 @@ def auto_update_order_books():
                 )
 
                 # Check if order book needs reseeding (insufficient liquidity or time-based)
-                bids_ok = (
-                    len(order_book.bids) >= min_levels and
-                    sum(sum(order["qty"] for order in q) for q in order_book.bids.values()) >= min_qty
-                )
-                asks_ok = (
-                    len(order_book.asks) >= min_levels and
-                    sum(sum(order["qty"] for order in q) for q in order_book.asks.values()) >= min_qty
-                )
+                bids_ok = (len(order_book.bids) >= min_levels and sum(sum(order["qty"] for order in q) for q in order_book.bids.values()) >= min_qty)
+                asks_ok = (len(order_book.asks) >= min_levels and sum(sum(order["qty"] for order in q) for q in order_book.asks.values()) >= min_qty)
                 now = time.time()
                 need_reseed = not bids_ok or not asks_ok
                 time_for_reseed = now - last_reseed_time[symbol] > reseed_interval
@@ -215,8 +211,10 @@ def auto_update_order_books():
                 logger.error(f"Error updating {symbol}: {str(e)}", exc_info=True)
         time.sleep(5)
 
+
 # Start the background thread to update order books and run strategies
 threading.Thread(target=auto_update_order_books, daemon=True).start()
+
 
 def filter_trades(trades, side=None, source=None, min_price=None, max_price=None):
     """
@@ -235,6 +233,7 @@ def filter_trades(trades, side=None, source=None, min_price=None, max_price=None
             continue
         filtered.append(trade)
     return filtered
+
 
 def register_routes(app):
     """
@@ -256,6 +255,7 @@ def register_routes(app):
     app.route("/")(index)
     app.route("/competition_logs")(get_competition_logs)  # NEW ENDPOINT
 
+
 def toggle_exchange():
     """
     Toggle the exchange halted/active state.
@@ -273,6 +273,7 @@ def toggle_exchange():
     logging.getLogger("FIX_my_strategy").info(f"EXCHANGE: Exchange has been {status} by user action.")
 
     return jsonify({"exchange_halted": trading_state["exchange_halted"]})
+
 
 def toggle_my_strategy():
     """
@@ -295,6 +296,7 @@ def toggle_my_strategy():
         strat_logger.info("PAUSE: my_strategy has been paused by user action.")
 
     return jsonify({"my_strategy_enabled": trading_state["my_strategy_enabled"]})
+
 
 def cancel_mystrategy_orders():
     """
@@ -336,6 +338,7 @@ def cancel_mystrategy_orders():
         decoded_removed_orders = decode_bytes(removed_orders)
         return jsonify({"status": "success", "removed_orders": decoded_removed_orders})
 
+
 def get_status():
     """
     Get the current status of the exchange and MyStrategy.
@@ -346,6 +349,7 @@ def get_status():
             "my_strategy_enabled": trading_state["my_strategy_enabled"],
             "symbol": trading_state["current_symbol"]
         })
+
 
 def safe_get_data(data_dict, symbol):
     """
@@ -358,6 +362,7 @@ def safe_get_data(data_dict, symbol):
     if data is None:
         return []
     return data
+
 
 def get_order_book():
     """
@@ -383,6 +388,7 @@ def get_order_book():
             "last_price": float(ob.last_price) if ob.last_price is not None else None
         })
 
+
 def decode_bytes(obj):
     """
     Recursively decode bytes to UTF-8 in nested lists/dicts for JSON serialization.
@@ -394,6 +400,7 @@ def decode_bytes(obj):
     if isinstance(obj, list):
         return [decode_bytes(i) for i in obj]
     return obj
+
 
 def get_trades():
     """
@@ -409,6 +416,7 @@ def get_trades():
         filtered_trades = filter_trades(trades, side, source, min_price, max_price)
         trades_decoded = decode_bytes(filtered_trades)
         return jsonify(trades_decoded)
+
 
 def get_order_book_history():
     symbol = request.args.get('symbol') or trading_state["current_symbol"]
@@ -430,6 +438,7 @@ def get_order_book_history():
             })
         return jsonify(processed)
 
+
 def get_spread_history():
     """
     Get historical bid-ask spread and mid price for the selected symbol.
@@ -439,6 +448,7 @@ def get_spread_history():
         spread_history = safe_get_data(trading_state['spread_history'], symbol)
         return jsonify(spread_history)
 
+
 def get_liquidity_history():
     """
     Get historical liquidity at top levels for the selected symbol.
@@ -447,6 +457,7 @@ def get_liquidity_history():
     with state_lock:
         liquidity_history = safe_get_data(trading_state['liquidity_history'], symbol)
         return jsonify(liquidity_history)
+
 
 def strategy_status():
     symbol = request.args.get("symbol") or trading_state["current_symbol"]
@@ -490,6 +501,7 @@ def strategy_status():
             }
         return jsonify(status)
 
+
 def get_execution_reports():
     """
     Get execution reports for the selected symbol, optionally filtered by source.
@@ -501,6 +513,7 @@ def get_execution_reports():
         if source:
             reports = [r for r in reports if r.get("source") == source]
         return jsonify(reports)
+
 
 def select_symbol():
     """
@@ -515,6 +528,7 @@ def select_symbol():
             return jsonify({"status": "symbol_changed", "symbol": symbol})
     return jsonify({"error": "Invalid symbol"}), 400
 
+
 def order_latency_history():
     """
     Get order latency history for the selected symbol.
@@ -524,11 +538,13 @@ def order_latency_history():
         latency_data = trading_state.get('latency_history', {}).get(symbol, [])
         return jsonify(latency_data)
 
+
 def index():
     """
     Render the main dashboard page.
     """
     return render_template("index.html", symbols=symbols)
+
 
 def get_competition_logs():
     """

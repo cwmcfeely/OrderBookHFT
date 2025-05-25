@@ -1,7 +1,8 @@
 import time
 import logging
-from abc import ABC, abstractmethod
+from abc import ABC
 import numpy as np  # Required for volatility calculations
+
 
 class BaseStrategy(ABC):
     """
@@ -55,7 +56,6 @@ class BaseStrategy(ABC):
 
         # Logger for this strategy instance
         self.logger = logging.getLogger(f"FIX_{self.source_name}")
-
 
     def generate_orders(self):
         """
@@ -201,8 +201,8 @@ class BaseStrategy(ABC):
         levels = list(book.values())[:5]
         for orders_at_level in levels:
             total_liquidity += sum(order["qty"] for order in orders_at_level)
-        # Allow max 10% of liquidity to be taken
-        return quantity <= total_liquidity * 0.1 if total_liquidity > 0 else False
+        # Allow max 20% of liquidity to be taken
+        return quantity <= total_liquidity * 0.2 if total_liquidity > 0 else False
 
     def _current_volatility(self, window=30):
         """
@@ -233,8 +233,6 @@ class BaseStrategy(ABC):
         side = trade['side']
         price = trade['price']
         pnl = trade.get('pnl', 0)  # Optional, for per-trade stop logic
-
-        prev_inventory = self.inventory
 
         if side in ('buy', "1"):
             if self.inventory >= 0:
