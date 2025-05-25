@@ -1,10 +1,6 @@
 import time
 from .base_strategy import BaseStrategy
 import random
-import logging
-
-# Initialise logger for this module
-logger = logging.getLogger(__name__)
 
 class PassiveLiquidityProvider(BaseStrategy):
     """
@@ -24,7 +20,6 @@ class PassiveLiquidityProvider(BaseStrategy):
         """
         # Initialise base strategy with a unique source name
         super().__init__(fix_engine, order_book, symbol, "passive_liquidity_provider", params)
-        self.inventory = 0  # Track current inventory of assets held
         self.max_inventory = 100  # Maximum allowed inventory (long or short)
         self.rebalance_pending = False  # Flag for rebalancing
 
@@ -75,12 +70,30 @@ class PassiveLiquidityProvider(BaseStrategy):
             self.logger.info(f"{self.source_name}: No best bid/ask, skipping orders.")
             return []
 
+        # Rebalancing logic implementation
+        if self.rebalance_pending:
+            qty = min(abs(self.inventory), 10)
+            if self.inventory > 0:
+                best_ask = self.order_book.get_best_ask()
+                if best_ask:
+                    self.place_order("2", best_ask["price"], qty)
+                    orders.append({"side": "2", "price": best_ask["price"], "quantity": qty})
+            elif self.inventory < 0:
+                best_bid = self.order_book.get_best_bid()
+                if best_bid:
+                    self.place_order("1", best_bid["price"], qty)
+                    orders.append({"side": "1", "price": best_bid["price"], "quantity": qty})
+            # Reset flag if inventory is now zero
+            if self.inventory == 0:
+                self.rebalance_pending = False
+            return orders
+
         # If inventory is at or beyond limits, flag for rebalancing (do not reset directly)
         if abs(self.inventory) >= self.max_inventory:
             self.logger.info(f"{self.source_name}: Inventory at limit ({self.inventory}), rebalancing required.")
             self.rebalance_pending = True
-            # Optionally, generate offsetting order here or in a separate rebalancing routine
-            return orders  # Skip placing further orders until rebalanced
+            # Skip placing further orders until rebalanced
+            return orders
 
         # Generate buy order if possible
         if best_bid:
@@ -115,5 +128,5 @@ class PassiveLiquidityProvider(BaseStrategy):
         """
         super().on_trade(trade)
         self.logger.info(f"{self.source_name}: Trade executed. Side: {trade.get('side')}, "
-                    f"Qty: {trade.get('qty')}, Price: {trade.get('price')}, "
-                    f"New inventory: {self.inventory}, Realised PnL: {self.realised_pnl}")
+                         f"Qty: {trade.get('qty')}, Price: {trade.get('price')}, "
+                         f"New inventory: {self.inventory}, Realised PnL: {self.realised_pnl}")

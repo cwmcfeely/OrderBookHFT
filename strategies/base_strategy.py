@@ -2,7 +2,6 @@ import time
 import logging
 from abc import ABC, abstractmethod
 import numpy as np  # Required for volatility calculations
-from app.logger import setup_logging
 
 class BaseStrategy(ABC):
     """
@@ -78,21 +77,22 @@ class BaseStrategy(ABC):
     def place_order(self, side, price, quantity):
         """
         Place an order via FIX and add it to the order book, after risk checks and cooldown.
+        Returns True if the order was placed, False if blocked.
         Args:
             side (str): '1' (buy) or '2' (sell) per FIX standard.
             price (float): Limit price.
             quantity (int): Order quantity.
         """
-        # Enforce minimum interval between orders (cooldown)
         now = time.time()
+        # Enforce minimum interval between orders (cooldown)
         if (now - getattr(self, 'last_order_time', 0)) < getattr(self, 'min_order_interval', 1.0):
-            self.logger.info(f"Order skipped due to cooldown: {side} {quantity}@{price}")
-            return
+            self.logger.info(f"{self.source_name}: Order skipped due to cooldown: {side} {quantity}@{price}")
+            return False
 
         # Run risk checks before placing the order
         if not self._risk_check(side, price, quantity):
-            self.logger.warning(f"[RISK BLOCKED] {side} order for {quantity}@{price} rejected.")
-            return
+            self.logger.info(f"{self.source_name}: Risk check failed, order not placed: {side} {quantity}@{price}")
+            return False
 
         # Create and send FIX new order message
         fix_msg = self.fix_engine.create_new_order(
@@ -114,15 +114,19 @@ class BaseStrategy(ABC):
                 quantity=parsed_order.get(38),
                 order_id=parsed_order.get(11),
                 source=self.source_name,
-                order_time=order_time  # Capture order submission timestamp
+                order_time=order_time
             )
 
             self.order_count += 1
             if self.position_start_time is None:
                 self.position_start_time = now
 
-            # Update last_order_time to enforce cooldown
             self.last_order_time = now
+            self.logger.info(f"{self.source_name}: Order placed: Side={side}, Qty={quantity}, Price={price}")
+            return True
+        else:
+            self.logger.warning(f"{self.source_name}: FIX message parsing failed, order not placed.")
+            return False
 
     def on_competition(self, taker_strategy, maker_strategy, price, qty):
         """
@@ -203,19 +207,22 @@ class BaseStrategy(ABC):
     def _current_volatility(self, window=30):
         """
         Calculate recent price volatility (standard deviation) over last `window` prices.
+        Ensures a minimum volatility to prevent excessive order sizes.
         Args:
             window (int): Number of recent prices to consider.
         Returns:
-            float: Standard deviation of recent prices.
+            float: Standard deviation of recent prices (minimum threshold applied).
         """
+        min_vol = 0.01  # Minimum volatility to prevent order size spikes
         try:
             prices = self.order_book.get_recent_prices(window=window)
-            if len(prices) < 2:
-                return 0.0
-            return np.std(prices)
+            if not prices or len(prices) < 2:
+                return min_vol
+            vol = np.std(prices)
+            return max(vol, min_vol)
         except Exception as e:
             self.logger.error(f"Volatility calculation failed: {e}")
-            return 0.0
+            return min_vol
 
     def on_trade(self, trade):
         """
@@ -349,7 +356,6 @@ class BaseStrategy(ABC):
     def get_adaptive_order_size(self, min_size=1, max_size=None, volatility_window=30):
         """
         Returns an order size inversely proportional to recent volatility.
-        This helps reduce risk in volatile markets.
         Args:
             min_size (int): Minimum order size.
             max_size (int or None): Maximum order size.

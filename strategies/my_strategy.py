@@ -1,11 +1,7 @@
 import time
 import random
-import logging
 
 from .base_strategy import BaseStrategy
-
-# Initialise logger for this module
-logger = logging.getLogger(__name__)
 
 class MyStrategy(BaseStrategy):
     """
@@ -16,7 +12,6 @@ class MyStrategy(BaseStrategy):
     def __init__(self, fix_engine, order_book, symbol, params=None):
         super().__init__(fix_engine, order_book, symbol, "my_strategy", params)
         self.spread_factor = self.params.get("spread_factor", 0.01)
-        self.inventory = 0
         self.max_inventory = 100
         self.rebalance_pending = False  # Flag for rebalancing
 
@@ -41,7 +36,6 @@ class MyStrategy(BaseStrategy):
         """
         Generate buy and sell orders with adjusted prices based on spread factor.
         """
-        # Call base class generate_orders to handle cooldown and drawdown chec
         base_result = super().generate_orders()
         if base_result == []:
             self.logger.info(f"{self.source_name}: In cooldown or risk block, skipping orders.")
@@ -58,12 +52,30 @@ class MyStrategy(BaseStrategy):
         best_bid = self.order_book.get_best_bid()
         best_ask = self.order_book.get_best_ask()
 
+        # --- Rebalancing logic implementation ---
+        if self.rebalance_pending:
+            qty = min(abs(self.inventory), 10)
+            if self.inventory > 0:
+                # Reduce long inventory by selling
+                if best_ask:
+                    self.place_order("2", best_ask["price"], qty)
+                    self.logger.info(f"{self.source_name}: Rebalancing SELL {qty}@{best_ask['price']}")
+            elif self.inventory < 0:
+                # Reduce short inventory by buying
+                if best_bid:
+                    self.place_order("1", best_bid["price"], qty)
+                    self.logger.info(f"{self.source_name}: Rebalancing BUY {qty}@{best_bid['price']}")
+            # Reset flag if inventory is now zero
+            if self.inventory == 0:
+                self.rebalance_pending = False
+            return orders
+
         # If inventory is at or beyond limits, flag for rebalancing (do not reset directly)
         if abs(self.inventory) >= self.max_inventory:
             self.logger.info(f"{self.source_name}: Inventory at limit ({self.inventory}), rebalancing required.")
             self.rebalance_pending = True
-            # Optionally, generate offsetting order here or in a separate rebalancing routine
-            return orders  # Skip placing further orders until rebalanced
+            # Skip placing further orders until rebalanced
+            return orders
 
         if best_bid and best_ask:
             adjusted_bid = best_bid["price"] * (1 - self.spread_factor)
@@ -92,15 +104,11 @@ class MyStrategy(BaseStrategy):
         self.last_order_time = now
         return orders
 
-    # Inventory will be updated in on_trade (in BaseStrategy) only, not here.
-    # You may wish to override on_trade to add additional logging if desired.
-
     def on_trade(self, trade):
         """
         Handle trade execution events. Update inventory and log details.
         """
         super().on_trade(trade)
         self.logger.info(f"{self.source_name}: Trade executed. Side: {trade.get('side')}, "
-                    f"Qty: {trade.get('qty')}, Price: {trade.get('price')}, "
-                    f"New inventory: {self.inventory}")
-
+                         f"Qty: {trade.get('qty')}, Price: {trade.get('price')}, "
+                         f"New inventory: {self.inventory}, Realised PnL: {self.realised_pnl}")

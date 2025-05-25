@@ -1,10 +1,7 @@
 import time
 import random
 import numpy as np
-import logging
 from .base_strategy import BaseStrategy
-
-logger = logging.getLogger(__name__)
 
 class MomentumStrategy(BaseStrategy):
     """
@@ -17,7 +14,6 @@ class MomentumStrategy(BaseStrategy):
 
     def __init__(self, fix_engine, order_book, symbol, params=None):
         super().__init__(fix_engine, order_book, symbol, "momentum", params)
-        self.inventory = 0
         self.max_inventory = self.params.get("max_inventory", 100)
         self.lookback = self.params.get("lookback", 0)
         self.base_spread = self.params.get("base_spread", 0.002)
@@ -54,10 +50,29 @@ class MomentumStrategy(BaseStrategy):
             self.logger.info(f"{self.source_name}: No best bid/ask, skipping orders.")
             return []
 
+        # --- Rebalancing logic implementation ---
+        if self.rebalance_pending:
+            qty = min(abs(self.inventory), 10)
+            if self.inventory > 0:
+                # Reduce long inventory by selling
+                if best_ask:
+                    self.place_order("2", best_ask["price"], qty)
+                    self.logger.info(f"{self.source_name}: Rebalancing SELL {qty}@{best_ask['price']}")
+            elif self.inventory < 0:
+                # Reduce short inventory by buying
+                if best_bid:
+                    self.place_order("1", best_bid["price"], qty)
+                    self.logger.info(f"{self.source_name}: Rebalancing BUY {qty}@{best_bid['price']}")
+            # Reset flag if inventory is now zero
+            if self.inventory == 0:
+                self.rebalance_pending = False
+            return []
+
+        # If inventory is at or beyond limits, flag for rebalancing (do not reset directly)
         if abs(self.inventory) >= self.max_inventory:
             self.logger.info(f"{self.source_name}: Inventory at limit ({self.inventory}), rebalancing required.")
             self.rebalance_pending = True
-            # Optionally, generate offsetting order here or in a separate rebalancing routine
+            # Skip placing further orders until rebalanced
             return []
 
         spread = self.base_spread

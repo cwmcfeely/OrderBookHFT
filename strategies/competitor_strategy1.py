@@ -1,10 +1,6 @@
 import time
 from .base_strategy import BaseStrategy
 import random
-import logging
-
-# Initialise logger for this module
-logger = logging.getLogger(__name__)
 
 class MarketMakerStrategy(BaseStrategy):
     """
@@ -23,14 +19,12 @@ class MarketMakerStrategy(BaseStrategy):
         """
         super().__init__(fix_engine, order_book, symbol, "market_maker", params)
         self.spread = self.params.get("spread", 0.002)
-        self.inventory = 0  # Track current inventory position
         self.max_inventory = 100  # Maximum allowed inventory (long or short)
         self.rebalance_pending = False  # Flag for rebalancing
 
     def generate_orders(self):
         """
         Generate buy and sell limit orders around the mid-price with adaptive order sizes.
-
         Returns:
             list: List of order dicts with 'side', 'price', and 'quantity' keys.
         """
@@ -52,13 +46,32 @@ class MarketMakerStrategy(BaseStrategy):
             self.logger.info(f"{self.source_name}: Missing best bid or ask, skipping orders.")
             return orders
 
+        # --- Rebalancing logic implementation ---
+        if self.rebalance_pending:
+            qty = min(abs(self.inventory), 10)
+            if self.inventory > 0:
+                # Reduce long inventory by selling
+                if best_ask:
+                    self.place_order("2", best_ask["price"], qty)
+                    orders.append({"side": "2", "price": best_ask["price"], "quantity": qty})
+            elif self.inventory < 0:
+                # Reduce short inventory by buying
+                if best_bid:
+                    self.place_order("1", best_bid["price"], qty)
+                    orders.append({"side": "1", "price": best_bid["price"], "quantity": qty})
+            # Reset flag if inventory is now zero
+            if self.inventory == 0:
+                self.rebalance_pending = False
+            return orders
+
         # If inventory is at or beyond limits, flag for rebalancing (do not reset directly)
         if abs(self.inventory) >= self.max_inventory:
             self.logger.info(f"{self.source_name}: Inventory at limit ({self.inventory}), rebalancing required.")
             self.rebalance_pending = True
-            # Optionally, generate offsetting order here or in a separate rebalancing routine
-            return orders  # Skip placing further orders until rebalanced
+            # Skip placing further orders until rebalanced
+            return orders
 
+        # --- Normal market making logic ---
         # Calculate mid-price as average of best bid and ask
         mid = (best_bid["price"] + best_ask["price"]) / 2
         bid_price = mid * (1 - self.spread / 2)
@@ -89,5 +102,5 @@ class MarketMakerStrategy(BaseStrategy):
         """
         super().on_trade(trade)
         self.logger.info(f"{self.source_name}: Trade executed. Side: {trade.get('side')}, "
-                    f"Qty: {trade.get('qty')}, Price: {trade.get('price')}, "
-                    f"New inventory: {self.inventory}, Realised PnL: {self.realised_pnl}")
+                         f"Qty: {trade.get('qty')}, Price: {trade.get('price')}, "
+                         f"New inventory: {self.inventory}, Realised PnL: {self.realised_pnl}")
