@@ -96,10 +96,8 @@ def setup_logging(
 def get_logger(name):
     """
     Helper function to retrieve a logger by name.
-
     Args:
         name (str): Name of the logger (usually module or component name)
-
     Returns:
         logging.Logger: The requested logger instance
     """
