@@ -1,5 +1,6 @@
-import time
 import random
+import time
+
 from .base_strategy import BaseStrategy
 
 

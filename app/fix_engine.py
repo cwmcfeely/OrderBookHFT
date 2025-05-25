@@ -1,6 +1,7 @@
-import simplefix
-import time
 import logging
+import time
+
+import simplefix
 
 
 class FixEngine:

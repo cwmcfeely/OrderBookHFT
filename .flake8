@@ -38,3 +38,10 @@ exclude =
     data,
     logs,
     notebooks
+
+# Import order settings for flake8-import-order plugin
+# Define local application/library names to be treated as first-party imports
+application-import-names = OrderBookHFT
+
+# Specify the import order style (default is 'cryptography', other options include 'google', 'smarkets')
+import-order-style = google

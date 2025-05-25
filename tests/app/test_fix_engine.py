@@ -1,6 +1,7 @@
+import time
 import unittest
 from unittest.mock import MagicMock, patch
-import time
+
 from app.fix_engine import FixEngine
 
 # Patch simplefix globally for all tests using the correct package path

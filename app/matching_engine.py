@@ -1,10 +1,10 @@
+import asyncio
 import logging
+import threading
 import time
 import uuid
-import asyncio
-import threading
-from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 
 # Set up a logger specifically for the matching engine
 logger = logging.getLogger("MatchingEngine")

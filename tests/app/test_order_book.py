@@ -1,5 +1,6 @@
-import unittest
 import time
+import unittest
+
 from app.order_book import OrderBook
 
 

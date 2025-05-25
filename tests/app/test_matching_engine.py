@@ -1,6 +1,7 @@
+import time
 import unittest
 from unittest.mock import MagicMock
-import time
+
 from app.matching_engine import MatchingEngine, TradingHalted
 
 

@@ -1,10 +1,11 @@
-import unittest
-from unittest.mock import patch, MagicMock, mock_open
-import threading
 import json
 import os
 import stat
+import threading
+import unittest
 from pathlib import Path
+from unittest.mock import MagicMock, mock_open, patch
+
 import app.market_data
 
 

@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, patch
+
 from strategies.base_strategy import BaseStrategy
 from strategies.my_strategy import MyStrategy
 

@@ -1,6 +1,7 @@
-from sortedcontainers import SortedDict
-from collections import deque
 import time
+from collections import deque
+
+from sortedcontainers import SortedDict
 
 
 class OrderBook:

@@ -1,6 +1,7 @@
-import time
-from .base_strategy import BaseStrategy
 import random
+import time
+
+from .base_strategy import BaseStrategy
 
 
 class MarketMakerStrategy(BaseStrategy):

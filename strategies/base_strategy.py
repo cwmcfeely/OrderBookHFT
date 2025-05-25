@@ -1,6 +1,7 @@
-import time
 import logging
+import time
 from abc import ABC
+
 import numpy as np  # Required for volatility calculations
 
 

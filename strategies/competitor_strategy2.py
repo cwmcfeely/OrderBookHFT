@@ -1,5 +1,7 @@
 import time
+
 import numpy as np
+
 from .base_strategy import BaseStrategy
 
 

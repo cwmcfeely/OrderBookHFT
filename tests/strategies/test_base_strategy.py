@@ -1,6 +1,6 @@
+import time
 import unittest
 from unittest.mock import MagicMock, patch
-import time
 
 # Assume BaseStrategy is imported from the file
 from strategies.base_strategy import BaseStrategy
