@@ -353,7 +353,7 @@ class MatchingEngine:
                         "type": "taker"
                     })
                     if len(latency_list) > 500:
-                        latency_list = latency_list[-500:]
+                        self.trading_state['latency_history'][symbol] = latency_list[-500:]
 
                 quantity -= trade_qty
                 top_order["qty"] -= trade_qty

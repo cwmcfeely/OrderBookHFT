@@ -102,7 +102,8 @@ class OrderBook:
 
         # If descending requested, reverse the price list
         if descending:
-            prices = list(book.keys())[:levels]
+            prices = prices[::-1]
+        prices = prices[:levels]
 
         for price in prices:
             orders = list(book[price])
@@ -273,5 +274,13 @@ class OrderBook:
         return None
 
     def get_orders_by_source(self, side, source):
+        """
+            Retrieve all orders for a given side and source strategy.
+            Args:
+                side (str): 'buy' or 'sell'.
+                source (str): Source strategy name.
+            Returns:
+                list: List of order dicts.
+            """
         book = self.bids if side == "buy" else self.asks
         return [order for q in book.values() for order in q if order["source"] == source]

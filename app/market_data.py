@@ -15,7 +15,6 @@ setup_logging(level=logging.INFO)
 logger = logging.getLogger(__name__)
 logger.propagate = False  # Prevent double logging if root logger also logs
 
-# Define directories for raw and processed data storage
 DATA_DIR_RAW = Path("data/raw")
 
 # Load configuration from YAML file
@@ -42,7 +41,7 @@ latest_prices_lock = threading.Lock()  # Lock for thread-safe access to latest_p
 
 def ensure_directories():
     """
-    Ensure that the required directories for raw data, processed data,
+    Ensure that the required directories for raw data
     and logs exist, creating them if necessary.
     """
     DATA_DIR_RAW.mkdir(parents=True, exist_ok=True)
@@ -216,7 +215,7 @@ def fetch_intraday_data(symbol, interval="5m"):
     logger.error(f"No data available for {symbol} from API or cache.")
     return None
 
-def get_latest_price(symbol):
+def get_latest_price(symbol: str) -> float | None:
     """
     Always attempt to fetch the latest price from the API first.
     If API fails, use the in-memory cache as a fallback.
@@ -249,7 +248,6 @@ def cache_data(symbol, data, processed=False):
     Args:
         symbol (str): Trading symbol.
         data (list or dict): Data to cache.
-        processed (bool): Whether data is processed (goes to processed directory).
     Returns:
         Path or None: Path to cached file or None if failed.
     """
@@ -259,7 +257,7 @@ def cache_data(symbol, data, processed=False):
         filepath = directory / f"{symbol}_{ts}.json"
         with open(filepath, "w") as f:
             json.dump(data, f, indent=2)
-        logger.info(f"Cached {'processed' if processed else 'raw'} data for {symbol} at {filepath}")
+        logger.info(f"Cached 'raw' data for {symbol} at {filepath}")
         return filepath
     except Exception as e:
         logger.error(f"Cache failed for {symbol}: {str(e)}")

@@ -15,7 +15,7 @@ class FixEngine:
         self.heartbeat_interval = heartbeat_interval  # Heartbeat interval in seconds
         self.last_heartbeat = time.time()  # Timestamp of the last heartbeat sent/received
         self.seq_num = 1  # Sequence number for outgoing FIX messages
-        self.symbol = symbol  # Symbol string for logging and message context
+        self.symbol = symbol  # Symbol string for logging and message context per strategy
 
         # Set up loggers: one for the FIX server, one per strategy (if symbol provided)
         self.server_logger = logging.getLogger("FIXServer")
@@ -65,7 +65,6 @@ class FixEngine:
             price (float or str): Order price.
             qty (int or str): Order quantity.
             source (str): Source identifier (e.g., strategy name).
-
         Returns:
             bytes: Encoded FIX NewOrderSingle message.
 
@@ -118,10 +117,8 @@ class FixEngine:
     def parse(self, raw_msg):
         """
         Parse an incoming FIX message.
-
         Args:
             raw_msg (bytes): Raw FIX message bytes.
-
         Returns:
             simplefix.FixMessage or None: Parsed message object, or None on error.
         """
