@@ -32,11 +32,15 @@ class MomentumStrategy(BaseStrategy):
         """
         if side == "1":  # Buy order
             if self.inventory + quantity > self.max_inventory:
-                self.logger.warning(f"{self.source_name}: Buy order rejected (would exceed max inventory).")
+                self.logger.warning(
+                    f"{self.source_name}: Buy order rejected (would exceed max inventory)."
+                )
                 return False
         elif side == "2":  # Sell order
             if self.inventory - quantity < -self.max_inventory:
-                self.logger.warning(f"{self.source_name}: Sell order rejected (would exceed short max inventory).")
+                self.logger.warning(
+                    f"{self.source_name}: Sell order rejected (would exceed short max inventory)."
+                )
                 return False
         if quantity > 500:
             self.logger.warning(f"{self.source_name}: Order rejected (quantity > 500).")
@@ -46,7 +50,9 @@ class MomentumStrategy(BaseStrategy):
     def generate_orders(self):
         base_result = super().generate_orders()
         if base_result == []:
-            self.logger.info(f"{self.source_name}: In cooldown or risk block, skipping orders.")
+            self.logger.info(
+                f"{self.source_name}: In cooldown or risk block, skipping orders."
+            )
             return []
 
         orders = []
@@ -59,7 +65,8 @@ class MomentumStrategy(BaseStrategy):
         prices = self.order_book.get_recent_prices(window=self.lookback)
         if len(prices) < self.lookback:
             self.logger.info(
-                f"{self.source_name}: Not enough price history ({len(prices)} < {self.lookback}), skipping orders.")
+                f"{self.source_name}: Not enough price history ({len(prices)} < {self.lookback}), skipping orders."
+            )
             return []
 
         trend = self._calculate_trend(prices)
@@ -76,14 +83,26 @@ class MomentumStrategy(BaseStrategy):
                 best_ask = self.order_book.get_best_ask()
                 if best_ask:
                     self.place_order("2", best_ask["price"], qty)
-                    orders.append({"side": "2", "price": best_ask["price"], "quantity": qty,
-                                   "order_id": best_ask["order_id"]})
+                    orders.append(
+                        {
+                            "side": "2",
+                            "price": best_ask["price"],
+                            "quantity": qty,
+                            "order_id": best_ask["order_id"],
+                        }
+                    )
             elif self.inventory < 0:
                 best_bid = self.order_book.get_best_bid()
                 if best_bid:
                     self.place_order("1", best_bid["price"], qty)
-                    orders.append({"side": "1", "price": best_bid["price"], "quantity": qty,
-                                   "order_id": best_bid["order_id"]})
+                    orders.append(
+                        {
+                            "side": "1",
+                            "price": best_bid["price"],
+                            "quantity": qty,
+                            "order_id": best_bid["order_id"],
+                        }
+                    )
             # **Add this block to reset rebalance_pending if inventory is zero**
             if self.inventory == 0:
                 self.rebalance_pending = False
@@ -91,13 +110,19 @@ class MomentumStrategy(BaseStrategy):
 
         # If inventory is at or beyond limits, flag for rebalancing (do not reset directly)
         if abs(self.inventory) >= self.max_inventory:
-            self.logger.info(f"{self.source_name}: Inventory at limit ({self.inventory}), rebalancing required.")
+            self.logger.info(
+                f"{self.source_name}: Inventory at limit ({self.inventory}), rebalancing required."
+            )
             self.rebalance_pending = True
             # Skip placing further orders until rebalanced
             return []
 
         spread = self.base_spread
-        skew = self.momentum_skew if trend > 0 else -self.momentum_skew if trend < 0 else 0.0
+        skew = (
+            self.momentum_skew
+            if trend > 0
+            else -self.momentum_skew if trend < 0 else 0.0
+        )
 
         mid = (best_bid["price"] + best_ask["price"]) / 2
         bid_price = mid * (1 - spread / 2 + skew)
@@ -110,13 +135,17 @@ class MomentumStrategy(BaseStrategy):
         if self.inventory + buy_qty <= self.max_inventory:
             orders.append({"side": "1", "price": bid_price, "quantity": buy_qty})
             self.place_order("1", bid_price, buy_qty)
-            self.logger.info(f"{self.source_name}: Placed BID {buy_qty}@{bid_price:.4f} (trend={trend:.4f})")
+            self.logger.info(
+                f"{self.source_name}: Placed BID {buy_qty}@{bid_price:.4f} (trend={trend:.4f})"
+            )
             # Do NOT update inventory here
 
         if self.inventory - sell_qty >= -self.max_inventory:
             orders.append({"side": "2", "price": ask_price, "quantity": sell_qty})
             self.place_order("2", ask_price, sell_qty)
-            self.logger.info(f"{self.source_name}: Placed ASK {sell_qty}@{ask_price:.4f} (trend={trend:.4f})")
+            self.logger.info(
+                f"{self.source_name}: Placed ASK {sell_qty}@{ask_price:.4f} (trend={trend:.4f})"
+            )
             # Do NOT update inventory here
 
         self.last_order_time = now
@@ -127,4 +156,6 @@ class MomentumStrategy(BaseStrategy):
         Handle trade execution events. Update inventory and log details.
         """
         super().on_trade(trade)
-        self.logger.info(f"{self.source_name}: Trade executed. Side: {trade.get('side')}, Qty: {trade.get('qty')}, Price: {trade.get('price')}, New inventory: {self.inventory}, Realised PnL: {self.realised_pnl}")
+        self.logger.info(
+            f"{self.source_name}: Trade executed. Side: {trade.get('side')}, Qty: {trade.get('qty')}, Price: {trade.get('price')}, New inventory: {self.inventory}, Realised PnL: {self.realised_pnl}"
+        )

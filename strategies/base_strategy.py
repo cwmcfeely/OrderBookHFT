@@ -25,21 +25,33 @@ class BaseStrategy(ABC):
 
         # Risk and trading parameters (with sensible defaults)
         self.max_order_qty = self.params.get("max_order_qty", 1000)
-        self.max_price_deviation = self.params.get("max_price_deviation", 0.02)  # 2% price deviation allowed
+        self.max_price_deviation = self.params.get(
+            "max_price_deviation", 0.02
+        )  # 2% price deviation allowed
         self.max_daily_orders = self.params.get("max_daily_orders", 1000)
-        self.max_position_duration = self.params.get("max_position_duration", 60)  # seconds
+        self.max_position_duration = self.params.get(
+            "max_position_duration", 60
+        )  # seconds
 
         # Cooldown period after drawdown or risk event
         self.last_order_time = 0
-        self.min_order_interval = self.params.get("min_order_interval", 1.0)  # Minimum time between orders (seconds)
+        self.min_order_interval = self.params.get(
+            "min_order_interval", 1.0
+        )  # Minimum time between orders (seconds)
         self.max_unrealised_pnl = 0.0
         self.cooldown_until = 0
-        self.drawdown_limit = self.params.get("drawdown_limit", 500)  # Drawdown threshold before cooldown (£500)
-        self.cooldown_period = self.params.get("cooldown_period", 60)  # Cooldown duration in seconds
+        self.drawdown_limit = self.params.get(
+            "drawdown_limit", 500
+        )  # Drawdown threshold before cooldown (£500)
+        self.cooldown_period = self.params.get(
+            "cooldown_period", 60
+        )  # Cooldown duration in seconds
         self.daily_loss_limit = self.params.get("daily_loss_limit", -10000)
 
         # Trailing stop parameters
-        self.trailing_stop = self.params.get("trailing_stop", 0.01)  # 1% trailing stop by default
+        self.trailing_stop = self.params.get(
+            "trailing_stop", 0.01
+        )  # 1% trailing stop by default
         self.highest_price = None
         self.lowest_price = None
 
@@ -65,7 +77,9 @@ class BaseStrategy(ABC):
         """
         now = time.time()
         if now < getattr(self, "cooldown_until", 0):
-            self.logger.info(f"{self.source_name}: In cooldown until {self.cooldown_until}, skipping orders.")
+            self.logger.info(
+                f"{self.source_name}: In cooldown until {self.cooldown_until}, skipping orders."
+            )
             return []
 
         # Optionally update unrealised PnL and check drawdown
@@ -85,13 +99,19 @@ class BaseStrategy(ABC):
         """
         now = time.time()
         # Enforce minimum interval between orders (cooldown)
-        if (now - getattr(self, 'last_order_time', 0)) < getattr(self, 'min_order_interval', 1.0):
-            self.logger.info(f"{self.source_name}: Order skipped due to cooldown: {side} {quantity}@{price}")
+        if (now - getattr(self, "last_order_time", 0)) < getattr(
+            self, "min_order_interval", 1.0
+        ):
+            self.logger.info(
+                f"{self.source_name}: Order skipped due to cooldown: {side} {quantity}@{price}"
+            )
             return False
 
         # Run risk checks before placing the order
         if not self._risk_check(side, price, quantity):
-            self.logger.info(f"{self.source_name}: Risk check failed, order not placed: {side} {quantity}@{price}")
+            self.logger.info(
+                f"{self.source_name}: Risk check failed, order not placed: {side} {quantity}@{price}"
+            )
             return False
 
         # Create and send FIX new order message
@@ -101,7 +121,7 @@ class BaseStrategy(ABC):
             side=side,
             price=price,
             qty=quantity,
-            source=self.source_name
+            source=self.source_name,
         )
 
         order_time = now
@@ -114,7 +134,7 @@ class BaseStrategy(ABC):
                 quantity=parsed_order.get(38),
                 order_id=parsed_order.get(11),
                 source=self.source_name,
-                order_time=order_time
+                order_time=order_time,
             )
 
             self.order_count += 1
@@ -122,10 +142,14 @@ class BaseStrategy(ABC):
                 self.position_start_time = now
 
             self.last_order_time = now
-            self.logger.info(f"{self.source_name}: Order placed: Side={side}, Qty={quantity}, Price={price}")
+            self.logger.info(
+                f"{self.source_name}: Order placed: Side={side}, Qty={quantity}, Price={price}"
+            )
             return True
         else:
-            self.logger.warning(f"{self.source_name}: FIX message parsing failed, order not placed.")
+            self.logger.warning(
+                f"{self.source_name}: FIX message parsing failed, order not placed."
+            )
             return False
 
     def on_competition(self, taker_strategy, maker_strategy, price, qty):
@@ -142,7 +166,9 @@ class BaseStrategy(ABC):
         """
         # Quantity limit
         if quantity > self.max_order_qty:
-            self.logger.error(f"Order quantity {quantity} exceeds max {self.max_order_qty}")
+            self.logger.error(
+                f"Order quantity {quantity} exceeds max {self.max_order_qty}"
+            )
             return False
 
         # Price deviation check (against best bid/ask)
@@ -157,7 +183,9 @@ class BaseStrategy(ABC):
         if reference_price:
             deviation = abs(price - reference_price) / reference_price
             if deviation > self.max_price_deviation:
-                self.logger.warning(f"Price deviation {deviation:.2%} exceeds max {self.max_price_deviation:.2%}")
+                self.logger.warning(
+                    f"Price deviation {deviation:.2%} exceeds max {self.max_price_deviation:.2%}"
+                )
                 return False
 
         # Daily order limit
@@ -166,7 +194,10 @@ class BaseStrategy(ABC):
             return False
 
         # Position duration check
-        if self.position_start_time and (time.time() - self.position_start_time) > self.max_position_duration:
+        if (
+            self.position_start_time
+            and (time.time() - self.position_start_time) > self.max_position_duration
+        ):
             self.logger.warning("Position held beyond max duration")
             return False
 
@@ -229,17 +260,19 @@ class BaseStrategy(ABC):
         Update position, realised PnL, and win rate after a trade.
         Uses average cost method and handles all position transitions.
         """
-        qty = trade['qty']
-        side = trade['side']
-        price = trade['price']
-        pnl = trade.get('pnl', 0)  # Optional, for per-trade stop logic
+        qty = trade["qty"]
+        side = trade["side"]
+        price = trade["price"]
+        pnl = trade.get("pnl", 0)  # Optional, for per-trade stop logic
 
-        if side in ('buy', "1"):
+        if side in ("buy", "1"):
             if self.inventory >= 0:
                 # Increasing or opening a long position
                 total_cost = self.avg_entry_price * self.inventory + price * qty
                 self.inventory += qty
-                self.avg_entry_price = total_cost / self.inventory if self.inventory != 0 else 0.0
+                self.avg_entry_price = (
+                    total_cost / self.inventory if self.inventory != 0 else 0.0
+                )
             else:
                 # Reducing or flipping a short position
                 close_qty = min(abs(self.inventory), qty)
@@ -252,12 +285,14 @@ class BaseStrategy(ABC):
                 elif self.inventory == 0:
                     self.avg_entry_price = 0.0
 
-        elif side in ('sell', "2"):
+        elif side in ("sell", "2"):
             if self.inventory <= 0:
                 # Increasing or opening a short position
                 total_cost = self.avg_entry_price * abs(self.inventory) + price * qty
                 self.inventory -= qty
-                self.avg_entry_price = total_cost / abs(self.inventory) if self.inventory != 0 else 0.0
+                self.avg_entry_price = (
+                    total_cost / abs(self.inventory) if self.inventory != 0 else 0.0
+                )
             else:
                 # Reducing or flipping a long position
                 close_qty = min(self.inventory, qty)
@@ -279,9 +314,9 @@ class BaseStrategy(ABC):
             self.position_start_time = None
 
         # --- Trailing stop logic ---
-        if not hasattr(self, 'highest_price'):
+        if not hasattr(self, "highest_price"):
             self.highest_price = None
-        if not hasattr(self, 'lowest_price'):
+        if not hasattr(self, "lowest_price"):
             self.lowest_price = None
 
         if self.inventory > 0:
@@ -289,7 +324,9 @@ class BaseStrategy(ABC):
                 self.highest_price = price
             trailing_stop_pct = self.params.get("trailing_stop_pct", 0.01)
             if price < self.highest_price * (1 - trailing_stop_pct):
-                self.logger.info(f"{self.source_name}: Trailing stop hit on long at {price}, closing position.")
+                self.logger.info(
+                    f"{self.source_name}: Trailing stop hit on long at {price}, closing position."
+                )
                 self.reset_inventory()
                 self.highest_price = None
                 self.lowest_price = None
@@ -298,7 +335,9 @@ class BaseStrategy(ABC):
                 self.lowest_price = price
             trailing_stop_pct = self.params.get("trailing_stop_pct", 0.01)
             if price > self.lowest_price * (1 + trailing_stop_pct):
-                self.logger.info(f"{self.source_name}: Trailing stop hit on short at {price}, closing position.")
+                self.logger.info(
+                    f"{self.source_name}: Trailing stop hit on short at {price}, closing position."
+                )
                 self.reset_inventory()
                 self.highest_price = None
                 self.lowest_price = None
@@ -312,14 +351,22 @@ class BaseStrategy(ABC):
 
         if pnl <= -abs(stop_loss):
             self.logger.warning(
-                f"Per-trade stop loss triggered: trade PnL={pnl}. Closing position and resetting inventory.")
+                f"Per-trade stop loss triggered: trade PnL={pnl}. Closing position and resetting inventory."
+            )
             self.reset_inventory()
         elif pnl >= abs(take_profit):
             self.logger.info(
-                f"Per-trade take profit triggered: trade PnL={pnl}. Closing position and resetting inventory.")
+                f"Per-trade take profit triggered: trade PnL={pnl}. Closing position and resetting inventory."
+            )
             self.reset_inventory()
 
-        return (self.inventory, self.avg_entry_price, self.realised_pnl, self.total_trades, self.winning_trades)
+        return (
+            self.inventory,
+            self.avg_entry_price,
+            self.realised_pnl,
+            self.total_trades,
+            self.winning_trades,
+        )
 
     def total_pnl(self):
         """
@@ -385,7 +432,9 @@ class BaseStrategy(ABC):
         self.max_unrealised_pnl = max(self.max_unrealised_pnl, unrealised)
         drawdown = self.max_unrealised_pnl - unrealised
         if drawdown >= self.drawdown_limit:
-            self.logger.warning(f"{self.source_name}: Drawdown limit hit ({drawdown}), entering cooldown.")
+            self.logger.warning(
+                f"{self.source_name}: Drawdown limit hit ({drawdown}), entering cooldown."
+            )
             self.cooldown_until = time.time() + self.cooldown_period
             self.max_unrealised_pnl = unrealised  # Reset peak
 

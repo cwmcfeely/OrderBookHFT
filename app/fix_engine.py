@@ -14,19 +14,27 @@ class FixEngine:
         """
         self.parser = simplefix.FixParser()  # Used to parse incoming FIX messages
         self.heartbeat_interval = heartbeat_interval  # Heartbeat interval in seconds
-        self.last_heartbeat = time.time()  # Timestamp of the last heartbeat sent/received
+        self.last_heartbeat = (
+            time.time()
+        )  # Timestamp of the last heartbeat sent/received
         self.seq_num = 1  # Sequence number for outgoing FIX messages
-        self.symbol = symbol  # Symbol string for logging and message context per strategy
+        self.symbol = (
+            symbol  # Symbol string for logging and message context per strategy
+        )
 
         # Set up loggers: one for the FIX server, one per strategy (if symbol provided)
         self.server_logger = logging.getLogger("FIXServer")
         # For per-strategy logs: use the strategy name or symbol (e.g., "my_strategy")
-        self.strategy_logger = logging.getLogger(f"FIX_{self.symbol}") if self.symbol else None
+        self.strategy_logger = (
+            logging.getLogger(f"FIX_{self.symbol}") if self.symbol else None
+        )
 
         # Log initialisation for diagnostics
         self.server_logger.info("===== FIX ENGINE INITIALISED =====")
         if self.strategy_logger:
-            self.strategy_logger.info("===== FIX ENGINE INITIALISED FOR SYMBOL %s =====", self.symbol)
+            self.strategy_logger.info(
+                "===== FIX ENGINE INITIALISED FOR SYMBOL %s =====", self.symbol
+            )
 
     def create_heartbeat(self):
         """
@@ -77,7 +85,9 @@ class FixEngine:
             raise ValueError("ClOrdID (11) must be a non-empty string")
         # Validate symbol
         if not symbol or not isinstance(symbol, str) or len(symbol) > 8:
-            raise ValueError(f"Symbol (55) must be a non-empty string up to 8 characters. Got: {symbol}")
+            raise ValueError(
+                f"Symbol (55) must be a non-empty string up to 8 characters. Got: {symbol}"
+            )
         # Validate side
         if str(side) not in {"1", "2"}:
             raise ValueError(f"Side (54) must be '1' (Buy) or '2' (Sell). Got: {side}")
@@ -87,7 +97,9 @@ class FixEngine:
         except Exception:
             raise ValueError(f"Price (44) must be a valid float. Got: {price}")
         if not (0.01 <= price_val <= 1_000_000):
-            raise ValueError(f"Price (44) out of valid range [0.01, 1,000,000]: {price_val}")
+            raise ValueError(
+                f"Price (44) out of valid range [0.01, 1,000,000]: {price_val}"
+            )
         # Validate quantity
         try:
             qty_val = int(qty)
@@ -151,7 +163,7 @@ class FixEngine:
         direction = "HEARTBEAT RECEIVED" if incoming else "HEARTBEAT SENT"
         try:
             # Convert FIX message to readable string (replace SOH with '|')
-            raw = msg.encode().decode(errors='replace').replace('\x01', '|')
+            raw = msg.encode().decode(errors="replace").replace("\x01", "|")
             self.server_logger.info(f"{direction}: {raw}")
             if self.strategy_logger:
                 self.strategy_logger.info(f"{direction}: {raw}")
@@ -159,7 +171,9 @@ class FixEngine:
             # Log any errors encountered during logging
             self.server_logger.error(f"Heartbeat log error: {str(e)}", exc_info=True)
             if self.strategy_logger:
-                self.strategy_logger.error(f"Heartbeat log error: {str(e)}", exc_info=True)
+                self.strategy_logger.error(
+                    f"Heartbeat log error: {str(e)}", exc_info=True
+                )
 
     def _log_fix_message(self, msg, incoming=True):
         """
@@ -173,9 +187,9 @@ class FixEngine:
         try:
             # Prepare readable string for logging
             if isinstance(msg, simplefix.FixMessage):
-                raw = msg.encode().decode(errors='replace').replace('\x01', '|')
+                raw = msg.encode().decode(errors="replace").replace("\x01", "|")
             elif isinstance(msg, bytes):
-                raw = msg.decode(errors='replace').replace('\x01', '|')
+                raw = msg.decode(errors="replace").replace("\x01", "|")
             else:
                 raw = str(msg)
 
@@ -187,9 +201,13 @@ class FixEngine:
         except Exception as e:
             # Log any errors encountered during logging
             if self.strategy_logger:
-                self.strategy_logger.error(f"FIX message log error: {str(e)}", exc_info=True)
+                self.strategy_logger.error(
+                    f"FIX message log error: {str(e)}", exc_info=True
+                )
             else:
-                self.server_logger.error(f"FIX message log error: {str(e)}", exc_info=True)
+                self.server_logger.error(
+                    f"FIX message log error: {str(e)}", exc_info=True
+                )
 
     def is_heartbeat_due(self):
         """
@@ -211,7 +229,24 @@ class FixEngine:
                 )
         return due
 
-    def create_execution_report(self, cl_ord_id, order_id, exec_id, ord_status, exec_type, symbol, side, order_qty, last_qty=None, last_px=None, leaves_qty=None, cum_qty=None, price=None, source=None, text=None):
+    def create_execution_report(
+        self,
+        cl_ord_id,
+        order_id,
+        exec_id,
+        ord_status,
+        exec_type,
+        symbol,
+        side,
+        order_qty,
+        last_qty=None,
+        last_px=None,
+        leaves_qty=None,
+        cum_qty=None,
+        price=None,
+        source=None,
+        text=None,
+    ):
         """
         Create a FIX ExecutionReport message.
 

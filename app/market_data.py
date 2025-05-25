@@ -31,7 +31,9 @@ HEADERS = {"Content-Type": "application/json"}
 api_calls_today = 0
 last_call_date = date.today()
 api_counter_lock = threading.Lock()  # Lock to synchronise access to API call counters
-API_COUNT_FILE = Path("logs/api_calls_today.json")  # File to persist API call count across restarts
+API_COUNT_FILE = Path(
+    "logs/api_calls_today.json"
+)  # File to persist API call count across restarts
 
 CACHE_EXPIRY_SECONDS = 3600  # Cache expiry time in seconds (1 hour)
 
@@ -71,10 +73,14 @@ def save_api_count():
     """
     try:
         with open(API_COUNT_FILE, "w") as f:
-            json.dump({
-                "api_calls_today": api_calls_today,
-                "last_call_date": last_call_date.isoformat()
-            }, f, indent=2)
+            json.dump(
+                {
+                    "api_calls_today": api_calls_today,
+                    "last_call_date": last_call_date.isoformat(),
+                },
+                f,
+                indent=2,
+            )
     except Exception as e:
         logger.error(f"Error saving API count: {str(e)}")
 
@@ -154,7 +160,7 @@ def _fetch_for_day(symbol, trading_day, interval="5m"):
         "interval": interval,
         "fmt": "json",
         "from": int(start_dt.timestamp()),
-        "to": int(end_dt.timestamp())
+        "to": int(end_dt.timestamp()),
     }
 
     try:
@@ -162,8 +168,12 @@ def _fetch_for_day(symbol, trading_day, interval="5m"):
         if api_calls_today >= 100000:
             raise Exception("Daily API limit (100,000) reached")
 
-        logger.info(f"Fetching {symbol} ({interval}) for {trading_day.strftime('%Y-%m-%d')}")
-        response = requests.get(f"{BASE_URL}/intraday/{symbol}", params=params, timeout=10)
+        logger.info(
+            f"Fetching {symbol} ({interval}) for {trading_day.strftime('%Y-%m-%d')}"
+        )
+        response = requests.get(
+            f"{BASE_URL}/intraday/{symbol}", params=params, timeout=10
+        )
 
         if response.status_code != 200:
             logger.error(f"API Error: {response.status_code} - {response.text}")
@@ -180,8 +190,10 @@ def _fetch_for_day(symbol, trading_day, interval="5m"):
         with latest_prices_lock:
             latest_tick = data[-1] if isinstance(data, list) and len(data) > 0 else None
             if latest_tick:
-                price = latest_tick.get('close') or latest_tick.get('c') or (
-                    (latest_tick.get('bid', 0) + latest_tick.get('ask', 0)) / 2
+                price = (
+                    latest_tick.get("close")
+                    or latest_tick.get("c")
+                    or ((latest_tick.get("bid", 0) + latest_tick.get("ask", 0)) / 2)
                 )
                 if price:
                     latest_prices[symbol] = price
@@ -199,18 +211,20 @@ def fetch_intraday_data(symbol, interval="5m"):
     data = _fetch_for_day(symbol, trading_day, interval)
     if data:
         cache_data(symbol, data)
-        processed = sorted(data, key=lambda x: x.get('date', ''))
+        processed = sorted(data, key=lambda x: x.get("date", ""))
         cache_data(symbol, processed, processed=True)
         return data
 
     # Fallback: try previous business day if no data on last trading day
     prev_day = pd.Timestamp(trading_day) - pd.tseries.offsets.BusinessDay(1)
     prev_day = prev_day.date()
-    logger.info(f"No data for {symbol} on {trading_day}, trying previous business day {prev_day}")
+    logger.info(
+        f"No data for {symbol} on {trading_day}, trying previous business day {prev_day}"
+    )
     data = _fetch_for_day(symbol, prev_day, interval)
     if data:
         cache_data(symbol, data)
-        processed = sorted(data, key=lambda x: x.get('date', ''))
+        processed = sorted(data, key=lambda x: x.get("date", ""))
         cache_data(symbol, processed, processed=True)
         return data
 
@@ -237,8 +251,10 @@ def get_latest_price(symbol: str) -> float | None:
     data = fetch_intraday_data(symbol)
     if data:
         latest = data[-1]
-        price = latest.get('close') or latest.get('c') or (
-            (latest.get('bid', 0) + latest.get('ask', 0)) / 2
+        price = (
+            latest.get("close")
+            or latest.get("c")
+            or ((latest.get("bid", 0) + latest.get("ask", 0)) / 2)
         )
         if price is not None:
             # Optionally update the in-memory cache
@@ -290,7 +306,7 @@ def update_all_symbols():
                 continue
 
             cache_data(symbol_key, raw_data)
-            processed = sorted(raw_data, key=lambda x: x.get('date', ''))
+            processed = sorted(raw_data, key=lambda x: x.get("date", ""))
             cache_data(symbol_key, processed, processed=True)
 
         except Exception as e:

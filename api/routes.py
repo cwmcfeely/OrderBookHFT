@@ -30,15 +30,27 @@ trading_state = {
     "exchange_halted": False,  # Whether the exchange is halted
     "my_strategy_enabled": True,  # Whether the user's strategy is enabled
     "current_symbol": next(iter(symbols.values()), None),  # Currently selected symbol
-    "order_books": {symbol: OrderBook(symbol) for symbol in symbols.values()},  # Order books per symbol
+    "order_books": {
+        symbol: OrderBook(symbol) for symbol in symbols.values()
+    },  # Order books per symbol
     "trades": {symbol: [] for symbol in symbols.values()},  # Trades per symbol
     "log": [],  # Log for UI or audit
-    "order_book_history": {symbol: [] for symbol in symbols.values()},  # Order book snapshots
-    "spread_history": {symbol: [] for symbol in symbols.values()},  # Bid-ask spread history
-    "liquidity_history": {symbol: [] for symbol in symbols.values()},  # Liquidity at top levels
-    "latency_history": {symbol: [] for symbol in symbols.values()},  # Order latency records
-    "execution_reports": {symbol: [] for symbol in symbols.values()},  # Execution reports per symbol
-    "competition_logs": []  # Strategy competition logs (NEW)
+    "order_book_history": {
+        symbol: [] for symbol in symbols.values()
+    },  # Order book snapshots
+    "spread_history": {
+        symbol: [] for symbol in symbols.values()
+    },  # Bid-ask spread history
+    "liquidity_history": {
+        symbol: [] for symbol in symbols.values()
+    },  # Liquidity at top levels
+    "latency_history": {
+        symbol: [] for symbol in symbols.values()
+    },  # Order latency records
+    "execution_reports": {
+        symbol: [] for symbol in symbols.values()
+    },  # Execution reports per symbol
+    "competition_logs": [],  # Strategy competition logs (NEW)
 }
 
 # Threading lock to ensure thread-safe access to trading_state
@@ -47,10 +59,7 @@ state_lock = threading.Lock()
 
 # Instantiate a FIX engine for each symbol
 
-fix_engines = {
-    symbol: FixEngine(symbol=symbol)
-    for symbol in symbols.values()
-}
+fix_engines = {symbol: FixEngine(symbol=symbol) for symbol in symbols.values()}
 
 # Dictionary to store strategy instances per symbol
 
@@ -58,7 +67,6 @@ strategy_instances = {}
 
 
 def append_order_book_snapshot(symbol, order_book):
-
     """
     Take a snapshot of the order book, spread, and liquidity for a symbol.
     Truncate history to keep memory usage manageable.
@@ -66,7 +74,9 @@ def append_order_book_snapshot(symbol, order_book):
     snapshot = order_book.get_depth_snapshot(levels=10)
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with state_lock:
-        trading_state["order_book_history"][symbol].append({"time": now, "snapshot": snapshot})
+        trading_state["order_book_history"][symbol].append(
+            {"time": now, "snapshot": snapshot}
+        )
 
     # Calculate and store mid price and spread
     best_bid = order_book.get_best_bid()
@@ -77,15 +87,21 @@ def append_order_book_snapshot(symbol, order_book):
     else:
         mid = None
         spread = None
-    trading_state["spread_history"][symbol].append({"time": now, "mid": mid, "spread": spread})
+    trading_state["spread_history"][symbol].append(
+        {"time": now, "mid": mid, "spread": spread}
+    )
 
     # Calculate and store total liquidity at top N levels
     total_liquidity = 0
     if snapshot:
         bids = snapshot.get("bids", [])
         asks = snapshot.get("asks", [])
-        total_liquidity = sum(level["quantity"] for level in bids) + sum(level["quantity"] for level in asks)
-    trading_state["liquidity_history"][symbol].append({"time": now, "liquidity": total_liquidity})
+        total_liquidity = sum(level["quantity"] for level in bids) + sum(
+            level["quantity"] for level in asks
+        )
+    trading_state["liquidity_history"][symbol].append(
+        {"time": now, "liquidity": total_liquidity}
+    )
 
     # Truncate histories to last 500 entries for efficiency
     for key in ["order_book_history", "spread_history", "liquidity_history"]:
@@ -133,13 +149,19 @@ def auto_update_order_books():
 
                     # Competitor strategies (always on)
                     if "passive_liquidity_provider" not in strategy_instances[symbol]:
-                        strategy_instances[symbol]["passive_liquidity_provider"] = PassiveLiquidityProvider(
-                            FixEngine(symbol="passive_liquidity_provider"), order_book, symbol
+                        strategy_instances[symbol]["passive_liquidity_provider"] = (
+                            PassiveLiquidityProvider(
+                                FixEngine(symbol="passive_liquidity_provider"),
+                                order_book,
+                                symbol,
+                            )
                         )
 
                     if "market_maker" not in strategy_instances[symbol]:
-                        strategy_instances[symbol]["market_maker"] = MarketMakerStrategy(
-                            FixEngine(symbol="market_maker"), order_book, symbol
+                        strategy_instances[symbol]["market_maker"] = (
+                            MarketMakerStrategy(
+                                FixEngine(symbol="market_maker"), order_book, symbol
+                            )
                         )
 
                     if "momentum" not in strategy_instances[symbol]:
@@ -152,12 +174,26 @@ def auto_update_order_books():
                     order_book,
                     strategies=strategy_instances[symbol],
                     trading_state=trading_state,
-                    state_lock=state_lock
+                    state_lock=state_lock,
                 )
 
                 # Check if order book needs reseeding (insufficient liquidity or time-based)
-                bids_ok = (len(order_book.bids) >= min_levels and sum(sum(order["qty"] for order in q) for q in order_book.bids.values()) >= min_qty)
-                asks_ok = (len(order_book.asks) >= min_levels and sum(sum(order["qty"] for order in q) for q in order_book.asks.values()) >= min_qty)
+                bids_ok = (
+                    len(order_book.bids) >= min_levels
+                    and sum(
+                        sum(order["qty"] for order in q)
+                        for q in order_book.bids.values()
+                    )
+                    >= min_qty
+                )
+                asks_ok = (
+                    len(order_book.asks) >= min_levels
+                    and sum(
+                        sum(order["qty"] for order in q)
+                        for q in order_book.asks.values()
+                    )
+                    >= min_qty
+                )
                 now = time.time()
                 need_reseed = not bids_ok or not asks_ok
                 time_for_reseed = now - last_reseed_time[symbol] > reseed_interval
@@ -166,7 +202,9 @@ def auto_update_order_books():
                     price = get_latest_price(symbol)
                     if price:
                         order_book.last_price = price
-                        order_book.seed_synthetic_depth(mid_price=price, levels=10, base_qty=100)
+                        order_book.seed_synthetic_depth(
+                            mid_price=price, levels=10, base_qty=100
+                        )
                         last_reseed_time[symbol] = now
                         logger.info(
                             f"Reseeded synthetic depth for {symbol} at mid price {price} "
@@ -186,7 +224,7 @@ def auto_update_order_books():
                                 price=order["price"],
                                 quantity=order["quantity"],
                                 order_id=str(uuid.uuid4()),
-                                source=strategy.source_name
+                                source=strategy.source_name,
                             )
                             with state_lock:
                                 trading_state["trades"][symbol].extend(trades)
@@ -197,7 +235,10 @@ def auto_update_order_books():
                         with state_lock:
                             trading_state["exchange_halted"] = True
                     except Exception as e:
-                        logger.error(f"Strategy {strategy.source_name} error: {str(e)}", exc_info=True)
+                        logger.error(
+                            f"Strategy {strategy.source_name} error: {str(e)}",
+                            exc_info=True,
+                        )
 
                 # Handle FIX heartbeats for each strategy
                 for strategy in strategies:
@@ -222,11 +263,11 @@ def filter_trades(trades, side=None, source=None, min_price=None, max_price=None
     """
     filtered = []
     for trade in trades:
-        if side and trade.get('side') != side:
+        if side and trade.get("side") != side:
             continue
-        if source and trade.get('source') != source:
+        if source and trade.get("source") != source:
             continue
-        price = trade.get('price')
+        price = trade.get("price")
         if min_price is not None and price < min_price:
             continue
         if max_price is not None and price > max_price:
@@ -251,7 +292,7 @@ def register_routes(app):
     app.route("/strategy_status")(strategy_status)
     app.route("/execution_reports")(get_execution_reports)
     app.route("/select_symbol", methods=["POST"])(select_symbol)
-    app.route('/order_latency_history')(order_latency_history)
+    app.route("/order_latency_history")(order_latency_history)
     app.route("/")(index)
     app.route("/competition_logs")(get_competition_logs)  # NEW ENDPOINT
 
@@ -270,7 +311,9 @@ def toggle_exchange():
     app_logger.info(f"Exchange has been {status} by user action.")
 
     # Optional: Logging to the per-strategy FIX log for audit trail
-    logging.getLogger("FIX_my_strategy").info(f"EXCHANGE: Exchange has been {status} by user action.")
+    logging.getLogger("FIX_my_strategy").info(
+        f"EXCHANGE: Exchange has been {status} by user action."
+    )
 
     return jsonify({"exchange_halted": trading_state["exchange_halted"]})
 
@@ -315,19 +358,25 @@ def cancel_mystrategy_orders():
             side_value = "1" if book_side is order_book.bids else "2"
             for price in list(book_side.keys()):
                 queue = book_side[price]
-                new_queue = [order for order in queue if order.get("source") != "my_strategy"]
+                new_queue = [
+                    order for order in queue if order.get("source") != "my_strategy"
+                ]
                 if len(new_queue) != len(queue):
-                    cancelled = [order for order in queue if order.get("source") == "my_strategy"]
+                    cancelled = [
+                        order for order in queue if order.get("source") == "my_strategy"
+                    ]
                     removed_orders.extend(cancelled)
                     for order in cancelled:
                         # Use order's side if present, otherwise infer
-                        side = order.get('side', side_value)
+                        side = order.get("side", side_value)
                         # Format price to 8 decimals if it's a float
-                        price_val = order.get('price')
+                        price_val = order.get("price")
                         if isinstance(price_val, float):
                             price_val = f"{price_val:.8f}"
                         # Tag 52: SendingTime in FIX UTC format
-                        sending_time = datetime.utcnow().strftime("%Y%m%d-%H:%M:%S.%f")[:-3]
+                        sending_time = datetime.utcnow().strftime("%Y%m%d-%H:%M:%S.%f")[
+                            :-3
+                        ]
                         logger.info(
                             f"8=FIX.4.4|35=8|39=4|150=4|11={order.get('id')}|55={symbol}|54={side}|38={order.get('qty')}|44={price_val}|58=Order cancelled by my_strategy|52={sending_time}|10=000"
                         )
@@ -344,11 +393,13 @@ def get_status():
     Get the current status of the exchange and MyStrategy.
     """
     with state_lock:
-        return jsonify({
-            "exchange_halted": trading_state["exchange_halted"],
-            "my_strategy_enabled": trading_state["my_strategy_enabled"],
-            "symbol": trading_state["current_symbol"]
-        })
+        return jsonify(
+            {
+                "exchange_halted": trading_state["exchange_halted"],
+                "my_strategy_enabled": trading_state["my_strategy_enabled"],
+                "symbol": trading_state["current_symbol"],
+            }
+        )
 
 
 def safe_get_data(data_dict, symbol):
@@ -374,19 +425,29 @@ def get_order_book():
         symbol = req_symbol
     with state_lock:
         ob = trading_state["order_books"][symbol]
-        return jsonify({
-            "bids": [{
-                "price": p,
-                "qty": sum(o["qty"] for o in q),
-                "sources": [o["source"] for o in q]
-            } for p, q in ob.bids.items()],
-            "asks": [{
-                "price": p,
-                "qty": sum(o["qty"] for o in q),
-                "sources": [o["source"] for o in q]
-            } for p, q in ob.asks.items()],
-            "last_price": float(ob.last_price) if ob.last_price is not None else None
-        })
+        return jsonify(
+            {
+                "bids": [
+                    {
+                        "price": p,
+                        "qty": sum(o["qty"] for o in q),
+                        "sources": [o["source"] for o in q],
+                    }
+                    for p, q in ob.bids.items()
+                ],
+                "asks": [
+                    {
+                        "price": p,
+                        "qty": sum(o["qty"] for o in q),
+                        "sources": [o["source"] for o in q],
+                    }
+                    for p, q in ob.asks.items()
+                ],
+                "last_price": (
+                    float(ob.last_price) if ob.last_price is not None else None
+                ),
+            }
+        )
 
 
 def decode_bytes(obj):
@@ -394,7 +455,7 @@ def decode_bytes(obj):
     Recursively decode bytes to UTF-8 in nested lists/dicts for JSON serialization.
     """
     if isinstance(obj, bytes):
-        return obj.decode('utf-8', errors='replace')
+        return obj.decode("utf-8", errors="replace")
     if isinstance(obj, dict):
         return {k: decode_bytes(v) for k, v in obj.items()}
     if isinstance(obj, list):
@@ -419,23 +480,25 @@ def get_trades():
 
 
 def get_order_book_history():
-    symbol = request.args.get('symbol') or trading_state["current_symbol"]
+    symbol = request.args.get("symbol") or trading_state["current_symbol"]
     with state_lock:
-        history = safe_get_data(trading_state['order_book_history'], symbol)
+        history = safe_get_data(trading_state["order_book_history"], symbol)
         if not history:
             return jsonify([])  # Return empty list if no data
         processed = []
         for entry in history:
-            snapshot = entry['snapshot']
-            bids = snapshot.get('bids', [])
-            asks = snapshot.get('asks', [])
-            price_levels = [b['price'] for b in bids] + [a['price'] for a in asks]
-            quantities = [b['quantity'] for b in bids] + [a['quantity'] for a in asks]
-            processed.append({
-                "time": entry['time'],
-                "price_levels": price_levels,
-                "quantities": quantities
-            })
+            snapshot = entry["snapshot"]
+            bids = snapshot.get("bids", [])
+            asks = snapshot.get("asks", [])
+            price_levels = [b["price"] for b in bids] + [a["price"] for a in asks]
+            quantities = [b["quantity"] for b in bids] + [a["quantity"] for a in asks]
+            processed.append(
+                {
+                    "time": entry["time"],
+                    "price_levels": price_levels,
+                    "quantities": quantities,
+                }
+            )
         return jsonify(processed)
 
 
@@ -443,9 +506,9 @@ def get_spread_history():
     """
     Get historical bid-ask spread and mid price for the selected symbol.
     """
-    symbol = request.args.get('symbol') or trading_state["current_symbol"]
+    symbol = request.args.get("symbol") or trading_state["current_symbol"]
     with state_lock:
-        spread_history = safe_get_data(trading_state['spread_history'], symbol)
+        spread_history = safe_get_data(trading_state["spread_history"], symbol)
         return jsonify(spread_history)
 
 
@@ -453,9 +516,9 @@ def get_liquidity_history():
     """
     Get historical liquidity at top levels for the selected symbol.
     """
-    symbol = request.args.get('symbol') or trading_state["current_symbol"]
+    symbol = request.args.get("symbol") or trading_state["current_symbol"]
     with state_lock:
-        liquidity_history = safe_get_data(trading_state['liquidity_history'], symbol)
+        liquidity_history = safe_get_data(trading_state["liquidity_history"], symbol)
         return jsonify(liquidity_history)
 
 
@@ -488,16 +551,30 @@ def strategy_status():
             status[name] = {
                 "inventory": inventory,
                 "realised_pnl": realised_pnl,
-                "realised_pnl_percent": (realised_pnl / initial_capital * 100) if initial_capital else 0,
-                "unrealised_pnl": strat.unrealised_pnl() if hasattr(strat, "unrealised_pnl") else 0.0,
+                "realised_pnl_percent": (
+                    (realised_pnl / initial_capital * 100) if initial_capital else 0
+                ),
+                "unrealised_pnl": (
+                    strat.unrealised_pnl() if hasattr(strat, "unrealised_pnl") else 0.0
+                ),
                 "unrealised_pnl_percent": (
-                    strat.unrealised_pnl() / initial_capital * 100) if initial_capital else 0,
-                "total_pnl": strat.total_pnl() if hasattr(strat, "total_pnl") else realised_pnl,
-                "total_pnl_percent": (strat.total_pnl() / initial_capital * 100) if initial_capital and hasattr(
-                    strat, "total_pnl") else 0,
-                "inventory_percent": (inventory / max_inventory * 100) if max_inventory else 0,
+                    (strat.unrealised_pnl() / initial_capital * 100)
+                    if initial_capital
+                    else 0
+                ),
+                "total_pnl": (
+                    strat.total_pnl() if hasattr(strat, "total_pnl") else realised_pnl
+                ),
+                "total_pnl_percent": (
+                    (strat.total_pnl() / initial_capital * 100)
+                    if initial_capital and hasattr(strat, "total_pnl")
+                    else 0
+                ),
+                "inventory_percent": (
+                    (inventory / max_inventory * 100) if max_inventory else 0
+                ),
                 "total_trades": total_trades,
-                "win_rate": win_rate
+                "win_rate": win_rate,
             }
         return jsonify(status)
 
@@ -533,9 +610,9 @@ def order_latency_history():
     """
     Get order latency history for the selected symbol.
     """
-    symbol = request.args.get('symbol') or trading_state['current_symbol']
+    symbol = request.args.get("symbol") or trading_state["current_symbol"]
     with state_lock:
-        latency_data = trading_state.get('latency_history', {}).get(symbol, [])
+        latency_data = trading_state.get("latency_history", {}).get(symbol, [])
         return jsonify(latency_data)
 
 

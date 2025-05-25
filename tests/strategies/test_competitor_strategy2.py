@@ -6,8 +6,14 @@ from strategies.competitor_strategy2 import MomentumStrategy
 
 class DummyOrderBook:
     def __init__(self):
-        self.bids = {100: [{"qty": 500, "order_id": "bid1"}], 99: [{"qty": 300, "order_id": "bid2"}]}
-        self.asks = {101: [{"qty": 400, "order_id": "ask1"}], 102: [{"qty": 200, "order_id": "ask2"}]}
+        self.bids = {
+            100: [{"qty": 500, "order_id": "bid1"}],
+            99: [{"qty": 300, "order_id": "bid2"}],
+        }
+        self.asks = {
+            101: [{"qty": 400, "order_id": "ask1"}],
+            102: [{"qty": 200, "order_id": "ask2"}],
+        }
         self.last_price = 100.5
 
     def get_best_bid(self):
@@ -33,7 +39,12 @@ class DummyFixEngine:
         return {"fake": "msg"}
 
     def parse(self, **kwargs):
-        return {54: kwargs.get("side", "1"), 44: kwargs.get("price", 100), 38: kwargs.get("qty", 1), 11: "OID"}
+        return {
+            54: kwargs.get("side", "1"),
+            44: kwargs.get("price", 100),
+            38: kwargs.get("qty", 1),
+            11: "OID",
+        }
 
 
 class TestMomentumStrategy(unittest.TestCase):
@@ -47,9 +58,11 @@ class TestMomentumStrategy(unittest.TestCase):
             "lookback": 5,
             "base_spread": 0.002,
             "momentum_skew": 0.001,
-            "size_skew": 2
+            "size_skew": 2,
         }
-        self.strategy = MomentumStrategy(self.fix_engine, self.order_book, self.symbol, self.params)
+        self.strategy = MomentumStrategy(
+            self.fix_engine, self.order_book, self.symbol, self.params
+        )
 
     def test_initialization(self):
         self.assertEqual(self.strategy.max_inventory, 100)
@@ -81,7 +94,9 @@ class TestMomentumStrategy(unittest.TestCase):
     @patch("time.time", return_value=1000)
     @patch.object(MomentumStrategy, "place_order", return_value=True)
     @patch.object(MomentumStrategy, "get_adaptive_order_size", return_value=5)
-    def test_generate_orders_normal(self, mock_adaptive_size, mock_place_order, mock_time):
+    def test_generate_orders_normal(
+        self, mock_adaptive_size, mock_place_order, mock_time
+    ):
         self.strategy.inventory = 0
         self.strategy.last_order_time = 900
         with patch("random.randint", return_value=3):
@@ -117,7 +132,9 @@ class TestMomentumStrategy(unittest.TestCase):
     def test_generate_orders_rebalance_pending_long(self, mock_place_order, mock_time):
         self.strategy.rebalance_pending = True
         self.strategy.inventory = 10
-        self.strategy.order_book.get_best_ask = MagicMock(return_value={"price": 101, "order_id": "ask1"})
+        self.strategy.order_book.get_best_ask = MagicMock(
+            return_value={"price": 101, "order_id": "ask1"}
+        )
         orders = self.strategy.generate_orders()
         self.assertEqual(len(orders), 1)
         self.assertEqual(orders[0]["side"], "2")
@@ -130,7 +147,9 @@ class TestMomentumStrategy(unittest.TestCase):
     def test_generate_orders_rebalance_pending_short(self, mock_place_order, mock_time):
         self.strategy.rebalance_pending = True
         self.strategy.inventory = -10
-        self.strategy.order_book.get_best_bid = MagicMock(return_value={"price": 100, "order_id": "bid1"})
+        self.strategy.order_book.get_best_bid = MagicMock(
+            return_value={"price": 100, "order_id": "bid1"}
+        )
         orders = self.strategy.generate_orders()
         self.assertEqual(len(orders), 1)
         self.assertEqual(orders[0]["side"], "1")

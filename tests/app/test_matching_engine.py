@@ -17,13 +17,16 @@ class DummyOrderBook:
         book = self.bids if side == "buy" else self.asks
         if price not in book:
             from collections import deque
+
             book[price] = deque()
-        book[price].append({
-            "id": order_id,
-            "qty": quantity,
-            "source": source,
-            "order_time": 0  # For latency test
-        })
+        book[price].append(
+            {
+                "id": order_id,
+                "qty": quantity,
+                "source": source,
+                "order_time": 0,  # For latency test
+            }
+        )
 
 
 # Minimal stub for Strategy for testing
@@ -49,7 +52,7 @@ class TestMatchingEngine(unittest.TestCase):
         self.order_book = DummyOrderBook()
         self.strategies = {
             "maker": DummyStrategy("maker"),
-            "taker": DummyStrategy("taker")
+            "taker": DummyStrategy("taker"),
         }
         self.engine = MatchingEngine(self.order_book, self.strategies)
 
@@ -57,6 +60,7 @@ class TestMatchingEngine(unittest.TestCase):
         """Test that TradingHalted is raised when circuit breaker triggers."""
         self.engine.circuit_breaker.daily_loss = -10001  # Exceed max_daily_loss
         from collections import deque
+
         self.order_book.asks[101.0] = deque()
         with self.assertRaises(TradingHalted):
             self.engine.match_order("buy", 101.0, 1, "oid", "taker")
@@ -65,12 +69,10 @@ class TestMatchingEngine(unittest.TestCase):
         """Test a simple match and correct PnL calculation."""
         # Maker posts an ask at 101.0
         from collections import deque
-        self.order_book.asks[101.0] = deque([{
-            "id": "maker_order",
-            "qty": 5,
-            "source": "maker",
-            "order_time": 0
-        }])
+
+        self.order_book.asks[101.0] = deque(
+            [{"id": "maker_order", "qty": 5, "source": "maker", "order_time": 0}]
+        )
         # Taker submits a buy at 101.0
         trades = self.engine.match_order("buy", 101.0, 3, "taker_order", "taker")
         self.assertEqual(len(trades), 1)
@@ -87,12 +89,10 @@ class TestMatchingEngine(unittest.TestCase):
     def test_self_trade_prevention(self):
         """Test that self-trading is prevented."""
         from collections import deque
-        self.order_book.asks[101.0] = deque([{
-            "id": "maker_order",
-            "qty": 5,
-            "source": "maker",
-            "order_time": 0
-        }])
+
+        self.order_book.asks[101.0] = deque(
+            [{"id": "maker_order", "qty": 5, "source": "maker", "order_time": 0}]
+        )
         # Maker tries to take their own order
         trades = self.engine.match_order("buy", 101.0, 2, "maker_order2", "maker")
         # Should result in no trade (self-trade prevention)
@@ -101,10 +101,13 @@ class TestMatchingEngine(unittest.TestCase):
     def test_partial_and_full_fill(self):
         """Test partial and full fills are handled correctly."""
         from collections import deque
-        self.order_book.asks[101.0] = deque([
-            {"id": "ask1", "qty": 2, "source": "maker", "order_time": 0},
-            {"id": "ask2", "qty": 3, "source": "maker", "order_time": 0}
-        ])
+
+        self.order_book.asks[101.0] = deque(
+            [
+                {"id": "ask1", "qty": 2, "source": "maker", "order_time": 0},
+                {"id": "ask2", "qty": 3, "source": "maker", "order_time": 0},
+            ]
+        )
         # Taker submits a buy for 4 units at 101.0
         trades = self.engine.match_order("buy", 101.0, 4, "taker_order", "taker")
         self.assertEqual(len(trades), 2)
@@ -116,12 +119,10 @@ class TestMatchingEngine(unittest.TestCase):
     def test_no_match_when_price_is_too_low(self):
         """Test that no match occurs if the price is not aggressive enough."""
         from collections import deque
-        self.order_book.asks[102.0] = deque([{
-            "id": "maker_order",
-            "qty": 5,
-            "source": "maker",
-            "order_time": 0
-        }])
+
+        self.order_book.asks[102.0] = deque(
+            [{"id": "maker_order", "qty": 5, "source": "maker", "order_time": 0}]
+        )
         # Taker submits a buy at 101.0 (not high enough)
         trades = self.engine.match_order("buy", 101.0, 5, "taker_order", "taker")
         self.assertEqual(trades, [])
@@ -129,12 +130,17 @@ class TestMatchingEngine(unittest.TestCase):
     def test_latency_tracking(self):
         """Test that latency is tracked in trade dict."""
         from collections import deque
-        self.order_book.asks[101.0] = deque([{
-            "id": "maker_order",
-            "qty": 1,
-            "source": "maker",
-            "order_time": time.time() - 0.01  # 10ms ago
-        }])
+
+        self.order_book.asks[101.0] = deque(
+            [
+                {
+                    "id": "maker_order",
+                    "qty": 1,
+                    "source": "maker",
+                    "order_time": time.time() - 0.01,  # 10ms ago
+                }
+            ]
+        )
         trades = self.engine.match_order("buy", 101.0, 1, "taker_order", "taker")
         self.assertIn("latency_ms", trades[0])
         self.assertIsInstance(trades[0]["latency_ms"], float)
@@ -142,12 +148,10 @@ class TestMatchingEngine(unittest.TestCase):
     def test_trade_history_and_last_price(self):
         """Test that last_price is updated after trade."""
         from collections import deque
-        self.order_book.asks[101.0] = deque([{
-            "id": "maker_order",
-            "qty": 1,
-            "source": "maker",
-            "order_time": 0
-        }])
+
+        self.order_book.asks[101.0] = deque(
+            [{"id": "maker_order", "qty": 1, "source": "maker", "order_time": 0}]
+        )
         self.engine.match_order("buy", 101.0, 1, "taker_order", "taker")
         self.assertEqual(self.order_book.last_price, 101.0)
 

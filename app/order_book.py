@@ -64,7 +64,7 @@ class OrderBook:
             "source": source,
             "order_time": order_time or time.time(),
             "price": price,
-            "side": side
+            "side": side,
         }
 
         # Append the order to the queue for this price level
@@ -82,7 +82,7 @@ class OrderBook:
         return {
             "bids": self._get_levels(self.bids, levels, descending=True),
             "asks": self._get_levels(self.asks, levels, descending=False),
-            "last_price": self.last_price
+            "last_price": self.last_price,
         }
 
     def _get_levels(self, book, levels, descending):
@@ -104,12 +104,14 @@ class OrderBook:
             orders = list(book[price])
             total_qty = sum(order["qty"] for order in orders)
             cumulative += total_qty
-            result.append({
-                "price": price,
-                "quantity": total_qty,
-                "cumulative": cumulative,
-                "orders": len(orders)
-            })
+            result.append(
+                {
+                    "price": price,
+                    "quantity": total_qty,
+                    "cumulative": cumulative,
+                    "orders": len(orders),
+                }
+            )
         return result
 
     def get_best_bid(self):
@@ -142,7 +144,7 @@ class OrderBook:
         best_price = extremum_func(book.keys())
         return {
             "price": best_price,
-            "qty": sum(order["qty"] for order in book[best_price])
+            "qty": sum(order["qty"] for order in book[best_price]),
         }
 
     def record_trade(self, price):
@@ -180,7 +182,7 @@ class OrderBook:
         for i in range(2, levels + 2):  # start at i=2 to skip top-of-book
             bid_price = mid_price * (1 - 0.005 * i)  # wider spread
             ask_price = mid_price * (1 + 0.005 * i)
-            qty = int(base_qty * (0.8 ** i))
+            qty = int(base_qty * (0.8**i))
             self.add_order("1", bid_price, qty, f"SEED-BID-{i}", "system")
             self.add_order("2", ask_price, qty, f"SEED-ASK-{i}", "system")
 
@@ -270,12 +272,14 @@ class OrderBook:
 
     def get_orders_by_source(self, side, source):
         """
-            Retrieve all orders for a given side and source strategy.
-            Args:
-                side (str): 'buy' or 'sell'.
-                source (str): Source strategy name.
-            Returns:
-                list: List of order dicts.
-            """
+        Retrieve all orders for a given side and source strategy.
+        Args:
+            side (str): 'buy' or 'sell'.
+            source (str): Source strategy name.
+        Returns:
+            list: List of order dicts.
+        """
         book = self.bids if side == "buy" else self.asks
-        return [order for q in book.values() for order in q if order["source"] == source]
+        return [
+            order for q in book.values() for order in q if order["source"] == source
+        ]

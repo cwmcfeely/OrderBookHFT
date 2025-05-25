@@ -7,7 +7,7 @@ def setup_logging(
     level=logging.INFO,
     app_log_file="logs/app.debug.log",
     fix_server_log_file="logs/fix_server.log",
-    strategies=None  # List of strategy names, e.g. ["my_strategy", "market_maker"]
+    strategies=None,  # List of strategy names, e.g. ["my_strategy", "market_maker"]
 ):
     """
     Set up logging configuration for the application, including:
@@ -35,15 +35,19 @@ def setup_logging(
     file_handler = RotatingFileHandler(
         app_log_file,
         maxBytes=1024 * 1024,  # Rotate after 1 MB
-        backupCount=5,         # Keep last 5 log files as backup
-        encoding='utf-8'       # Use UTF-8 encoding for log files
+        backupCount=5,  # Keep last 5 log files as backup
+        encoding="utf-8",  # Use UTF-8 encoding for log files
     )
     # Define a formatter with timestamp, log level, and message
-    file_handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(message)s'))
+    file_handler.setFormatter(
+        logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+    )
 
     # Create a console handler to output logs to stdout
     console_handler = logging.StreamHandler()
-    console_handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(message)s'))
+    console_handler.setFormatter(
+        logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+    )
 
     # Set the logging level for the root logger (e.g., INFO, DEBUG)
     root_logger.setLevel(level)
@@ -59,10 +63,12 @@ def setup_logging(
     fix_server_handler = RotatingFileHandler(
         fix_server_log_file,
         maxBytes=2 * 1024 * 1024,  # Rotate after 2 MB
-        backupCount=10,            # Keep last 10 logs
-        encoding='utf-8'
+        backupCount=10,  # Keep last 10 logs
+        encoding="utf-8",
     )
-    fix_server_handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(message)s'))
+    fix_server_handler.setFormatter(
+        logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+    )
 
     # Set FIX server logger level to INFO (can be adjusted if needed)
     fix_server_logger.setLevel(logging.INFO)
@@ -80,10 +86,12 @@ def setup_logging(
             strat_fix_handler = RotatingFileHandler(
                 f"logs/fix_{strat}.log",
                 maxBytes=2 * 1024 * 1024,  # Rotate after 2 MB
-                backupCount=10,            # Keep last 10 logs
-                encoding='utf-8'
+                backupCount=10,  # Keep last 10 logs
+                encoding="utf-8",
             )
-            strat_fix_handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(message)s'))
+            strat_fix_handler.setFormatter(
+                logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+            )
 
             strat_fix_logger.setLevel(logging.INFO)  # Set level to INFO
             strat_fix_logger.addHandler(strat_fix_handler)

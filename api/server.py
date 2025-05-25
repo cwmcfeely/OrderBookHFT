@@ -7,7 +7,12 @@ setup_logging(
     level=logging.INFO,
     app_log_file="logs/app.debug.log",
     fix_server_log_file="logs/fix_server.log",
-    strategies=["my_strategy", "passive_liquidity_provider", "market_maker", "momentum"]
+    strategies=[
+        "my_strategy",
+        "passive_liquidity_provider",
+        "market_maker",
+        "momentum",
+    ],
 )
 
 # Create the Flask app instance using the factory function

@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 import time
+
 # Assume BaseStrategy is imported from the file
 from strategies.base_strategy import BaseStrategy
 
@@ -34,7 +35,12 @@ class DummyFixEngine:
 
     def parse(self, **kwargs):
         # Simulate parsed FIX message
-        return {54: kwargs.get("side", "1"), 44: kwargs.get("price", 100), 38: kwargs.get("qty", 1), 11: "OID"}
+        return {
+            54: kwargs.get("side", "1"),
+            44: kwargs.get("price", 100),
+            38: kwargs.get("qty", 1),
+            11: "OID",
+        }
 
 
 class TestBaseStrategy(unittest.TestCase):
@@ -52,9 +58,11 @@ class TestBaseStrategy(unittest.TestCase):
             "drawdown_limit": 50,
             "cooldown_period": 1,
             "daily_loss_limit": -1000,
-            "trailing_stop": 0.01
+            "trailing_stop": 0.01,
         }
-        self.strategy = BaseStrategy(self.fix_engine, self.order_book, self.symbol, self.source_name, self.params)
+        self.strategy = BaseStrategy(
+            self.fix_engine, self.order_book, self.symbol, self.source_name, self.params
+        )
 
     def test_initialization_defaults(self):
         self.assertEqual(self.strategy.max_order_qty, 100)
@@ -97,7 +105,9 @@ class TestBaseStrategy(unittest.TestCase):
         self.strategy.last_order_time = 998
         self.strategy._risk_check = MagicMock(return_value=True)
         self.strategy.fix_engine.create_new_order = MagicMock(return_value={})
-        self.strategy.fix_engine.parse = MagicMock(return_value={54: "1", 44: 101, 38: 10, 11: "OID"})
+        self.strategy.fix_engine.parse = MagicMock(
+            return_value={54: "1", 44: 101, 38: 10, 11: "OID"}
+        )
         self.strategy.order_book.add_order = MagicMock()
         self.assertTrue(self.strategy.place_order("1", 101, 10))
         self.assertEqual(self.strategy.order_count, 1)

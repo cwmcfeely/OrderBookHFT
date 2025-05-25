@@ -29,7 +29,12 @@ class DummyFixEngine:
         return {"fake": "msg"}
 
     def parse(self, **kwargs):
-        return {54: kwargs.get("side", "1"), 44: kwargs.get("price", 100), 38: kwargs.get("qty", 1), 11: "OID"}
+        return {
+            54: kwargs.get("side", "1"),
+            44: kwargs.get("price", 100),
+            38: kwargs.get("qty", 1),
+            11: "OID",
+        }
 
 
 class TestMyStrategy(unittest.TestCase):
@@ -38,7 +43,9 @@ class TestMyStrategy(unittest.TestCase):
         self.order_book = DummyOrderBook()
         self.symbol = "TEST"
         self.params = {"min_order_interval": 0.1, "spread_factor": 0.01}
-        self.strategy = MyStrategy(self.fix_engine, self.order_book, self.symbol, self.params)
+        self.strategy = MyStrategy(
+            self.fix_engine, self.order_book, self.symbol, self.params
+        )
 
     def test_initialization(self):
         self.assertEqual(self.strategy.spread_factor, 0.01)
@@ -59,7 +66,9 @@ class TestMyStrategy(unittest.TestCase):
     @patch("time.time", return_value=1000)
     @patch.object(MyStrategy, "place_order", return_value=True)
     @patch.object(MyStrategy, "get_adaptive_order_size", return_value=10)
-    def test_generate_orders_normal(self, mock_adaptive_size, mock_place_order, mock_time):
+    def test_generate_orders_normal(
+        self, mock_adaptive_size, mock_place_order, mock_time
+    ):
         self.strategy.inventory = 0
         self.strategy.last_order_time = 900
         with patch("random.randint", return_value=5):

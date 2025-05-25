@@ -4,7 +4,7 @@ import time
 from app.fix_engine import FixEngine
 
 # Patch simplefix globally for all tests using the correct package path
-patcher_simplefix = patch('app.fix_engine.simplefix', autospec=True)
+patcher_simplefix = patch("app.fix_engine.simplefix", autospec=True)
 mock_simplefix = patcher_simplefix.start()
 
 
@@ -32,7 +32,9 @@ mock_simplefix.FixParser.return_value = MockFixParser
 class TestFixEngine(unittest.TestCase):
     def setUp(self):
         # Patch logging to avoid actual log output
-        self.patcher_log = patch('app.fix_engine.logging.getLogger', return_value=MagicMock())
+        self.patcher_log = patch(
+            "app.fix_engine.logging.getLogger", return_value=MagicMock()
+        )
         self.mock_logger = self.patcher_log.start()
         self.addCleanup(self.patcher_log.stop)
 
@@ -81,7 +83,7 @@ class TestFixEngine(unittest.TestCase):
             side="1",
             price=100.5,
             qty=10,
-            source="my_strategy"
+            source="my_strategy",
         )
         self.assertEqual(result, b"ORDERFIX")
         self.assertEqual(self.engine.seq_num, initial_seq + 1)
@@ -110,7 +112,10 @@ class TestFixEngine(unittest.TestCase):
         result = self.engine.parse(b"RAWFIX")
         self.assertEqual(result, msg)
         self.assertEqual(self.engine.seq_num, 43)
-        self.assertTrue(self.engine.server_logger.info.called or self.engine.strategy_logger.info.called)
+        self.assertTrue(
+            self.engine.server_logger.info.called
+            or self.engine.strategy_logger.info.called
+        )
 
     def test_parse_logs_and_returns_none_on_exception(self):
         MockFixParser.get_message.side_effect = Exception("parse fail")
@@ -125,7 +130,10 @@ class TestFixEngine(unittest.TestCase):
         self.engine._log_heartbeat(msg, incoming=True)
         self.assertTrue(self.engine.server_logger.info.called)
         self.engine._log_fix_message(msg, incoming=False)
-        self.assertTrue(self.engine.strategy_logger.info.called or self.engine.server_logger.info.called)
+        self.assertTrue(
+            self.engine.strategy_logger.info.called
+            or self.engine.server_logger.info.called
+        )
 
     def test_is_heartbeat_due(self):
         self.assertFalse(self.engine.is_heartbeat_due())
@@ -152,7 +160,7 @@ class TestFixEngine(unittest.TestCase):
             cum_qty=5,
             price=101.0,
             source="my_strategy",
-            text="Filled"
+            text="Filled",
         )
         self.assertEqual(result, b"EXECFIX")
         self.assertEqual(self.engine.seq_num, initial_seq + 1)
