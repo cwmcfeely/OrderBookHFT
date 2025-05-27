@@ -1,6 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch
-
+from unittest.mock import patch, MagicMock
 from api import create_app
 
 
@@ -133,7 +132,7 @@ class TestRoutes(unittest.TestCase):
         self.assertIsInstance(data, list)
 
     def test_strategy_status(self):
-        from api.routes import strategy_instances, trading_state
+        from api.routes import trading_state, strategy_instances
 
         # Define a dummy order book with required attributes/methods
         class DummyOrderBook:

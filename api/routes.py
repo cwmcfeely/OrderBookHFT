@@ -604,6 +604,7 @@ def select_symbol():
         if symbol in symbols.values():
             trading_state["current_symbol"] = symbol
             trading_state["log"].append(f"Symbol selected: {symbol}")
+            logging.getLogger("FIX_my_strategy").info(f"SYMBOL: Symbol changed to: {symbol}")
             return jsonify({"status": "symbol_changed", "symbol": symbol})
     return jsonify({"error": "Invalid symbol"}), 400
 

@@ -9,7 +9,7 @@ class BaseStrategy(ABC):
     """
     Abstract base class for trading strategies.
 
-    Provides risk management, order placement, PnL, and performance tracking utilities.
+    Provides risk management, order placement, PnL, and Performance tracking utilities.
 
     All custom strategies should inherit from this class and implement their own logic.
     """

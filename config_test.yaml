@@ -1,0 +1,11 @@
+# EOD Historical Data API test configuration
+api_key: "TEST_API_KEY_1234567890"
+
+# Supported European Equity Symbols for testing
+symbols:
+  TEST1: "TEST1.AS"
+  TEST2: "TEST2.AS"
+  TEST3: "TEST3.AS"
+  TEST4: "TEST4.AS"
+  TEST5: "TEST5.PA"
+  TEST6: "TEST6.PA"
