@@ -2,11 +2,11 @@ import threading
 import time
 import unittest
 
+from app.fix_engine import FixEngine
+from app.order_book import OrderBook
+from strategies.competitor_strategy import PassiveLiquidityProvider
 from strategies.competitor_strategy1 import MarketMakerStrategy
 from strategies.competitor_strategy2 import MomentumStrategy
-from strategies.competitor_strategy import PassiveLiquidityProvider
-from app.order_book import OrderBook
-from app.fix_engine import FixEngine
 
 
 class TestParallelStrategiesSystem(unittest.TestCase):
