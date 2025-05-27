@@ -1,5 +1,6 @@
 import requests
 
+
 def test_symbol_switching():
     # Switch symbol to PHIA.AS
     resp = requests.post("http://localhost:8000/select_symbol", json={"ticker": "PHIA.AS"})

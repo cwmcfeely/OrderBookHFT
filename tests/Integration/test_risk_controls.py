@@ -1,7 +1,5 @@
 import requests
 
-# This test cannot be performed as /orders endpoint does not exist
-# You need to add an endpoint for order placement to test risk rejection properly
 
 def test_risk_rejection():
     # Attempt to submit an order exceeding risk limits
