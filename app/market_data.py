@@ -58,14 +58,30 @@ def load_api_count():
     This helps to persist API usage count across application restarts.
     """
     global api_calls_today, last_call_date
+    logger.info("Attempting to load API usage count from file...")
+
     try:
         if API_COUNT_FILE.exists():
+            logger.debug(f"API count file found at: {API_COUNT_FILE}")
             with open(API_COUNT_FILE, "r") as f:
                 data = json.load(f)
                 api_calls_today = data.get("api_calls_today", 0)
-                last_call_date = date.fromisoformat(data["last_call_date"])
+                last_call_date_str = data.get("last_call_date")
+
+                if last_call_date_str:
+                    last_call_date = date.fromisoformat(last_call_date_str)
+                    logger.info(f"Loaded API count: {api_calls_today}, Last call date: {last_call_date}")
+                else:
+                    logger.warning("Missing 'last_call_date' in API count file.")
+        else:
+            logger.warning(f"API count file does not exist at path: {API_COUNT_FILE}")
+
+    except json.JSONDecodeError as e:
+        logger.error(f"JSON decoding error while loading API count file: {e}")
+    except FileNotFoundError as e:
+        logger.error(f"API count file not found: {e}")
     except Exception as e:
-        logger.error(f"Error loading API count: {str(e)}")
+        logger.error(f"Unexpected error loading API count: {str(e)}")
 
 
 def save_api_count():
