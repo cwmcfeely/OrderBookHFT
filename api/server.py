@@ -24,5 +24,4 @@ logger = logging.getLogger(__name__)
 logger.propagate = False
 
 if __name__ == "__main__":
-    # Only run the server if this script is executed directly
-    app.run(host="127.0.0.1", port=5000, debug=False)
+    app.run(host="127.0.0.1", port=8000, debug=False)
