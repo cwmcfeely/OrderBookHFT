@@ -26,18 +26,18 @@ class TestParallelStrategiesSystem(unittest.TestCase):
             fix_engine=self.fix_engine_mm,
             order_book=self.order_book,
             symbol=self.symbol,
-            params={"max_order_qty": 100, "max_price_deviation": 0.02}
+            params={"max_order_qty": 100, "max_price_deviation": 0.02},
         )
         self.momentum = MomentumStrategy(
             fix_engine=self.fix_engine_mom,
             order_book=self.order_book,
             symbol=self.symbol,
-            params={"max_order_qty": 100, "max_price_deviation": 0.02}
+            params={"max_order_qty": 100, "max_price_deviation": 0.02},
         )
         self.passive = PassiveLiquidityProvider(
             fix_engine=self.fix_engine_pas,
             order_book=self.order_book,
-            symbol=self.symbol
+            symbol=self.symbol,
         )
         # Initial market data
         self.order_book.asks = {100: [{"qty": 200}]}
@@ -55,7 +55,7 @@ class TestParallelStrategiesSystem(unittest.TestCase):
         threads = [
             threading.Thread(target=self.run_strategy, args=(self.market_maker,)),
             threading.Thread(target=self.run_strategy, args=(self.momentum,)),
-            threading.Thread(target=self.run_strategy, args=(self.passive,))
+            threading.Thread(target=self.run_strategy, args=(self.passive,)),
         ]
         for t in threads:
             t.start()
@@ -79,7 +79,9 @@ class TestParallelStrategiesSystem(unittest.TestCase):
         for book in [self.order_book.bids, self.order_book.asks]:
             for price, queue in book.items():
                 all_orders.extend(queue)
-        oids = {o.get("order_id") or o.get("id") for o in all_orders if isinstance(o, dict)}
+        oids = {
+            o.get("order_id") or o.get("id") for o in all_orders if isinstance(o, dict)
+        }
         self.assertIn("OID_MM", oids)
         self.assertIn("OID_MOM", oids)
         self.assertIn("OID_PAS", oids)

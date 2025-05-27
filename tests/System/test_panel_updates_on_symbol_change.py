@@ -8,7 +8,7 @@ class TestMetricsPanel(unittest.TestCase):
         self.metrics_panel = MagicMock()
         self.symbol_selector = MagicMock()
         # Initial symbol
-        self.current_symbol = 'AD.AS'
+        self.current_symbol = "AD.AS"
 
     def simulate_symbol_change(self, new_symbol):
         # Simulate user changing the symbol in the UI
@@ -19,14 +19,14 @@ class TestMetricsPanel(unittest.TestCase):
     def test_metrics_panel_updates_on_symbol_change(self):
         # Initial update
         self.metrics_panel.update_metrics(self.current_symbol)
-        self.metrics_panel.update_metrics.assert_called_with('AD.AS')
+        self.metrics_panel.update_metrics.assert_called_with("AD.AS")
 
         # Change symbol
-        self.simulate_symbol_change('OR.PA')
+        self.simulate_symbol_change("OR.PA")
 
         # Assert metrics panel updated with new symbol
-        self.metrics_panel.update_metrics.assert_called_with('OR.PA')
+        self.metrics_panel.update_metrics.assert_called_with("OR.PA")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
