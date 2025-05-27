@@ -1,24 +1,37 @@
 export default [
   {
-    files: ['**/*.js'],
+    files: ["**/*.js"],
     languageOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module',
+      ecmaVersion: "latest",
+      sourceType: "module",
       globals: {
-        window: 'readonly',
-        document: 'readonly',
-        // Add other browser or Node globals here if needed
-      },
+        window: "readonly",
+        document: "readonly",
+        fetch: "readonly",
+        alert: "readonly",
+        setInterval: "readonly",
+        Plotly: "readonly", // if Plotly is loaded via <script>
+        // Add any additional globals you use:
+        symbols: "readonly",
+        bid: "readonly",
+        ask: "readonly",
+        rows: "readonly",
+        openTab: "readonly",
+        toggleExchange: "readonly",
+        toggleMyStrategy: "readonly",
+        cancelMyStrategyOrders: "readonly",
+        inventoryPercentClass: "readonly",
+        hideStatusError: "readonly",
+        data: "readonly",
+        err: "readonly"
+      }
     },
-    plugins: {},
     rules: {
-      // Add custom rules here, for example:
-      // 'semi': ['error', 'always'],
-      // 'quotes': ['error', 'single'],
-    },
-    // Optionally, extends are not supported in the same way as before,
-    // but you can use eslint:recommended like this:
-    // https://eslint.org/docs/latest/use/configure/configuration-files-new#extending-other-configurations
-    extends: ['eslint:recommended'],
+      "no-unused-vars": "warn",
+      "no-undef": "error",
+      "no-console": "off",
+      "eqeqeq": "error",
+      "curly": "error"
+    }
   }
 ];

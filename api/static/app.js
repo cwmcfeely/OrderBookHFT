@@ -19,7 +19,7 @@ symbolSelect.onchange = function() {
 
 function fetchWithRetry(url, options = {}, retries = 2) {
     return fetch(url, options).then(response => {
-        if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+        if (!response.ok) {throw new Error(`${response.status} ${response.statusText}`);}
         return response.json();
     }).catch(err => {
         if (retries > 0) {
@@ -40,6 +40,7 @@ function selectSymbol(symbol) {
     });
 }
 
+// eslint-disable-next-line no-unused-vars
 function toggleExchange() {
     fetchWithRetry('/toggle_exchange', { method: 'POST' })
         .then(data => {
@@ -50,6 +51,7 @@ function toggleExchange() {
         .catch(err => showExchangeError("Failed to toggle exchange: " + err.message));
 }
 
+// eslint-disable-next-line no-unused-vars
 function toggleMyStrategy() {
     fetchWithRetry('/toggle_my_strategy', { method: 'POST' })
         .then(data => {
@@ -60,6 +62,7 @@ function toggleMyStrategy() {
         .catch(err => showStatusError("Failed to toggle trading: " + err.message));
 }
 
+// eslint-disable-next-line no-unused-vars
 function cancelMyStrategyOrders() {
     const symbol = document.getElementById('symbol-select').value;
     fetch('/cancel_mystrategy_orders', {
@@ -68,7 +71,7 @@ function cancelMyStrategyOrders() {
         body: JSON.stringify({ symbol: symbol })
     })
     .then(response => response.json())
-    .then(data => {
+    .then(() => {
         alert("All MyStrategy orders cancelled.");
         refreshOrderBook();
     })
@@ -112,6 +115,7 @@ function showExchangeError(msg) {
     el.classList.add('error');
 }
 
+// eslint-disable-next-line no-unused-vars
 function hideStatusError() {
     document.getElementById('trading-status').classList.remove('error');
 }
@@ -179,7 +183,7 @@ function refreshMetrics() {
     document.getElementById('metrics-error').style.display = 'none';
     fetch(`/strategy_status?symbol=${encodeURIComponent(currentSymbol)}`)
     .then(response => {
-        if (!response.ok) throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+        if (!response.ok) {throw new Error(`HTTP ${response.status} - ${response.statusText}`);}
         return response.json();
     })
     .then(data => {
@@ -193,7 +197,6 @@ function refreshMetrics() {
             const realisedClass = m.realised_pnl >= 0 ? "positive" : "negative";
             const unrealisedClass = m.unrealised_pnl >= 0 ? "positive" : "negative";
             const totalClass = m.total_pnl >= 0 ? "positive" : "negative";
-            const inventoryPercentClass = m.inventory_percent >= 0 ? "positive" : "negative";
             rows += `<tr>
                 <td>${name === "my_strategy" ? "MyStrategy"
                     : name === "passive_liquidity_provider" ? "Passive Liquidity Provider"
@@ -336,7 +339,9 @@ function refreshExecutionReports() {
 
 function filterExecReportsTable() {
     var input = document.getElementById("exec-filter");
-    if (!input) return;
+    if (!input) {
+        return;
+    }
     var filter = input.value.toUpperCase();
     var table = document.getElementById("exec-reports-table");
     var tr = table.getElementsByTagName("tr");
@@ -346,6 +351,7 @@ function filterExecReportsTable() {
     }
 }
 
+// eslint-disable-next-line no-unused-vars
 function openTab(evt, tabName) {
     var tabcontent = document.getElementsByClassName("tabcontent");
     for (let i = 0; i < tabcontent.length; i++) {
@@ -387,7 +393,7 @@ function refreshLatencyChart() {
 
         filtered.forEach(d => {
             const strat = d.strategy || "Unknown";
-            if (!grouped[strat]) grouped[strat] = {x: [], y: []};
+            if (!grouped[strat]) {grouped[strat] = {x: [], y: []};}
             grouped[strat].x.push(d.time);
             grouped[strat].y.push(d.latency_ms);
         });
@@ -448,9 +454,6 @@ function refreshDepthChart() {
             font: { color: "#F3F6F9" }
         }, { responsive: true });
     })
-    .catch(err => {
-        Plotly.newPlot('depth-chart', [{ x: [], y: [], type: 'scatter' }], { title: "No Data" });
-    });
 }
 
 function refreshCompetitionLogs() {
@@ -458,7 +461,7 @@ function refreshCompetitionLogs() {
     .then(r => r.json())
     .then(logs => {
         const tbody = document.getElementById('competition-logs-body');
-        if (!tbody) return;
+        if (!tbody) {return;}
         tbody.innerHTML = (logs || []).map(log => `
             <tr>
                 <td>${log.time}</td>

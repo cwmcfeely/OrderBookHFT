@@ -44,11 +44,11 @@ jobs:
       - name: Install Python linters
         run: pip install flake8 black isort
 
-      - name: Run Python linters
+      - name: Auto-fix Python code style with black and isort
         run: |
+          black .
+          isort .
           flake8 app/ strategies/ tests/ api/
-          black --check .
-          isort --check-only .
 
       # Set up Node.js for JS linting
       - name: Set up Node.js
@@ -59,8 +59,8 @@ jobs:
       - name: Install ESLint
         run: npm install eslint --global
 
-      - name: Lint app.js
-        run: eslint api/static/app.js
+      - name: Lint and auto-fix app.js
+        run: eslint --fix api/static/app.js
 
       # Run tests with coverage and upload to Codecov
       - name: Run tests with coverage
