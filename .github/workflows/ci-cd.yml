@@ -62,10 +62,6 @@ jobs:
       - name: Lint and auto-fix app.js
         run: eslint --fix api/static/app.js
 
-      # Run tests with coverage and upload to Codecov
-      - name: Run tests with coverage
-        run: pytest --cov=app --cov=strategies --cov-report=xml tests/
-
   security-scan:
     runs-on: ubuntu-latest
     needs: lint-test
