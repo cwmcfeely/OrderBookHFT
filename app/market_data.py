@@ -70,7 +70,9 @@ def load_api_count():
 
                 if last_call_date_str:
                     last_call_date = date.fromisoformat(last_call_date_str)
-                    logger.info(f"Loaded API count: {api_calls_today}, Last call date: {last_call_date}")
+                    logger.info(
+                        f"Loaded API count: {api_calls_today}, Last call date: {last_call_date}"
+                    )
                 else:
                     logger.warning("Missing 'last_call_date' in API count file.")
         else:
