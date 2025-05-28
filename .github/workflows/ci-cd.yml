@@ -92,6 +92,11 @@ jobs:
           pip install pytest pytest-cov
       - name: Run unit tests with coverage
         run: pytest --cov=app --cov=strategies --cov-report=xml --cov-report=term-missing tests/Unit/
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: cwmcfeely/OrderBookHFT
 
   integration-tests:
     runs-on: ubuntu-latest
@@ -134,6 +139,11 @@ jobs:
         run: pytest --cov=app --cov=strategies --cov-report=xml --cov-append tests/Integration/
         env:
           PYTHONUNBUFFERED: 1
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: cwmcfeely/OrderBookHFT
 
   system-tests:
     runs-on: ubuntu-latest
@@ -168,6 +178,11 @@ jobs:
         run: pytest --cov=app --cov=strategies --cov-report=xml --cov-append tests/System/
         env:
           PYTHONUNBUFFERED: 1
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: cwmcfeely/OrderBookHFT
 
   docker-build:
     runs-on: ubuntu-latest
