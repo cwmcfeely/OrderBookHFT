@@ -16,6 +16,3 @@ pip install - requirements.txt
 
 2. Run the server:
 python src/fix_server.py
-
-3. Run the client:
-python src/fix_client.py
