@@ -7,7 +7,7 @@ def test_fix_logging():
     for _ in range(20):  # Try for up to 20 seconds
         with open("logs/fix_my_strategy.log") as f:
             log_content = f.read()
-        if "8=FIX.4.4" in log_content:
+        if "===== FIX ENGINE INITIALISED FOR SYMBOL my_strategy =====" in log_content:
             found = True
             break
         time.sleep(1)
