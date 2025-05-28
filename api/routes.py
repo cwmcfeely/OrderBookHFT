@@ -28,7 +28,7 @@ with open("config.yaml", "r") as f:
 
 # Initialize the global trading state used by all routes and background threads
 
-trading_state = {
+trading_state: dict[str, object] = {
     "exchange_halted": False,  # Whether the exchange is halted
     "my_strategy_enabled": True,  # Whether the user's strategy is enabled
     "current_symbol": next(iter(symbols.values()), None),  # Currently selected symbol
