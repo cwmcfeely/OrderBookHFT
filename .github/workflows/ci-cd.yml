@@ -29,19 +29,20 @@ jobs:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: ${{ runner.os }}-pip-
-      - name: Install Python dependencies
-        run: pip install -r requirements.txt
+      - name: Install Python dependencies and dev tools
+        run: |
+          pip install -r requirements.txt
+          pip install flake8 black isort mypy pip-audit bandit pytest pytest-cov types-requests pandas-stubs types-PyYAML
       - name: Run pip-audit
-        run: pip install pip-audit && pip-audit
-      - name: Install Python linters
-        run: pip install flake8 black isort
+        run: pip-audit
       - name: Auto-fix Python code style with black and isort
         run: |
           black .
           isort .
-          flake8 app/ strategies/ tests/ api/
-      - name: Run mypy
-        run: pip install mypy && mypy app/ strategies/ tests/ api/
+      - name: Run flake8
+        run: flake8 app/ strategies/ tests/ api/
+      - name: Run mypy (ignore missing imports)
+        run: mypy --ignore-missing-imports app/ strategies/ tests/ api/
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -56,6 +57,10 @@ jobs:
     needs: lint-test
     steps:
       - uses: actions/checkout@v4
+      - name: Install Bandit
+        run: pip install bandit
+      - name: Run Bandit security scanner
+        run: bandit -r app/ strategies/ api/ || true
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
       - name: Perform CodeQL Analysis
@@ -78,8 +83,10 @@ jobs:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: ${{ runner.os }}-pip-
-      - name: Install dependencies
-        run: pip install -r requirements.txt pytest-cov
+      - name: Install dependencies and dev tools
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
       - name: Run unit tests with coverage
         run: pytest --cov=app --cov=strategies --cov-report=xml --cov-report=term-missing tests/Unit/
 
@@ -100,8 +107,10 @@ jobs:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: ${{ runner.os }}-pip-
-      - name: Install dependencies
-        run: pip install -r requirements.txt pytest-cov
+      - name: Install dependencies and dev tools
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
       - name: Start application server
         run: |
           python3 -m api.server &
@@ -132,8 +141,10 @@ jobs:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: ${{ runner.os }}-pip-
-      - name: Install dependencies
-        run: pip install -r requirements.txt pytest-cov
+      - name: Install dependencies and dev tools
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
       - name: Start application server
         run: |
           python3 -m api.server &
