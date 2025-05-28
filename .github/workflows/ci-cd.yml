@@ -92,7 +92,7 @@ jobs:
 
   integration-tests:
     runs-on: ubuntu-latest
-    needs: [lint-test, security-scan]
+    needs: [ lint-test, security-scan ]
     env:
       EOD_API_KEY: ${{ secrets.EOD_API_KEY }}
     steps:
@@ -113,6 +113,14 @@ jobs:
         run: |
           pip install -r requirements.txt
           pip install pytest pytest-cov
+      - name: (Optional) Debug - Show if API key present
+        run: |
+          if [ -z "$EOD_API_KEY" ]; then
+            echo "EOD_API_KEY is not set!"
+            exit 1
+          else
+            echo "EOD_API_KEY is set (length: ${#EOD_API_KEY})"
+          fi
       - name: Start application server
         run: |
           python3 -m api.server &
