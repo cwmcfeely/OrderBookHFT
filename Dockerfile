@@ -16,7 +16,7 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 COPY . /app/
 
 # Expose the port your app runs on
-EXPOSE 80
+EXPOSE 8000
 
 # Start the application
 CMD ["python3", "-m", "api.server"]
