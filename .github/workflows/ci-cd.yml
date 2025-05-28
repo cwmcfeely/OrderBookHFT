@@ -74,7 +74,7 @@ jobs:
 
   unit-tests:
     runs-on: ubuntu-latest
-    needs: [ lint-test, security-scan ]
+    needs: [lint-test, security-scan]
     steps:
       - uses: actions/checkout@v4
       - name: Set PYTHONPATH
@@ -88,35 +88,9 @@ jobs:
       - name: Run unit tests with coverage
         run: pytest --cov=app --cov=strategies --cov-report=xml --cov-report=term-missing tests/Unit/
 
-  system-tests:
-    runs-on: ubuntu-latest
-    needs: [ unit-tests, integration-tests ]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set PYTHONPATH
-        run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Start application server
-        run: |
-          python3 -m api.server &
-          for i in {1..10}; do
-            nc -z 127.0.0.1 8000 && echo "Server up!" && exit 0
-            sleep 2
-          done
-          echo "Server did not start in time" && exit 1
-      - name: Run system tests with coverage
-        run: pytest --cov=app --cov=strategies --cov-report=xml --cov-append tests/System/
-        env:
-          PYTHONUNBUFFERED: 1
-
   integration-tests:
     runs-on: ubuntu-latest
-    needs: [ unit-tests ]
+    needs: [lint-test, security-scan]
     steps:
       - uses: actions/checkout@v4
       - name: Set PYTHONPATH
@@ -140,10 +114,36 @@ jobs:
         env:
           PYTHONUNBUFFERED: 1
 
+  system-tests:
+    runs-on: ubuntu-latest
+    needs: [lint-test, security-scan]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest-cov
+      - name: Start application server
+        run: |
+          python3 -m api.server &
+          for i in {1..10}; do
+            nc -z 127.0.0.1 8000 && echo "Server up!" && exit 0
+            sleep 2
+          done
+          echo "Server did not start in time" && exit 1
+      - name: Run system tests with coverage
+        run: pytest --cov=app --cov=strategies --cov-report=xml --cov-append tests/System/
+        env:
+          PYTHONUNBUFFERED: 1
+
   deploy-dev:
     if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
-    needs: [unit-tests, integration-tests]
+    needs: [unit-tests, integration-tests, system-tests]
     steps:
       - uses: actions/checkout@v4
       - name: Set PYTHONPATH
@@ -167,7 +167,7 @@ jobs:
   deploy-staging:
     if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
-    needs: [unit-tests, integration-tests]
+    needs: [unit-tests, integration-tests, system-tests]
     steps:
       - uses: actions/checkout@v4
       - name: Set PYTHONPATH
@@ -191,7 +191,7 @@ jobs:
   deploy-production:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    needs: [unit-tests, integration-tests]
+    needs: [unit-tests, integration-tests, system-tests]
     steps:
       - uses: actions/checkout@v4
       - name: Set PYTHONPATH
