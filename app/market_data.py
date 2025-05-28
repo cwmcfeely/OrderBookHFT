@@ -24,7 +24,7 @@ with open("config.yaml", "r") as f:
     CONFIG = yaml.safe_load(f)
 
 # Extract API key and symbols dictionary from config
-API_KEY = os.environ.get("EOD_API_KEY", "")
+API_KEY = os.environ.get("EOD_API_KEY")
 SYMBOLS = CONFIG.get("symbols", {})
 BASE_URL = "https://eodhistoricaldata.com/api"
 HEADERS = {"Content-Type": "application/json"}
