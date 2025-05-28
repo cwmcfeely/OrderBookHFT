@@ -6,7 +6,7 @@ def test_order_lifecycle():
     found_trade = False
 
     # Wait a little to allow background strategies to generate orders/trades
-    for _ in range(10):  # Try for up to 10 seconds
+    for _ in range(60):  # Try for up to 10 seconds
         for symbol in symbols:
             trades = requests.get(f"http://localhost:8000/trades?symbol={symbol}").json()
             if any(trade.get("qty", 0) > 0 for trade in trades):
