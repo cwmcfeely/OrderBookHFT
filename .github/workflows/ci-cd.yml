@@ -89,30 +89,30 @@ jobs:
         run: pytest tests/Unit/
 
   integration-tests:
-  runs-on: ubuntu-latest
-  needs: [unit-tests]
-  steps:
-    - uses: actions/checkout@v4
-    - name: Set PYTHONPATH
-      run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-    - name: Install dependencies
-      run: pip install -r requirements.txt
-    - name: Start application server
-      run: |
-        python3 -m api.server &
-        for i in {1..10}; do
-          nc -z 127.0.0.1 8000 && echo "Server up!" && exit 0
-          sleep 2
-        done
-        echo "Server did not start in time" && exit 1
-    - name: Run integration tests
-      run: pytest tests/Integration/
-      env:
-        PYTHONUNBUFFERED: 1
+    runs-on: ubuntu-latest
+    needs: [ unit-tests ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Start application server
+        run: |
+          python3 -m api.server &
+          for i in {1..10}; do
+            nc -z 127.0.0.1 8000 && echo "Server up!" && exit 0
+            sleep 2
+          done
+          echo "Server did not start in time" && exit 1
+      - name: Run integration tests
+        run: pytest tests/Integration/
+        env:
+          PYTHONUNBUFFERED: 1
 
   deploy-dev:
     if: github.ref == 'refs/heads/dev'
