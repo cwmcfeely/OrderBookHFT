@@ -1,5 +1,5 @@
 # EOD Historical Data API configuration
-api_key: "6804f044ec7c74.97906694"
+api_key: !!ENV ${EOD_API_KEY}
 
 # Supported European Equity Symbols
 symbols:
