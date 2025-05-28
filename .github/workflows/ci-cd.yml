@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   pull_request:
-    branches: [develop, main]
+    branches: [dev, develop, main]
   push:
-    branches: [develop, main]
+    branches: [dev, develop, main]
 
 permissions:
   actions: read
@@ -72,56 +72,108 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
 
-  deploy-staging:
-    if: github.ref == 'refs/heads/develop'
+  unit-tests:
     runs-on: ubuntu-latest
     needs: [lint-test, security-scan]
     steps:
       - uses: actions/checkout@v4
-
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
       - name: Install dependencies
         run: pip install -r requirements.txt
+      - name: Run unit tests
+        run: pytest tests/Unit/
 
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: [unit-tests]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Start application server
+        run: |
+          python app.py &    # Or your actual server start command
+          sleep 5            # Give the server time to start
+      - name: Run integration tests
+        run: pytest tests/Integration/
+        env:
+          PYTHONUNBUFFERED: 1
+
+  deploy-dev:
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
       - name: Run tests
         run: pytest tests/
+      - name: Deploy to Azure Dev
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: OrderBookHFT-Pilot
+          slot-name: dev
+          publish-profile: ${{ secrets.AZURE_DEV_PUBLISH_PROFILE }}
+          package: .
 
+  deploy-staging:
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run tests
+        run: pytest tests/
       - name: Deploy to Azure Staging
         uses: azure/webapps-deploy@v2
         with:
           app-name: OrderBookHFT-Pilot
-          slot-name: staging                     # Optional for slots
+          slot-name: staging
           publish-profile: ${{ secrets.AZURE_STAGING_PUBLISH_PROFILE }}
           package: .
 
   deploy-production:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    needs: [lint-test, security-scan]
+    needs: [unit-tests, integration-tests]
     steps:
       - uses: actions/checkout@v4
-
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
       - name: Install dependencies
         run: pip install -r requirements.txt
-
       - name: Run tests
         run: pytest tests/
-
       - name: Deploy to Azure Production
         uses: azure/webapps-deploy@v2
         with:
