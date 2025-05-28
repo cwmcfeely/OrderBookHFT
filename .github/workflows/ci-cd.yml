@@ -16,16 +16,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
-      # Cache pip dependencies
       - name: Cache pip
         uses: actions/cache@v4
         with:
@@ -33,32 +29,23 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-
       - name: Install Python dependencies
         run: pip install -r requirements.txt
-
-      # Run pip-audit for security
       - name: Run pip-audit
         run: pip install pip-audit && pip-audit
-
       - name: Install Python linters
         run: pip install flake8 black isort
-
       - name: Auto-fix Python code style with black and isort
         run: |
           black .
           isort .
           flake8 app/ strategies/ tests/ api/
-
-      # Set up Node.js for JS linting
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-
       - name: Install ESLint
         run: npm install eslint --global
-
       - name: Lint and auto-fix app.js
         run: eslint --fix api/static/app.js
 
@@ -140,73 +127,59 @@ jobs:
         env:
           PYTHONUNBUFFERED: 1
 
-  deploy-dev:
-    if: github.ref == 'refs/heads/dev'
+  docker-build:
     runs-on: ubuntu-latest
     needs: [unit-tests, integration-tests, system-tests]
     steps:
       - uses: actions/checkout@v4
-      - name: Set PYTHONPATH
-        run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          python-version: '3.12'
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Run tests
-        run: pytest tests/
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build Docker image
+        run: docker build -t ghcr.io/${{ github.repository }}:${{ github.sha }} .
+      - name: Push Docker image
+        run: docker push ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+  deploy-dev:
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    steps:
+      - uses: actions/checkout@v4
       - name: Deploy to Azure Dev
         uses: azure/webapps-deploy@v2
         with:
           app-name: OrderBookHFT-Pilot
           slot-name: dev
           publish-profile: ${{ secrets.AZURE_DEV_PUBLISH_PROFILE }}
-          package: .
+          images: ghcr.io/${{ github.repository }}:${{ github.sha }}
 
   deploy-staging:
     if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
-    needs: [unit-tests, integration-tests, system-tests]
+    needs: [docker-build]
     steps:
       - uses: actions/checkout@v4
-      - name: Set PYTHONPATH
-        run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Run tests
-        run: pytest tests/
       - name: Deploy to Azure Staging
         uses: azure/webapps-deploy@v2
         with:
           app-name: OrderBookHFT-Pilot
           slot-name: staging
           publish-profile: ${{ secrets.AZURE_STAGING_PUBLISH_PROFILE }}
-          package: .
+          images: ghcr.io/${{ github.repository }}:${{ github.sha }}
 
   deploy-production:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    needs: [unit-tests, integration-tests, system-tests]
+    needs: [docker-build]
     steps:
       - uses: actions/checkout@v4
-      - name: Set PYTHONPATH
-        run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Run tests
-        run: pytest tests/
       - name: Deploy to Azure Production
         uses: azure/webapps-deploy@v2
         with:
           app-name: OrderBookHFT
           publish-profile: ${{ secrets.AZURE_PRODUCTION_PUBLISH_PROFILE }}
-          package: .
+          images: ghcr.io/${{ github.repository }}:${{ github.sha }}
