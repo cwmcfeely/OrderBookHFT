@@ -139,9 +139,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build Docker image
-        run: docker build -t ghcr.io/${{ github.repository }}:${{ github.sha }} .
+        run: docker build -t ghcr.io/${{ github.repository_owner }}/orderbookhft:${{ github.sha }} .
       - name: Push Docker image
-        run: docker push ghcr.io/${{ github.repository }}:${{ github.sha }}
+        run: docker push ghcr.io/${{ github.repository_owner }}/orderbookhft:${{ github.sha }}
 
   deploy-pilot:
     if: github.ref == 'refs/heads/dev'
@@ -154,7 +154,7 @@ jobs:
         with:
           app-name: OrderBookHFT-Pilot
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PILOT }}
-          images: ghcr.io/${{ github.repository }}:${{ github.sha }}
+          images: ghcr.io/${{ github.repository_owner }}/orderbookhft:${{ github.sha }}
 
   deploy-staging:
     if: github.ref == 'refs/heads/develop'
@@ -167,7 +167,7 @@ jobs:
         with:
           app-name: OrderBookHFT-Staging
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_STAGING }}
-          images: ghcr.io/${{ github.repository }}:${{ github.sha }}
+          images: ghcr.io/${{ github.repository_owner }}/orderbookhft:${{ github.sha }}
 
   deploy-production:
     if: github.ref == 'refs/heads/main'
@@ -180,4 +180,4 @@ jobs:
         with:
           app-name: OrderBookHFT-Prod
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PROD }}
-          images: ghcr.io/${{ github.repository }}:${{ github.sha }}
+          images: ghcr.io/${{ github.repository_owner }}/orderbookhft:${{ github.sha }}
