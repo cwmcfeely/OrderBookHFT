@@ -1,4 +1,4 @@
-name: AI PR Summary
+name: AI PR Summary and Description
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  summarize-pr:
+  ai-pr-summary:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -17,31 +17,42 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get PR diff
-        id: diff
-        run: |
-          git fetch origin ${{ github.event.pull_request.base.ref }}
-          DIFF=$(git diff origin/${{ github.event.pull_request.base.ref }}..HEAD)
-          echo "DIFF<<EOF" >> $GITHUB_ENV
-          echo "$DIFF" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-      - name: Summarize Diff with OpenAI
-        id: explain
-        uses: grey/openai-summarize-diff-action@main
+      - name: Generate AI summary
+        id: ai_summary
+        uses: platisd/openai-pr-description@master
         with:
-          diff: ${{ env.DIFF }}
-          apikey: ${{ secrets.OPENAI_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Post AI summary as PR comment
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const explanation = `${{ steps.explain.outputs.explanation }}`;
+            const summary = `${{ steps.ai_summary.outputs.description }}`;
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 🤖 AI Summary of Changes\n\n${explanation}`
+              body: `## 🤖 AI Summary of Changes\n\n${summary}`
+            });
+
+      - name: Update PR description
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const summary = `${{ steps.ai_summary.outputs.description }}`;
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            const currentBody = pr.data.body || '';
+            const newBody = `## 🤖 AI Summary of Changes\n\n${summary}\n\n---\n\n${currentBody}`;
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              body: newBody
             });
