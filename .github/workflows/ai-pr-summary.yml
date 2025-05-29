@@ -1,35 +1,55 @@
+# This GitHub Actions workflow automatically generates an AI-powered summary and description
+# for every pull request (PR) that is opened or updated, using OpenAI and posts the summary
+# as a comment and in the PR description.
+
 name: AI PR Summary and Description
 
 on:
+  # Workflow triggers:
+  # - When a pull request is opened
+  # - When a pull request is synchronized (i.e., new commits are pushed to it)
   pull_request:
     types: [opened, synchronize]
 
 permissions:
+  # Sets the permissions for the job:
+  # - Allows writing to pull requests (needed for commenting and updating PRs)
+  # - Allows reading repository contents (needed for checkout and context)
   pull-requests: write
   contents: read
 
 jobs:
   ai-pr-summary:
+    # The job runs on the latest Ubuntu runner
     runs-on: ubuntu-latest
+
     steps:
+      # Step 1: Checkout the repository code
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          # Fetches the full git history (not just the last commit)
           fetch-depth: 0
 
+      # Step 2: Generate the AI-powered PR summary using the OpenAI API
       - name: Generate AI summary
         id: ai_summary
         uses: platisd/openai-pr-description@master
         with:
+          # GitHub token for repository authentication (provided automatically by GitHub Actions)
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          # OpenAI API key (must be set as a secret in the repository)
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
 
+      # Step 3: Post the AI summary as a comment on the pull request
       - name: Post AI summary as PR comment
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            // Get the AI-generated summary from the previous step's outputs
             const summary = `${{ steps.ai_summary.outputs.description }}`;
+            // Create a new comment on the PR with the AI summary
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -37,19 +57,26 @@ jobs:
               body: `## 🤖 AI Summary of Changes\n\n${summary}`
             });
 
+      # Step 4: Prepend the AI summary to the PR description (body)
       - name: Update PR description
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            // Get the AI-generated summary from the previous step's outputs
             const summary = `${{ steps.ai_summary.outputs.description }}`;
+            // Fetch the current PR details (including the existing description/body)
             const pr = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.issue.number
             });
+            // Get the current PR description (body), or default to empty string if missing
             const currentBody = pr.data.body || '';
+            // Construct the new PR body with the AI summary prepended at the top,
+            // followed by a separator and the previous PR description
             const newBody = `## 🤖 AI Summary of Changes\n\n${summary}\n\n---\n\n${currentBody}`;
+            // Update the PR with the new description
             await github.rest.pulls.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
