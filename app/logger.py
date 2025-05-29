@@ -98,7 +98,6 @@ def setup_logging(
             strat_fix_logger.propagate = False  # Prevent propagation to root logger
 
     # --- Optional: Disable propagation for other noisy modules ---
-    # For example, disable propagation for 'market_data' module logs if too verbose
     logging.getLogger("market_data").propagate = False
 
 

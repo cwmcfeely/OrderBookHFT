@@ -1,31 +1,39 @@
+# -----------------------------------------------------------
+# GitHub Actions CI/CD Pipeline for OrderBookHFT
+# -----------------------------------------------------------
+# This workflow runs on pushes and pull requests to pilot, staging, and main.
+# It performs linting, testing, security scans, Docker builds, container scanning,
+# and deploys to Azure environments. It also logs deployment metrics for DORA tracking.
+# -----------------------------------------------------------
+
 name: CI/CD Pipeline
 
 on:
   pull_request:
-    branches: [pilot, staging, main]
+    branches: [pilot, staging, main] # Run on PRs to these branches
   push:
-    branches: [pilot, staging, main]
+    branches: [pilot, staging, main] # Run on pushes to these branches
 
 permissions:
   actions: read
   contents: read
   security-events: write
-  packages: write
+  packages: write # Required for pushing to GitHub Container Registry
 
 env:
-  EOD_API_KEY: ${{ secrets.EOD_API_KEY }}
+  EOD_API_KEY: ${{ secrets.EOD_API_KEY }} # Set sensitive env variable for tests
 
 jobs:
   lint-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4 # Checkout repo code
       - name: Set PYTHONPATH
-        run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
+        run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV # Ensure local imports work
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.12' # Use latest Python 3.12
       - name: Cache pip
         uses: actions/cache@v4
         with:
@@ -37,37 +45,37 @@ jobs:
           pip install -r requirements.txt
           pip install flake8 black isort mypy pip-audit bandit pytest pytest-cov types-requests pandas-stubs types-PyYAML
       - name: Run pip-audit
-        run: pip-audit
+        run: pip-audit # Audit for insecure Python dependencies
       - name: Auto-fix Python code style with black and isort
         run: |
           black .
           isort .
       - name: Run flake8
-        run: flake8 app/ strategies/ tests/ api/
+        run: flake8 app/ strategies/ tests/ api/ # Python linting
       - name: Run mypy (ignore missing imports)
-        run: mypy --ignore-missing-imports app/ strategies/ tests/ api/
+        run: mypy --ignore-missing-imports app/ strategies/ tests/ api/ # Static typing check
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '20' # Use Node.js v20 for frontend linting
       - name: Install ESLint
-        run: npm install eslint --global
+        run: npm install eslint --global # Globally install ESLint
       - name: Lint and auto-fix app.js
-        run: eslint --fix api/static/app.js
+        run: eslint --fix api/static/app.js # JS linting
 
   security-scan:
     runs-on: ubuntu-latest
-    needs: lint-test
+    needs: lint-test # Run after lint-test
     steps:
       - uses: actions/checkout@v4
       - name: Install Bandit
-        run: pip install bandit
+        run: pip install bandit # Install Bandit for security scanning
       - name: Run Bandit security scanner
-        run: bandit -r app/ strategies/ api/ || true
+        run: bandit -r app/ strategies/ api/ || true # Python security scan, tolerate nonzero exit
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v3 # Set up CodeQL analysis
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v3 # Run CodeQL
 
   unit-tests:
     runs-on: ubuntu-latest
@@ -100,7 +108,7 @@ jobs:
 
   integration-tests:
     runs-on: ubuntu-latest
-    needs: [ lint-test, security-scan ]
+    needs: [lint-test, security-scan]
     steps:
       - uses: actions/checkout@v4
       - name: Set PYTHONPATH
@@ -202,7 +210,7 @@ jobs:
 
   container-scan:
     runs-on: ubuntu-latest
-    needs: [ docker-build ]
+    needs: [docker-build]
     steps:
       - uses: actions/checkout@v4
       - name: Scan Docker image for vulnerabilities
@@ -212,6 +220,7 @@ jobs:
           exit-code: 1
           severity: 'HIGH,CRITICAL'
 
+  # ------------- Deploy to Pilot Environment -------------
   deploy-pilot:
     if: github.ref == 'refs/heads/pilot'
     runs-on: ubuntu-latest
@@ -225,7 +234,20 @@ jobs:
           app-name: OrderBookHFT-Pilot
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PILOT }}
           images: ghcr.io/${{ github.repository_owner }}/orderbookhft:${{ github.sha }}
+      # DORA Metrics reporting step: logs deployment metadata for tracking frequency, failures, durations, etc.
+      - name: Report deployment metrics
+        if: ${{ always() }}
+        run: |
+          echo "Workflow: $GITHUB_WORKFLOW"
+          echo "Job: $GITHUB_JOB"
+          echo "Run ID: $GITHUB_RUN_ID"
+          echo "Status: ${{ job.status }}"
+          echo "SHA: $GITHUB_SHA"
+          echo "Branch: $GITHUB_REF"
+          echo "Actor: $GITHUB_ACTOR"
+          echo "Deployed at: $(date -u)"
 
+  # ------------- Deploy to Staging Environment -------------
   deploy-staging:
     if: github.ref == 'refs/heads/staging'
     runs-on: ubuntu-latest
@@ -239,7 +261,20 @@ jobs:
           app-name: OrderBookHFT-Staging
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_STAGING }}
           images: ghcr.io/${{ github.repository_owner }}/orderbookhft:${{ github.sha }}
+      # DORA Metrics reporting step: logs deployment metadata for tracking frequency, failures, durations, etc.
+      - name: Report deployment metrics
+        if: ${{ always() }}
+        run: |
+          echo "Workflow: $GITHUB_WORKFLOW"
+          echo "Job: $GITHUB_JOB"
+          echo "Run ID: $GITHUB_RUN_ID"
+          echo "Status: ${{ job.status }}"
+          echo "SHA: $GITHUB_SHA"
+          echo "Branch: $GITHUB_REF"
+          echo "Actor: $GITHUB_ACTOR"
+          echo "Deployed at: $(date -u)"
 
+  # ------------- Deploy to Production Environment -------------
   deploy-production:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -253,3 +288,15 @@ jobs:
           app-name: OrderBookHFT-Prod
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PROD }}
           images: ghcr.io/${{ github.repository_owner }}/orderbookhft:${{ github.sha }}
+      # DORA Metrics reporting step: logs deployment metadata for tracking frequency, failures, durations, etc.
+      - name: Report deployment metrics
+        if: ${{ always() }}
+        run: |
+          echo "Workflow: $GITHUB_WORKFLOW"
+          echo "Job: $GITHUB_JOB"
+          echo "Run ID: $GITHUB_RUN_ID"
+          echo "Status: ${{ job.status }}"
+          echo "SHA: $GITHUB_SHA"
+          echo "Branch: $GITHUB_REF"
+          echo "Actor: $GITHUB_ACTOR"
+          echo "Deployed at: $(date -u)"
