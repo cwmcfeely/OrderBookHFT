@@ -200,10 +200,21 @@ jobs:
       - name: Push Docker image
         run: docker push ghcr.io/${{ github.repository_owner }}/orderbookhft:${{ github.sha }}
 
+  container-scan:
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Trivy
+        uses: aquasecurity/trivy-action@v0.16.2
+      - name: Scan Docker image for vulnerabilities
+        run: |
+          trivy image --exit-code 1 --severity HIGH,CRITICAL ghcr.io/${{ github.repository_owner }}/orderbookhft:${{ github.sha }}
+
   deploy-pilot:
     if: github.ref == 'refs/heads/pilot'
     runs-on: ubuntu-latest
-    needs: [docker-build]
+    needs: [container-scan]
     environment: pilot
     steps:
       - uses: actions/checkout@v4
@@ -217,7 +228,7 @@ jobs:
   deploy-staging:
     if: github.ref == 'refs/heads/staging'
     runs-on: ubuntu-latest
-    needs: [docker-build]
+    needs: [container-scan]
     environment: staging
     steps:
       - uses: actions/checkout@v4
@@ -231,7 +242,7 @@ jobs:
   deploy-production:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    needs: [docker-build]
+    needs: [container-scan]
     environment: production
     steps:
       - uses: actions/checkout@v4
