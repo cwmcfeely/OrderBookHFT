@@ -1,0 +1,27 @@
+# This workflow automatically adds new Pull Requests (PRs) and Issues
+# to a specified GitHub Project Board using the 'actions/add-to-project' GitHub Action.
+
+name: Add PR or Issue to Project
+
+on:
+  # Trigger the workflow when a pull request is opened or marked as ready for review
+  pull_request:
+    types: [opened, ready_for_review]
+  # Trigger the workflow when a new issue is opened
+  issues:
+    types: [opened]
+
+jobs:
+  add-to-project:
+    # Specify the type of runner that will execute this job
+    runs-on: ubuntu-latest
+
+    steps:
+      # Use the 'actions/add-to-project' action to add the PR or Issue to the project board
+      - uses: actions/add-to-project@v1.0.1
+        with:
+          # The URL of the GitHub Project Board where PRs/Issues should be added
+          project-url: https://github.com/users/cwmcfeely/projects/4
+          # The Personal Access Token (PAT) with 'repo', 'project', and 'workflow' scopes
+          # stored as a secret in the repository for authentication.
+          github-token: ${{ secrets.OrderBookHFTPAT }}

@@ -90,7 +90,7 @@ docker run -p 8000:8000 orderbookhft
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-Update API_KEY = ("EOD_API_KEY") with registered API_KEY
+export EOD_API_KEY='your_actual_api_key_here'
 python3 -m api.server
 ```
 
