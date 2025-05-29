@@ -296,7 +296,7 @@ def register_routes(app):
     app.route("/select_symbol", methods=["POST"])(select_symbol)
     app.route("/order_latency_history")(order_latency_history)
     app.route("/")(index)
-    app.route("/competition_logs")(get_competition_logs)  # NEW ENDPOINT
+    app.route("/competition_logs")(get_competition_logs)
 
 
 def toggle_exchange():

@@ -10,8 +10,7 @@ export default [
         fetch: "readonly",
         alert: "readonly",
         setInterval: "readonly",
-        Plotly: "readonly", // if Plotly is loaded via <script>
-        // Add any additional globals you use:
+        Plotly: "readonly",
         symbols: "readonly",
         bid: "readonly",
         ask: "readonly",

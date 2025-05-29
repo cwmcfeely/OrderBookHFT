@@ -174,16 +174,26 @@ class OrderBook:
     def seed_synthetic_depth(self, mid_price, levels=10, base_qty=100):
         """
         Seed the order book with synthetic depth around a mid price.
+        If mid_price is None or invalid, use a fallback value.
         Creates 'levels' price levels on both bid and ask sides with exponentially decaying quantities.
         Args:
             mid_price (float): The central price around which to seed depth.
             levels (int): Number of price levels on each side.
             base_qty (int): Base quantity for the first level; subsequent levels decay exponentially.
         """
-        for i in range(2, levels + 2):  # start at i=2 to skip top-of-book
-            bid_price = mid_price * (1 - 0.005 * i)  # wider spread
+        # Fallback if no market data is available
+        if not mid_price or not isinstance(mid_price, (int, float)) or mid_price <= 0:
+            print(f"WARNING: No market data for {self.symbol}, using fallback price 100.0")
+            mid_price = 100.0
+
+        # Optionally, always seed the top-of-book as well for robustness
+        self.add_order("1", mid_price * (1 - 0.005 * 1), int(base_qty), "SEED-BID-1", "system")
+        self.add_order("2", mid_price * (1 + 0.005 * 1), int(base_qty), "SEED-ASK-1", "system")
+
+        for i in range(2, levels + 2):  # start at i=2 for wider spread
+            bid_price = mid_price * (1 - 0.005 * i)
             ask_price = mid_price * (1 + 0.005 * i)
-            qty = int(base_qty * (0.8**i))
+            qty = int(base_qty * (0.8 ** i))
             self.add_order("1", bid_price, qty, f"SEED-BID-{i}", "system")
             self.add_order("2", ask_price, qty, f"SEED-ASK-{i}", "system")
 

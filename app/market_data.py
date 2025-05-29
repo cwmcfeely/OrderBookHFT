@@ -2,6 +2,7 @@ import json
 import logging
 import threading
 import time
+import os
 from datetime import date, datetime
 from pathlib import Path
 
@@ -23,7 +24,7 @@ with open("config.yaml", "r") as f:
     CONFIG = yaml.safe_load(f)
 
 # Extract API key and symbols dictionary from config
-API_KEY = CONFIG.get("api_key")
+API_KEY = os.environ.get("EOD_API_KEY")
 SYMBOLS = CONFIG.get("symbols", {})
 BASE_URL = "https://eodhistoricaldata.com/api"
 HEADERS = {"Content-Type": "application/json"}
@@ -70,9 +71,7 @@ def load_api_count():
 
                 if last_call_date_str:
                     last_call_date = date.fromisoformat(last_call_date_str)
-                    logger.info(
-                        f"Loaded API count: {api_calls_today}, Last call date: {last_call_date}"
-                    )
+                    logger.info(f"Loaded API count: {api_calls_today}, Last call date: {last_call_date}")
                 else:
                     logger.warning("Missing 'last_call_date' in API count file.")
         else:

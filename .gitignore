@@ -1,0 +1,6 @@
+# Dependency directory
+node_modules/
+
+# Optional: OS or editor files
+.DS_Store
+.env
