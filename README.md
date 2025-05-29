@@ -82,7 +82,7 @@ OrderBookHFT/
 #### With Docker
 ```bash
 docker build -t orderbookhft .
-docker run -p 8888:8888 orderbookhft
+docker run -p 8000:8000 orderbookhft
 ```
 
 #### Local (Manual)
